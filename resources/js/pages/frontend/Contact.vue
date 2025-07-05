@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
+import { Facebook, Linkedin, Instagram, Send, Github, Mail, ExternalLink, Clock, Settings } from 'lucide-vue-next';
 
 const props = defineProps({
     title: String,
@@ -17,44 +18,44 @@ const toggleMobileMenu = () => {
 const socialLinks = [
     {
         name: 'Facebook',
-        icon: '📘',
-        url: 'https://facebook.com/antonf',
-        username: '@antonf.dev',
+        icon: Facebook,
+        url: 'https://www.facebook.com/samo.thai.73',
+        username: 'HE Sovanthai',
         color: '#1877F2'
     },
     {
         name: 'LinkedIn',
-        icon: '💼',
-        url: 'https://linkedin.com/in/antonf',
-        username: 'Anton F.',
+        icon: Linkedin,
+        url: 'https://www.linkedin.com/in/sros-thai-b491b42ab/',
+        username: 'SROS THAI',
         color: '#0A66C2'
     },
     {
         name: 'Instagram',
-        icon: '📸',
-        url: 'https://instagram.com/antonf.dev',
-        username: '@antonf.dev',
+        icon: Instagram,
+        url: 'https://www.instagram.com/sovannthai887',
+        username: '@sovannthai887',
         color: '#E4405F'
     },
     {
         name: 'Telegram',
-        icon: '✈️',
-        url: 'https://t.me/antonf',
-        username: '@antonf',
+        icon: Send,
+        url: 'https://t.me/HE_Sovanthai',
+        username: '@HE_Sovanthai',
         color: '#0088CC'
     },
     {
         name: 'GitHub',
-        icon: '💻',
-        url: 'https://github.com/antonf',
-        username: 'antonf',
+        icon: Github,
+        url: 'https://github.com/Sovannthai',
+        username: 'Sovannthai',
         color: '#333333'
     },
     {
         name: 'Email',
-        icon: '📧',
-        url: 'mailto:anton@example.com',
-        username: 'anton@example.com',
+        icon: Mail,
+        url: 'mailto:srosthai00@gmail.com',
+        username: 'srosthai00@gmail.com',
         color: '#EA4335'
     }
 ]
@@ -62,22 +63,22 @@ const socialLinks = [
 const websites = [
     {
         name: 'Personal Portfolio',
-        url: 'https://antonf.dev',
+        url: 'http://sovannthai.vercel.app/',
         description: 'My main portfolio website showcasing all projects and skills',
         type: 'portfolio'
     },
-    {
-        name: 'Tech Blog',
-        url: 'https://blog.antonf.dev',
-        description: 'Technical articles and tutorials about web development',
-        type: 'blog'
-    },
-    {
-        name: 'Code Snippets',
-        url: 'https://snippets.antonf.dev',
-        description: 'Useful code snippets and development resources',
-        type: 'resources'
-    }
+    // {
+    //     name: 'Tech Blog',
+    //     url: 'https://blog.antonf.dev',
+    //     description: 'Technical articles and tutorials about web development',
+    //     type: 'blog'
+    // },
+    // {
+    //     name: 'Code Snippets',
+    //     url: 'https://snippets.antonf.dev',
+    //     description: 'Useful code snippets and development resources',
+    //     type: 'resources'
+    // }
 ]
 
 onMounted(() => {
@@ -154,7 +155,9 @@ onMounted(() => {
                             '--hover-color': social.color 
                         }"
                     >
-                        <div class="social-icon">{{ social.icon }}</div>
+                        <div class="social-icon">
+                            <component :is="social.icon" />
+                        </div>
                         <div class="social-info">
                             <h3 class="social-name">{{ social.name }}</h3>
                             <p class="social-username">{{ social.username }}</p>
@@ -181,9 +184,7 @@ onMounted(() => {
                         :style="{ animationDelay: `${index * 0.2}s` }"
                     >
                         <div class="website-icon">
-                            <span v-if="website.type === 'portfolio'">🌐</span>
-                            <span v-else-if="website.type === 'blog'">📝</span>
-                            <span v-else="website.type === 'resources'">🔧</span>
+                            <component :is="website.type === 'portfolio' ? ExternalLink : website.type === 'blog' ? Clock : Settings" />
                         </div>
                         <div class="website-content">
                             <h3 class="website-name">{{ website.name }}</h3>
@@ -225,7 +226,7 @@ onMounted(() => {
                         
                         <button type="submit" class="submit-btn">
                             <span>Send Message</span>
-                            <span class="btn-icon">📤</span>
+                            <span class="btn-icon"><Send /></span>
                         </button>
                     </form>
                 </div>

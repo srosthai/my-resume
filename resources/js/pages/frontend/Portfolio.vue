@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
+import { Laptop, Eye, Github } from 'lucide-vue-next'
 
 const props = defineProps({
     title: String,
@@ -227,16 +228,16 @@ onMounted(() => {
                     >
                         <div class="project-image">
                             <div class="image-placeholder">
-                                <span class="project-icon">💻</span>
+                                <Laptop :size="48" />
                             </div>
                             <div class="project-overlay">
                                 <div class="project-links">
                                     <a :href="project.links.demo" class="project-link demo">
-                                        <span>👁️</span>
+                                        <Eye :size="24" />
                                         <span>Live Demo</span>
                                     </a>
                                     <a :href="project.links.github" class="project-link github">
-                                        <span>📂</span>
+                                        <Github :size="24" />
                                         <span>GitHub</span>
                                     </a>
                                 </div>
