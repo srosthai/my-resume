@@ -20,8 +20,8 @@ class PortfolioController extends Controller
     public function about()
     {
         return Inertia::render('frontend/About', [
-            'title' => 'About Me - Anton F.',
-            'description' => 'Learn more about Anton F., his background, experience, and technical skills.',
+            'title' => 'About - SROS THAI',
+            'description' => 'Learn more about SROS THAI, our mission, and the team behind the platform.',
         ]);
     }
 

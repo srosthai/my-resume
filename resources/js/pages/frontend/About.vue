@@ -16,41 +16,34 @@ const toggleMobileMenu = () => {
 
 const education = [
     {
-        period: '2020-2024',
-        title: 'Bachelor of Computer Systems and Networks',
-        institution: 'BSUIR (Belarusian State University of Informatics and Radioelectronics)',
-        description: 'Specialized in computer systems architecture, network protocols, and software development. Graduated with honors.',
+        period: '2021-2025',
+        title: 'Bachelor of Information Technology',
+        institution: 'BBU (Build Bright University)',
+        description: 'Studying advanced concepts in Information Technology and software development. Focused on fullstack development, data structures, algorithms, and software engineering principles.',
         type: 'education'
     },
     {
-        period: '2020',
-        title: 'Fullstack Development Bootcamp',
-        institution: 'IBA (International Business Academy)',
-        description: 'Intensive training in modern web development technologies including Java, Spring Boot, JavaScript, React, and Redux.',
+        period: '2019-2021',
+        title: 'High School Diploma',
+        institution: 'KDHS (Kouk Doung High School)',
+        description: 'Studied at High School for Specialized Studies, Siem Reap, Cambodia.',
         type: 'education'
     }
 ]
 
 const experience = [
     {
-        period: '2022-Present',
-        title: 'Senior Fullstack Developer',
-        company: 'Tech Solutions Inc.',
-        description: 'Leading development of enterprise web applications using React, Node.js, and PostgreSQL. Mentoring junior developers and architecting scalable solutions.',
+        period: '2023-Present',
+        title: 'Backend Laravel Dev',
+        company: 'EOT (eOcambo Technology)',
+        description: 'Developing and maintaining backend systems using Laravel and PHP. Focused on building scalable APIs, optimizing database queries, and ensuring application security. Collaborating with frontend developers to integrate user-facing elements.',
         type: 'experience'
     },
     {
-        period: '2020-2022',
-        title: 'Software Engineer',
-        company: 'Digital Innovations LLC',
-        description: 'Developed and maintained multiple fullstack applications. Implemented automated testing and CI/CD pipelines. Collaborated with cross-functional teams.',
-        type: 'experience'
-    },
-    {
-        period: '2020',
-        title: 'Junior Developer',
-        company: 'StartUp Solutions',
-        description: 'Started career in software development. Worked on frontend applications using React and contributed to backend API development.',
+        period: '2023-2024',
+        title: 'Junior Backend Laravel Dev',
+        company: 'EOT (eOcambo Technology)',
+        description: 'Started career in software development. Worked on backend systems using Laravel and PHP. Gained experience in RESTful APIs, database design, and application security.',
         type: 'experience'
     }
 ]
@@ -58,10 +51,46 @@ const experience = [
 const techStack = [
     // Frontend Technologies
     {
-        name: 'React',
+        name: 'HTML',
         category: 'Frontend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
-        description: 'A JavaScript library for building user interfaces with component-based architecture.'
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
+        description: 'Standard markup language for creating web pages and applications.'
+    },
+    {
+        name: 'CSS',
+        category: 'Frontend',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
+        description: 'Style sheet language used for describing the presentation of a document written in HTML.'
+    },
+    {
+        name: 'JavaScript',
+        category: 'Frontend',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
+        description: 'High-level programming language for web development and interactive applications.'
+    },
+    {
+        name: 'Tailwind CSS',
+        category: 'Frontend',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg',
+        description: 'Utility-first CSS framework for rapid UI development.'
+    },
+    {
+        name: 'Bootstrap',
+        category: 'Frontend',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg',
+        description: 'Popular CSS framework for building responsive and mobile-first websites.'
+    },
+    {
+        name: 'PHP',
+        category: 'Backend',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg',
+        description: 'Popular server-side scripting language for web development.'
+    },
+    {
+        name: 'Laravel',
+        category: 'Backend',
+        image: 'https://cdn.worldvectorlogo.com/logos/laravel-2.svg',
+        description: 'PHP framework for building web applications with elegant syntax and powerful features.'
     },
     {
         name: 'Vue.js',
@@ -75,55 +104,6 @@ const techStack = [
         image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg',
         description: 'React framework for production with server-side rendering and static site generation.'
     },
-    {
-        name: 'TypeScript',
-        category: 'Frontend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
-        description: 'Strongly typed programming language that builds on JavaScript.'
-    },
-    {
-        name: 'JavaScript',
-        category: 'Frontend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
-        description: 'High-level programming language for web development and interactive applications.'
-    },
-    // Backend Technologies
-    {
-        name: 'Node.js',
-        category: 'Backend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
-        description: 'JavaScript runtime built on Chrome\'s V8 engine for server-side development.'
-    },
-    {
-        name: 'Express.js',
-        category: 'Backend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg',
-        description: 'Fast, unopinionated web framework for Node.js applications.'
-    },
-    {
-        name: 'Spring Boot',
-        category: 'Backend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg',
-        description: 'Java-based framework for building enterprise-grade applications.'
-    },
-    {
-        name: 'Java',
-        category: 'Backend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg',
-        description: 'Object-oriented programming language for building scalable applications.'
-    },
-    {
-        name: 'Python',
-        category: 'Backend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg',
-        description: 'High-level programming language known for its simplicity and versatility.'
-    },
-    {
-        name: 'Go',
-        category: 'Backend',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg',
-        description: 'Open-source programming language designed for simplicity and efficiency.'
-    },
     // Database Technologies
     {
         name: 'PostgreSQL',
@@ -132,30 +112,12 @@ const techStack = [
         description: 'Advanced open-source relational database with powerful features.'
     },
     {
-        name: 'MongoDB',
-        category: 'Database',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg',
-        description: 'NoSQL document database for modern applications.'
-    },
-    {
-        name: 'Redis',
-        category: 'Database',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg',
-        description: 'In-memory data structure store used as database, cache, and message broker.'
-    },
-    {
         name: 'MySQL',
         category: 'Database',
         image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg',
         description: 'Popular open-source relational database management system.'
     },
     // DevOps & Tools
-    {
-        name: 'Docker',
-        category: 'DevOps & Tools',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg',
-        description: 'Platform for developing, shipping, and running applications in containers.'
-    },
     {
         name: 'Git',
         category: 'DevOps & Tools',
@@ -168,12 +130,6 @@ const techStack = [
         image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg',
         description: 'Open-source operating system kernel widely used in server environments.'
     },
-    {
-        name: 'Nginx',
-        category: 'DevOps & Tools',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg',
-        description: 'High-performance web server and reverse proxy server.'
-    },
     // Design & Media
     {
         name: 'Figma',
@@ -182,11 +138,31 @@ const techStack = [
         description: 'Collaborative design tool for creating user interfaces and prototypes.'
     },
     {
-        name: 'Adobe Photoshop',
+        name: 'Canva',
         category: 'Design & Media',
-        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg',
-        description: 'Professional image editing software for creative design work.'
-    }
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/canva/canva-original.svg',
+        description: 'User-friendly graphic design tool for creating visual content.'
+    },
+    //Server & Hostings
+    { 
+        name: 'Vercel',
+        category: 'Server & Hosting',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vercel/vercel-original.svg',
+        description: 'Platform for deploying and hosting web applications with serverless functions.'
+    },
+    { 
+        name: 'DigitalOcean',
+        category: 'Server & Hosting',
+        image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/digitalocean/digitalocean-original.svg',
+        description: 'Cloud infrastructure provider offering scalable virtual servers and managed databases.'
+    },
+    { 
+        name: 'cPanel',
+        category: 'Server & Hosting',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/CPanel_logo.svg/2560px-CPanel_logo.svg.png',
+        description: 'Cloud infrastructure provider offering scalable virtual servers and managed databases.'
+    },
+
 ]
 
 onMounted(() => {
@@ -240,7 +216,11 @@ onMounted(() => {
             <div class="hero-content">
                 <h1 class="page-title" :class="{ 'fade-in-up': isVisible }">About Me</h1>
                 <p class="page-description" :class="{ 'fade-in-up': isVisible }">
-                    Passionate software engineer with a strong foundation in fullstack development and a keen eye for creating innovative solutions.
+                    Hi, I'm SROS THAI, a passionate software developer with a focus on backend development using Laravel and PHP. I have a strong foundation in fullstack development, data structures, algorithms, and software engineering principles. My goal is to create efficient and scalable applications that solve real-world problems.
+                    <br><br>
+                    I am currently pursuing a Bachelor of Information Technology at BBU (Build Bright University) and have gained valuable experience working as a Backend Laravel Developer at EOT (eOcambo Technology).
+                    <br><br>
+                    In my free time, I enjoy exploring new technologies, contributing to open-source projects, and enhancing my skills in web development. I am always eager to learn and grow as a developer, and I believe in the power of collaboration and sharing knowledge with others.
                 </p>
             </div>
         </section>
