@@ -76,7 +76,7 @@ const animateText = () => {
             
             <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-8 items-center w-full relative z-10">
                 <div class="space-y-4 lg:space-y-4" :class="{ 'fade-in-up': isVisible }">
-                    <div class="space-y-3 mt-10">
+                    <div class="space-y-3">
                         <Badge variant="outline" class="w-fit px-3 py-1.5 bg-primary/10 border-primary/20 text-primary">
                             <Sparkles class="w-3 h-3 mr-2" />
                             Software Developer
