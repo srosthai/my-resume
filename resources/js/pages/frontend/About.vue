@@ -1,6 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
+import { Calendar, MapPin, GraduationCap, Briefcase, Code, Award } from 'lucide-vue-next'
+import DockNavigation from '@/components/DockNavigation.vue'
 
 const props = defineProps({
     title: String,
@@ -8,11 +14,6 @@ const props = defineProps({
 })
 
 const isVisible = ref(false)
-const isMobileMenuOpen = ref(false)
-
-const toggleMobileMenu = () => {
-    isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
 
 const education = [
     {
@@ -125,7 +126,7 @@ const techStack = [
         description: 'Distributed version control system for tracking changes in source code.'
     },
     {
-        name: 'Linux',
+        name: 'Linux (UBT)',
         category: 'DevOps & Tools',
         image: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg',
         description: 'Open-source operating system kernel widely used in server environments.'
@@ -178,513 +179,238 @@ onMounted(() => {
         <meta name="description" :content="description" />
     </Head>
 
-    <div class="about-container">
-        <!-- Navigation -->
-        <nav class="portfolio-nav">
-            <div class="nav-content">
-                <div class="nav-logo" hidden>Anton F.</div>
-                
-                <!-- Mobile Menu Toggle -->
-                <button 
-                    class="mobile-menu-toggle"
-                    @click="toggleMobileMenu"
-                    :class="{ 'active': isMobileMenuOpen }"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                
-                <!-- Navigation Links -->
-                <ul class="nav-links" :class="{ 'mobile-open': isMobileMenuOpen }">
-                    <li><Link href="/" class="nav-link">Home</Link></li>
-                    <li><Link href="/about" class="nav-link active">About Me</Link></li>
-                    <li><Link href="/portfolio" class="nav-link">Portfolio</Link></li>
-                    <li><Link href="/contact" class="nav-link">Contact</Link></li>
-                    <li><Link href="/more" class="nav-link">More</Link></li>
-                </ul>
-                
-                <!-- Search Input -->
-                <div class="nav-search" hidden>
-                    <input type="text" placeholder="Search..." class="search-input">
-                </div>
-            </div>
-        </nav>
+    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
+        <!-- Dock Navigation -->
+        <DockNavigation currentRoute="/about" />
 
         <!-- About Hero Section -->
-        <section class="about-hero">
-            <div class="hero-content">
-                <h1 class="page-title" :class="{ 'fade-in-up': isVisible }">About Me</h1>
-                <p class="page-description" :class="{ 'fade-in-up': isVisible }">
-                    Hi, I'm SROS THAI, a passionate software developer with a focus on backend development using Laravel and PHP. I have a strong foundation in fullstack development, data structures, algorithms, and software engineering principles. My goal is to create efficient and scalable applications that solve real-world problems.
-                    <br><br>
-                    I am currently pursuing a Bachelor of Information Technology at BBU (Build Bright University) and have gained valuable experience working as a Backend Laravel Developer at EOT (eOcambo Technology).
-                    <br><br>
-                    In my free time, I enjoy exploring new technologies, contributing to open-source projects, and enhancing my skills in web development. I am always eager to learn and grow as a developer, and I believe in the power of collaboration and sharing knowledge with others.
-                </p>
+        <section class="pt-6 sm:pt-8 pb-12 px-4 max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 lg:gap-12 items-start" :class="{ 'fade-in-up': isVisible }">
+                <div class="space-y-6">
+                    <div class="space-y-4">
+                        <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary">
+                            <Code class="w-3 h-3 mr-2" />
+                            Software Developer
+                        </Badge>
+                        
+                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
+                            <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                                About Me
+                            </span>
+                        </h1>
+                    </div>
+                    
+                    <div class="prose prose-base lg:prose-lg max-w-none text-muted-foreground leading-relaxed space-y-4">
+                        <p class="text-base lg:text-lg">
+                            Hi, I'm <span class="font-semibold text-foreground">SROS THAI</span>, a passionate software developer with a focus on backend development using Laravel and PHP. I have a strong foundation in fullstack development, data structures, algorithms, and software engineering principles.
+                        </p>
+                        
+                        <p>
+                            My goal is to create efficient and scalable applications that solve real-world problems. I am currently pursuing a Bachelor of Information Technology at BBU (Build Bright University) and have gained valuable experience working as a Backend Laravel Developer at EOT (eOcambo Technology).
+                        </p>
+                        
+                        <p>
+                            In my free time, I enjoy exploring new technologies, contributing to open-source projects, and enhancing my skills in web development. I am always eager to learn and grow as a developer, and I believe in the power of collaboration and sharing knowledge with others.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="space-y-4">
+                    <Card class="bg-card/50 backdrop-blur-sm border border-border/50">
+                        <CardContent class="p-4 lg:p-6 space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-primary/10 rounded-lg">
+                                    <MapPin class="h-4 w-4 text-primary" />
+                                </div>
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Location</p>
+                                    <p class="font-medium">Cambodia</p>
+                                </div>
+                            </div>
+                            
+                            <Separator class="bg-border/50" />
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-primary/10 rounded-lg">
+                                    <Briefcase class="h-4 w-4 text-primary" />
+                                </div>
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Experience</p>
+                                    <p class="font-medium">2+ Years</p>
+                                </div>
+                            </div>
+                            
+                            <Separator class="bg-border/50" />
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-primary/10 rounded-lg">
+                                    <Award class="h-4 w-4 text-primary" />
+                                </div>
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Focus</p>
+                                    <p class="font-medium">Backend Development</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </section>
 
         <!-- Resume Section -->
-        <section class="resume-section">
-            <div class="section-container">
-                <h2 class="section-title" :class="{ 'fade-in-up': isVisible }">Resume</h2>
-                
-                <!-- Experience Timeline -->
-                <div class="timeline-container">
-                    <h3 class="timeline-category" :class="{ 'fade-in-up': isVisible }">Professional Experience</h3>
-                    <div class="timeline">
-                        <div
-                            v-for="(item, index) in experience"
-                            :key="index"
-                            class="timeline-item experience"
-                            :class="{ 'fade-in-up': isVisible }"
-                            :style="{ animationDelay: `${index * 0.2}s` }"
-                        >
-                            <div class="timeline-period">{{ item.period }}</div>
-                            <div class="timeline-content">
-                                <h4 class="timeline-title">{{ item.title }}</h4>
-                                <h5 class="timeline-company">{{ item.company }}</h5>
-                                <p class="timeline-description">{{ item.description }}</p>
-                            </div>
-                        </div>
+        <section class="py-12 lg:py-16 px-4 max-w-6xl mx-auto">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-8 lg:mb-12 bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent" :class="{ 'fade-in-up': isVisible }">
+                Professional Journey
+            </h2>
+            
+            <!-- Experience Timeline -->
+            <div class="mb-12 lg:mb-16">
+                <div class="flex items-center gap-4 mb-6 lg:mb-8">
+                    <div class="p-3 bg-primary/10 rounded-xl">
+                        <Briefcase class="h-6 w-6 text-primary" />
                     </div>
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground" :class="{ 'fade-in-up': isVisible }">
+                        Work Experience
+                    </h3>
                 </div>
-
-                <!-- Education Timeline -->
-                <div class="timeline-container">
-                    <h3 class="timeline-category" :class="{ 'fade-in-up': isVisible }">Education</h3>
-                    <div class="timeline">
-                        <div
-                            v-for="(item, index) in education"
-                            :key="index"
-                            class="timeline-item education"
-                            :class="{ 'fade-in-up': isVisible }"
-                            :style="{ animationDelay: `${(index + experience.length) * 0.2}s` }"
-                        >
-                            <div class="timeline-period">{{ item.period }}</div>
-                            <div class="timeline-content">
-                                <h4 class="timeline-title">{{ item.title }}</h4>
-                                <h5 class="timeline-institution">{{ item.institution }}</h5>
-                                <p class="timeline-description">{{ item.description }}</p>
+                
+                <div class="space-y-4 lg:space-y-6 relative">
+                    <!-- Timeline line -->
+                    <div class="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-primary/50 to-transparent hidden md:block"></div>
+                    
+                    <Card
+                        v-for="(item, index) in experience"
+                        :key="index"
+                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group relative md:ml-16"
+                        :class="{ 'fade-in-up': isVisible }"
+                        :style="{ animationDelay: `${index * 0.2}s` }"
+                    >
+                        <!-- Timeline dot -->
+                        <div class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 transition-transform"></div>
+                        
+                        <CardContent class="p-4 lg:p-6">
+                            <div class="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
+                                <Badge variant="outline" class="bg-primary/10 border-primary/20 text-primary w-fit px-4 py-2">
+                                    <Calendar class="w-3 h-3 mr-2" />
+                                    {{ item.period }}
+                                </Badge>
+                                <div class="flex-1 space-y-3">
+                                    <div>
+                                        <h4 class="text-lg lg:text-xl font-bold text-foreground mb-2">{{ item.title }}</h4>
+                                        <h5 class="text-base lg:text-lg font-semibold text-primary mb-2">{{ item.company }}</h5>
+                                    </div>
+                                    <p class="text-muted-foreground leading-relaxed">{{ item.description }}</p>
+                                </div>
                             </div>
-                        </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
+            <!-- Education Timeline -->
+            <div>
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="p-3 bg-primary/10 rounded-xl">
+                        <GraduationCap class="h-6 w-6 text-primary" />
                     </div>
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground" :class="{ 'fade-in-up': isVisible }">
+                        Education
+                    </h3>
+                </div>
+                
+                <div class="space-y-4 lg:space-y-6 relative">
+                    <!-- Timeline line -->
+                    <div class="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-primary/50 to-transparent hidden md:block"></div>
+                    
+                    <Card
+                        v-for="(item, index) in education"
+                        :key="index"
+                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group relative md:ml-16"
+                        :class="{ 'fade-in-up': isVisible }"
+                        :style="{ animationDelay: `${(index + experience.length) * 0.2}s` }"
+                    >
+                        <!-- Timeline dot -->
+                        <div class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 transition-transform"></div>
+                        
+                        <CardContent class="p-4 lg:p-6">
+                            <div class="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
+                                <Badge variant="outline" class="bg-primary/10 border-primary/20 text-primary w-fit px-4 py-2">
+                                    <Calendar class="w-3 h-3 mr-2" />
+                                    {{ item.period }}
+                                </Badge>
+                                <div class="flex-1 space-y-3">
+                                    <div>
+                                        <h4 class="text-2xl font-bold text-foreground mb-2">{{ item.title }}</h4>
+                                        <h5 class="text-lg font-semibold text-primary mb-3">{{ item.institution }}</h5>
+                                    </div>
+                                    <p class="text-muted-foreground leading-relaxed">{{ item.description }}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </section>
 
         <!-- Tech Stack Section -->
-        <section class="techstack-section">
-            <div class="section-container">
-                <h2 class="section-title" :class="{ 'fade-in-up': isVisible }">Tech Stack</h2>
-                <div class="techstack-cards-grid">
-                    <div
-                        v-for="(tech, index) in techStack"
-                        :key="index"
-                        class="tech-card"
-                        :class="{ 'fade-in-up': isVisible }"
-                        :style="{ animationDelay: `${index * 0.1}s` }"
-                    >
-                        <div class="tech-card-header">
-                            <div class="tech-image-container">
-                                <img :src="tech.image" :alt="tech.name" class="tech-image" />
+        <section class="py-12 lg:py-16 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-8 lg:mb-12">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6 bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent" :class="{ 'fade-in-up': isVisible }">
+                    Technology Stack
+                </h2>
+                <p class="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+                    The tools and technologies I work with to bring ideas to life
+                </p>
+            </div>
+            
+            <!-- Tech categories grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-4">
+                <Card
+                    v-for="(tech, index) in techStack"
+                    :key="index"
+                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl group overflow-hidden relative"
+                    :class="{ 'fade-in-up': isVisible }"
+                    :style="{ animationDelay: `${index * 0.05}s` }"
+                >
+                    <!-- Hover gradient border -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                    
+                    <CardContent class="p-3 lg:p-4 relative z-10">
+                        <div class="flex items-start gap-2 lg:gap-3 mb-3">
+                            <div class="p-2 lg:p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors duration-300 flex-shrink-0">
+                                <Avatar class="h-6 w-6 lg:h-8 lg:w-8">
+                                    <AvatarImage :src="tech.image" :alt="tech.name" class="object-contain p-1" />
+                                    <AvatarFallback class="bg-primary/20 text-primary text-xs font-bold">
+                                        {{ tech.name.slice(0, 2) }}
+                                    </AvatarFallback>
+                                </Avatar>
                             </div>
-                            <div class="tech-category-badge">{{ tech.category }}</div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm lg:text-base font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300 truncate">
+                                    {{ tech.name }}
+                                </h3>
+                                <Badge 
+                                    variant="outline" 
+                                    class="bg-primary/10 border-primary/20 text-primary text-xs px-1.5 py-0.5"
+                                >
+                                    {{ tech.category }}
+                                </Badge>
+                            </div>
                         </div>
-                        <div class="tech-card-content">
-                            <h3 class="tech-name">{{ tech.name }}</h3>
-                            <p class="tech-description">{{ tech.description }}</p>
-                        </div>
-                    </div>
-                </div>
+                        
+                        <p class="text-xs lg:text-sm text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300 line-clamp-2 lg:line-clamp-3">
+                            {{ tech.description }}
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         </section>
     </div>
 </template>
 
 <style scoped>
-/* Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.about-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #ffffff;
-    font-family: 'Arial', 'Helvetica', sans-serif;
-    overflow-x: hidden;
-}
-
-/* Navigation - Same as Portfolio.vue */
-.portfolio-nav {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 50px;
-    padding: 15px 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: auto;
-    max-width: calc(100vw - 40px);
-}
-
-.nav-content {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    position: relative;
-}
-
-.nav-logo {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 20px;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: #a0a0a0;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.nav-search {
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 8px 16px;
-    color: #ffffff;
-    width: 150px;
-    transition: all 0.3s ease;
-}
-
-.search-input::placeholder {
-    color: #a0a0a0;
-}
-
-.search-input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.15);
-    width: 200px;
-}
-
-.mobile-menu-toggle {
-    display: none;
-    flex-direction: column;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    gap: 3px;
-}
-
-.mobile-menu-toggle span {
-    width: 20px;
-    height: 2px;
-    background-color: #ffffff;
-    transition: all 0.3s ease;
-    border-radius: 2px;
-}
-
-.mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
-}
-
-/* About Hero Section */
-.about-hero {
-    padding: 120px 5% 80px;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.page-title {
-    font-size: 4rem;
-    font-weight: 900;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1.1;
-}
-
-.page-description {
-    font-size: 1.3rem;
-    color: #a0a0a0;
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-/* Sections */
-.section-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 80px 5%;
-}
-
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 60px;
-    text-align: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Timeline */
-.timeline-container {
-    margin-bottom: 60px;
-}
-
-.timeline-category {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 40px;
-    text-align: center;
-}
-
-.timeline {
-    position: relative;
-    padding-left: 30px;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-    border-radius: 2px;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 50px;
-    padding-left: 50px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px 30px 30px 70px;
-    transition: all 0.3s ease;
-}
-
-.timeline-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-}
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -35px;
-    top: 30px;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: 3px solid #1a1a2e;
-}
-
-.timeline-item.experience::before {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.timeline-item.education::before {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-}
-
-.timeline-period {
-    color: #667eea;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 8px;
-}
-
-.timeline-title {
-    color: #ffffff;
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.timeline-company,
-.timeline-institution {
-    color: #c0c0c0;
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 15px;
-}
-
-.timeline-description {
-    color: #a0a0a0;
-    line-height: 1.6;
-    font-size: 1rem;
-}
-
-/* Tech Stack */
-.techstack-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-}
-
-.tech-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 25px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.tech-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.tech-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-}
-
-.tech-card:hover::before {
-    opacity: 1;
-}
-
-.tech-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.tech-image-container {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 8px;
-    transition: all 0.3s ease;
-}
-
-.tech-card:hover .tech-image-container {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.05);
-}
-
-.tech-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: brightness(0.9);
-    transition: filter 0.3s ease;
-}
-
-.tech-card:hover .tech-image {
-    filter: brightness(1);
-}
-
-.tech-category-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-.tech-card:hover .tech-category-badge {
-    opacity: 1;
-}
-
-.tech-card-content {
-    text-align: left;
-}
-
-.tech-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.tech-description {
-    color: #a0a0a0;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin: 0;
-    transition: color 0.3s ease;
-}
-
-.tech-card:hover .tech-description {
-    color: #b0b0b0;
-}
-
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -699,206 +425,5 @@ onMounted(() => {
 
 .fade-in-up {
     animation: fadeInUp 1s ease-out forwards;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .portfolio-nav {
-        padding: 12px 25px;
-    }
-    
-    .nav-content {
-        gap: 20px;
-    }
-    
-    .search-input {
-        width: 120px;
-    }
-    
-    .search-input:focus {
-        width: 150px;
-    }
-    
-    .page-title {
-        font-size: 3rem;
-    }
-    
-    .section-container {
-        padding: 60px 4%;
-    }
-}
-
-@media (max-width: 768px) {
-    .portfolio-nav {
-        top: 15px;
-        padding: 10px 20px;
-        border-radius: 25px;
-        width: calc(100vw - 30px);
-    }
-    
-    .nav-content {
-        gap: 15px;
-        justify-content: space-between;
-    }
-    
-    .mobile-menu-toggle {
-        display: flex;
-    }
-    
-    .nav-links {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        margin-top: 10px;
-        padding: 20px;
-        flex-direction: column;
-        gap: 10px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-    }
-    
-    .nav-links.mobile-open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    .nav-search {
-        display: none;
-    }
-    
-    .about-hero {
-        padding: 100px 4% 60px;
-    }
-    
-    .page-title {
-        font-size: 2.5rem;
-    }
-    
-    .page-description {
-        font-size: 1.1rem;
-    }
-    
-    .section-container {
-        padding: 50px 4%;
-    }
-    
-    .section-title {
-        font-size: 2rem;
-        margin-bottom: 40px;
-    }
-    
-    .timeline {
-        padding-left: 20px;
-    }
-    
-    .timeline-item {
-        padding: 20px 20px 20px 50px;
-        margin-bottom: 30px;
-    }
-    
-    .timeline-item::before {
-        left: -25px;
-        top: 20px;
-        width: 12px;
-        height: 12px;
-    }
-    
-    .techstack-cards-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
-    
-    .tech-card {
-        padding: 20px;
-    }
-    
-    .tech-image-container {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .tech-name {
-        font-size: 1.1rem;
-    }
-    
-    .tech-description {
-        font-size: 0.85rem;
-    }
-    
-    .timeline-title {
-        font-size: 1.2rem;
-    }
-    
-    .timeline-company,
-    .timeline-institution {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .portfolio-nav {
-        top: 10px;
-        padding: 8px 15px;
-        width: calc(100vw - 20px);
-    }
-    
-    .nav-logo {
-        font-size: 1rem;
-    }
-    
-    .page-title {
-        font-size: 2rem;
-    }
-    
-    .page-description {
-        font-size: 1rem;
-    }
-    
-    .section-container {
-        padding: 40px 3%;
-    }
-    
-    .section-title {
-        font-size: 1.8rem;
-    }
-    
-    .timeline-item {
-        padding: 15px 15px 15px 40px;
-    }
-    
-    .techstack-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .tech-card {
-        padding: 18px;
-    }
-    
-    .tech-image-container {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .tech-name {
-        font-size: 1rem;
-    }
-    
-    .tech-description {
-        font-size: 0.8rem;
-    }
-    
-    .tech-category-badge {
-        font-size: 0.7rem;
-        padding: 5px 10px;
-    }
 }
 </style>

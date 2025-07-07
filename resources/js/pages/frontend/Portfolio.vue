@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
-import { Laptop, Eye, Github } from 'lucide-vue-next'
+import { Laptop, Eye, Github, Folder, Star } from 'lucide-vue-next'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import DockNavigation from '@/components/DockNavigation.vue'
 
 const props = defineProps({
     title: String,
@@ -9,13 +13,8 @@ const props = defineProps({
     projects: Array
 })
 
-const isVisible = ref(false)
-const isMobileMenuOpen = ref(false)
+const isVisible       = ref(false)
 const selectedFilter = ref('all')
-
-const toggleMobileMenu = () => {
-    isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
 
 const projectsData = [
     {
@@ -128,511 +127,147 @@ onMounted(() => {
         <meta name="description" :content="description" />
     </Head>
 
-    <div class="portfolio-container">
-        <!-- Navigation -->
-        <nav class="portfolio-nav">
-            <div class="nav-content">
-                <div class="nav-logo" hidden>Anton F.</div>
-                
-                <!-- Mobile Menu Toggle -->
-                <button 
-                    class="mobile-menu-toggle"
-                    @click="toggleMobileMenu"
-                    :class="{ 'active': isMobileMenuOpen }"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                
-                <!-- Navigation Links -->
-                <ul class="nav-links" :class="{ 'mobile-open': isMobileMenuOpen }">
-                    <li><Link href="/" class="nav-link">Home</Link></li>
-                    <li><Link href="/about" class="nav-link">About Me</Link></li>
-                    <li><Link href="/portfolio" class="nav-link active">Portfolio</Link></li>
-                    <li><Link href="/contact" class="nav-link">Contact</Link></li>
-                    <li><Link href="/more" class="nav-link">More</Link></li>
-                </ul>
-                
-                <!-- Search Input -->
-                <div class="nav-search" hidden>
-                    <input type="text" placeholder="Search..." class="search-input">
-                </div>
-            </div>
-        </nav>
+    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
+        <DockNavigation currentRoute="/portfolio" />
 
         <!-- Portfolio Hero Section -->
-        <section class="portfolio-hero">
-            <div class="hero-content">
-                <h1 class="page-title" :class="{ 'fade-in-up': isVisible }">My Portfolio</h1>
-                <p class="page-description" :class="{ 'fade-in-up': isVisible }">
+        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center">
+            <div class="space-y-4" :class="{ 'fade-in-up': isVisible }">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <Badge variant="secondary" class="text-sm px-4 py-2">
+                        <Folder class="w-4 h-4 mr-2" />
+                        Portfolio
+                    </Badge>
+                </div>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent leading-tight">
+                    My Portfolio
+                </h1>
+                <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
                     Explore my collection of projects showcasing modern web development, mobile applications, and innovative solutions.
                 </p>
             </div>
         </section>
 
         <!-- Filter Section -->
-        <section class="filter-section">
-            <div class="section-container">
-                <div class="filter-buttons" :class="{ 'fade-in-up': isVisible }">
-                    <button 
-                        @click="filterProjects('all')"
-                        :class="['filter-btn', { active: selectedFilter === 'all' }]"
-                    >
-                        All Projects
-                    </button>
-                    <button 
-                        @click="filterProjects('fullstack')"
-                        :class="['filter-btn', { active: selectedFilter === 'fullstack' }]"
-                    >
-                        Full Stack
-                    </button>
-                    <button 
-                        @click="filterProjects('frontend')"
-                        :class="['filter-btn', { active: selectedFilter === 'frontend' }]"
-                    >
-                        Frontend
-                    </button>
-                    <button 
-                        @click="filterProjects('backend')"
-                        :class="['filter-btn', { active: selectedFilter === 'backend' }]"
-                    >
-                        Backend
-                    </button>
-                    <button 
-                        @click="filterProjects('mobile')"
-                        :class="['filter-btn', { active: selectedFilter === 'mobile' }]"
-                    >
-                        Mobile
-                    </button>
-                    <button 
-                        @click="filterProjects('ai')"
-                        :class="['filter-btn', { active: selectedFilter === 'ai' }]"
-                    >
-                        AI/ML
-                    </button>
-                </div>
+        <section class="py-6 px-4 max-w-6xl mx-auto">
+            <div class="flex justify-center flex-wrap gap-3 mb-8" :class="{ 'fade-in-up': isVisible }">
+                <button 
+                    @click="filterProjects('all')"
+                    :class="selectedFilter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+                >
+                    All Projects
+                </button>
+                <button 
+                    @click="filterProjects('fullstack')"
+                    :class="selectedFilter === 'fullstack' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+                >
+                    Full Stack
+                </button>
+                <button 
+                    @click="filterProjects('frontend')"
+                    :class="selectedFilter === 'frontend' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+                >
+                    Frontend
+                </button>
+                <button 
+                    @click="filterProjects('backend')"
+                    :class="selectedFilter === 'backend' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+                >
+                    Backend
+                </button>
+                <button 
+                    @click="filterProjects('mobile')"
+                    :class="selectedFilter === 'mobile' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+                >
+                    Mobile
+                </button>
+                <button 
+                    @click="filterProjects('ai')"
+                    :class="selectedFilter === 'ai' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+                >
+                    AI/ML
+                </button>
             </div>
         </section>
 
         <!-- Projects Section -->
-        <section class="projects-section">
-            <div class="section-container">
-                <div class="projects-grid">
-                    <div
-                        v-for="(project, index) in filteredProjects"
-                        :key="project.id"
-                        class="project-card"
-                        :class="{ 'fade-in-up': isVisible }"
-                        :style="{ animationDelay: `${index * 0.1}s` }"
-                    >
-                        <div class="project-image">
-                            <div class="image-placeholder">
-                                <Laptop :size="48" />
-                            </div>
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    <a :href="project.links.demo" class="project-link demo">
-                                        <Eye :size="24" />
-                                        <span>Live Demo</span>
+        <section class="pb-12 px-4 max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <Card
+                    v-for="(project, index) in filteredProjects"
+                    :key="project.id"
+                    class="bg-card/50 backdrop-blur-md border-border/50 hover:bg-card/70 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
+                    :class="{ 'fade-in-up': isVisible }"
+                    :style="{ animationDelay: `${index * 0.1}s` }"
+                >
+                    <CardHeader class="p-0 relative overflow-hidden">
+                        <div class="h-36 lg:h-48 bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center relative group-hover:scale-105 transition-transform duration-300">
+                            <Laptop class="w-12 h-12 text-primary-foreground/80" />
+                            <div class="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div class="flex gap-4">
+                                    <a :href="project.links.demo" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card border border-border rounded-md transition-colors">
+                                        <Eye class="w-4 h-4 mr-2" />
+                                        Demo
                                     </a>
-                                    <a :href="project.links.github" class="project-link github">
-                                        <Github :size="24" />
-                                        <span>GitHub</span>
+                                    <a :href="project.links.github" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card border border-border rounded-md transition-colors">
+                                        <Github class="w-4 h-4 mr-2" />
+                                        Code
                                     </a>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="project-content">
-                            <div class="project-header">
-                                <h3 class="project-title">{{ project.title }}</h3>
-                                <span class="project-date">{{ project.date }}</span>
-                            </div>
-                            
-                            <p class="project-description">{{ project.description }}</p>
-                            
-                            <div class="project-technologies">
-                                <span
-                                    v-for="tech in project.technologies"
-                                    :key="tech"
-                                    class="tech-tag"
-                                >
-                                    {{ tech }}
-                                </span>
-                            </div>
-                            
-                            <div class="project-status">
-                                <span class="status-badge completed">{{ project.status }}</span>
-                            </div>
+                    </CardHeader>
+                    
+                    <CardContent class="p-4 lg:p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <CardTitle class="text-base lg:text-lg font-semibold text-foreground line-clamp-2">
+                                {{ project.title }}
+                            </CardTitle>
+                            <Badge variant="secondary" class="bg-primary/20 text-primary border-primary/30 text-xs shrink-0 ml-2">
+                                {{ project.date }}
+                            </Badge>
                         </div>
-                    </div>
-                </div>
+                        
+                        <CardDescription class="text-muted-foreground text-sm leading-relaxed mb-3 line-clamp-2 lg:line-clamp-3">
+                            {{ project.description }}
+                        </CardDescription>
+                        
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <Badge
+                                v-for="tech in project.technologies"
+                                :key="tech"
+                                variant="outline"
+                                class="bg-accent/50 border-border text-foreground text-xs hover:bg-accent transition-all"
+                            >
+                                {{ tech }}
+                            </Badge>
+                        </div>
+                    </CardContent>
+                    
+                    <CardFooter class="px-4 lg:px-6 pb-4 lg:pb-6 pt-0">
+                        <div class="flex justify-between items-center w-full">
+                            <div class="flex items-center gap-1 text-muted-foreground">
+                                <Star class="w-4 h-4" />
+                                <span class="text-sm">Featured</span>
+                            </div>
+                            <Badge class="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 capitalize">
+                                {{ project.status }}
+                            </Badge>
+                        </div>
+                    </CardFooter>
+                </Card>
             </div>
         </section>
     </div>
 </template>
 
 <style scoped>
-/* Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.portfolio-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #ffffff;
-    font-family: 'Arial', 'Helvetica', sans-serif;
-    overflow-x: hidden;
-}
-
-/* Navigation - Same as other pages */
-.portfolio-nav {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 50px;
-    padding: 15px 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: auto;
-    max-width: calc(100vw - 40px);
-}
-
-.nav-content {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    position: relative;
-}
-
-.nav-logo {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 20px;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: #a0a0a0;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.nav-search {
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 8px 16px;
-    color: #ffffff;
-    width: 150px;
-    transition: all 0.3s ease;
-}
-
-.search-input::placeholder {
-    color: #a0a0a0;
-}
-
-.search-input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.15);
-    width: 200px;
-}
-
-.mobile-menu-toggle {
-    display: none;
-    flex-direction: column;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    gap: 3px;
-}
-
-.mobile-menu-toggle span {
-    width: 20px;
-    height: 2px;
-    background-color: #ffffff;
-    transition: all 0.3s ease;
-    border-radius: 2px;
-}
-
-.mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
-}
-
-/* Portfolio Hero Section */
-.portfolio-hero {
-    padding: 120px 5% 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.page-title {
-    font-size: 4rem;
-    font-weight: 900;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1.1;
-}
-
-.page-description {
-    font-size: 1.3rem;
-    color: #a0a0a0;
-    line-height: 1.6;
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-/* Filter Section */
-.filter-section {
-    padding: 40px 0;
-}
-
-.section-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 5%;
-}
-
-.filter-buttons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 60px;
-}
-
-.filter-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: #a0a0a0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.filter-btn:hover,
-.filter-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-}
-
-/* Projects Grid */
-.projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 40px;
-    padding: 40px 0;
-}
-
-.project-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.project-card:hover {
-    transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-}
-
-.project-image {
-    position: relative;
-    height: 250px;
-    overflow: hidden;
-}
-
-.image-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.project-icon {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.project-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.project-card:hover .project-overlay {
-    opacity: 1;
-}
-
-.project-links {
-    display: flex;
-    gap: 20px;
-}
-
-.project-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    color: #ffffff;
-    text-decoration: none;
-    padding: 15px 20px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.project-link:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.project-link span:first-child {
-    font-size: 1.5rem;
-}
-
-.project-content {
-    padding: 30px;
-}
-
-.project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 15px;
-    gap: 15px;
-}
-
-.project-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #ffffff;
-    line-height: 1.3;
-}
-
-.project-date {
-    color: #667eea;
-    font-weight: 500;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-.project-description {
-    color: #a0a0a0;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    font-size: 0.95rem;
-}
-
-.project-technologies {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.tech-tag {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.tech-tag:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transform: translateY(-1px);
-}
-
-.project-status {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.status-badge {
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-badge.completed {
-    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-    color: #ffffff;
-}
-
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -647,176 +282,5 @@ onMounted(() => {
 
 .fade-in-up {
     animation: fadeInUp 1s ease-out forwards;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .portfolio-nav {
-        padding: 12px 25px;
-    }
-    
-    .nav-content {
-        gap: 20px;
-    }
-    
-    .search-input {
-        width: 120px;
-    }
-    
-    .search-input:focus {
-        width: 150px;
-    }
-    
-    .page-title {
-        font-size: 3rem;
-    }
-    
-    .projects-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 30px;
-    }
-}
-
-@media (max-width: 768px) {
-    .portfolio-nav {
-        top: 15px;
-        padding: 10px 20px;
-        border-radius: 25px;
-        width: calc(100vw - 30px);
-    }
-    
-    .nav-content {
-        gap: 15px;
-        justify-content: space-between;
-    }
-    
-    .mobile-menu-toggle {
-        display: flex;
-    }
-    
-    .nav-links {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        margin-top: 10px;
-        padding: 20px;
-        flex-direction: column;
-        gap: 10px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-    }
-    
-    .nav-links.mobile-open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    .nav-search {
-        display: none;
-    }
-    
-    .portfolio-hero {
-        padding: 100px 4% 40px;
-    }
-    
-    .page-title {
-        font-size: 2.5rem;
-    }
-    
-    .page-description {
-        font-size: 1.1rem;
-    }
-    
-    .filter-buttons {
-        gap: 10px;
-        margin-bottom: 40px;
-    }
-    
-    .filter-btn {
-        padding: 10px 18px;
-        font-size: 0.85rem;
-    }
-    
-    .projects-grid {
-        grid-template-columns: 1fr;
-        gap: 25px;
-        padding: 20px 0;
-    }
-    
-    .project-content {
-        padding: 20px;
-    }
-    
-    .project-title {
-        font-size: 1.3rem;
-    }
-    
-    .project-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .portfolio-nav {
-        top: 10px;
-        padding: 8px 15px;
-        width: calc(100vw - 20px);
-    }
-    
-    .nav-logo {
-        font-size: 1rem;
-    }
-    
-    .page-title {
-        font-size: 2rem;
-    }
-    
-    .page-description {
-        font-size: 1rem;
-    }
-    
-    .filter-buttons {
-        gap: 8px;
-    }
-    
-    .filter-btn {
-        padding: 8px 15px;
-        font-size: 0.8rem;
-    }
-    
-    .project-image {
-        height: 200px;
-    }
-    
-    .image-placeholder {
-        font-size: 3rem;
-    }
-    
-    .project-content {
-        padding: 15px;
-    }
-    
-    .project-title {
-        font-size: 1.2rem;
-    }
-    
-    .project-description {
-        font-size: 0.9rem;
-    }
-    
-    .tech-tag {
-        font-size: 0.75rem;
-        padding: 4px 10px;
-    }
 }
 </style>

@@ -1,6 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Sparkles, Download, ArrowRight, Github, Linkedin, Mail } from 'lucide-vue-next'
+import DockNavigation from '@/components/DockNavigation.vue'
 
 const props = defineProps({
     users: {
@@ -9,7 +14,7 @@ const props = defineProps({
     },
     title: {
         type: String,
-        default: 'Portfolio'
+        default: 'Home'
     },
     description: {
         type: String,
@@ -18,17 +23,37 @@ const props = defineProps({
 })
 
 const isVisible = ref(false)
-const isMobileMenuOpen = ref(false)
-
-const toggleMobileMenu = () => {
-    isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
+const animatedText = ref('')
+const textIndex = ref(0)
 
 onMounted(() => {
     setTimeout(() => {
         isVisible.value = true
+        animateText()
     }, 100)
 })
+
+const animateText = () => {
+    const fullText = props.users.name
+    const typeSpeed = 100
+    const pauseBeforeLoop = 2000
+    
+    const typeText = () => {
+        if (textIndex.value < fullText.length) {
+            animatedText.value += fullText.charAt(textIndex.value)
+            textIndex.value++
+            setTimeout(typeText, typeSpeed)
+        } else {
+            setTimeout(() => {
+                animatedText.value = ''
+                textIndex.value = 0
+                setTimeout(typeText, 500)
+            }, pauseBeforeLoop)
+        }
+    }
+    
+    setTimeout(typeText, 500)
+}
 </script>
 
 <template>
@@ -37,66 +62,98 @@ onMounted(() => {
         <meta name="description" :content="description" />
     </Head>
 
-    <div class="portfolio-container">
-        <!-- Navigation -->
-        <nav class="portfolio-nav">
-            <div class="nav-content">
-                <div class="nav-logo" hidden>Anton F.</div>
-                
-                <!-- Mobile Menu Toggle -->
-                <button 
-                    class="mobile-menu-toggle"
-                    @click="toggleMobileMenu"
-                    :class="{ 'active': isMobileMenuOpen }"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                
-                <!-- Navigation Links -->
-                <ul class="nav-links" :class="{ 'mobile-open': isMobileMenuOpen }">
-                    <li><Link href="/" class="nav-link active">Home</Link></li>
-                    <li><Link href="/about" class="nav-link">About Me</Link></li>
-                    <li><Link href="/portfolio" class="nav-link">Portfolio</Link></li>
-                    <li><Link href="/contact" class="nav-link">Contact</Link></li>
-                    <li><Link href="/more" class="nav-link">More</Link></li>
-                </ul>
-                
-                <!-- Search Input -->
-                <div class="nav-search" hidden>
-                    <input type="text" placeholder="Search..." class="search-input">
-                </div>
-            </div>
-        </nav>
+    <div class="min-h-screen lg:h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans lg:overflow-hidden transition-all duration-300">
+        <!-- Dock Navigation -->
+        <DockNavigation currentRoute="/" />
 
         <!-- Hero Section -->
-        <section id="home" class="hero-section">
-            <div class="hero-content">
-                <div class="hero-text" :class="{ 'fade-in-up': isVisible }">
-                    <h1 class="hero-title">{{ users.name }}</h1>
-                    <h2 class="hero-subtitle">{{ users.position }}</h2>
-                    <p class="hero-description">
+        <section id="home" class="min-h-screen lg:h-full flex items-center px-4 py-8 lg:py-0 max-w-6xl mx-auto relative">
+            <!-- Background decoration -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-8 items-center w-full relative z-10">
+                <div class="space-y-4 lg:space-y-4" :class="{ 'fade-in-up': isVisible }">
+                    <div class="space-y-3 mt-10">
+                        <Badge variant="outline" class="w-fit px-3 py-1.5 bg-primary/10 border-primary/20 text-primary">
+                            <Sparkles class="w-3 h-3 mr-2" />
+                            Software Developer
+                        </Badge>
+                        
+                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
+                            <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                                {{ animatedText }}<span class="animate-pulse">|</span>
+                            </span>
+                        </h1>
+                        
+                        <h2 class="text-base sm:text-lg md:text-xl font-medium text-muted-foreground tracking-wide">
+                            {{ users.position }}
+                        </h2>
+                    </div>
+                    
+                    <p class="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                         {{ users.description }}
                     </p>
-                    <div class="hero-buttons">
-                        <Link href="/about" class="btn-primary">Learn more</Link>
-                        <Link href="/portfolio" class="btn-secondary">View Portfolio</Link>
+                    
+                    <!-- Social Links -->
+                    <div class="flex items-center gap-3">
+                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
+                            <a href="https://github.com/Sovannthai" target="_blank" rel="noopener noreferrer">
+                                <Github class="h-4 w-4" />
+                            </a>
+                        </Button>
+                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
+                            <a href="https://www.linkedin.com/in/sros-thai-b491b42ab/" target="_blank" rel="noopener noreferrer">
+                                <Linkedin class="h-4 w-4" />
+                            </a>
+                        </Button>
+                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
+                            <a href="mailto:srosthai00@gmail.com" rel="noopener noreferrer">
+                                <Mail class="h-4 w-4" />
+                            </a>
+                        </Button>
+                    </div>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <Button asChild class="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+                            <Link href="/about" class="flex items-center gap-2">
+                                <span>Details About Me</span>
+                                <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" class="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-accent px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 group">
+                            <Link href="/portfolio" class="flex items-center gap-2">
+                                <Download class="h-4 w-4 transition-transform group-hover:translate-y-1" />
+                                View Portfolio
+                            </Link>
+                        </Button>
                     </div>
                 </div>
-                <div class="hero-image" :class="{ 'fade-in-up': isVisible }">
-                    <div class="avatar-container">
-                        <div class="avatar floating">
-                            <img 
+                
+                <!-- Avatar Section -->
+                <div class="flex justify-center items-center relative" :class="{ 'fade-in-up': isVisible }">
+                    <div class="relative group">
+                        <!-- Decorative rings -->
+                        <div class="absolute inset-0 rounded-full border-2 border-primary/20 scale-110 group-hover:scale-125 transition-transform duration-700"></div>
+                        <div class="absolute inset-0 rounded-full border border-primary/10 scale-125 group-hover:scale-140 transition-transform duration-1000"></div>
+                        
+                        <Avatar class="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 floating border-4 border-background shadow-2xl relative z-10">
+                            <AvatarImage 
                                 v-if="users.image" 
                                 :src="users.image.startsWith('http') ? users.image : `/${users.image}`" 
                                 :alt="users.name" 
-                                class="avatar-image"
+                                class="object-cover"
                             />
-                            <div v-else class="avatar-placeholder">
-                                <span class="avatar-initials">{{ users.name?.charAt(0) }}</span>
-                            </div>
-                        </div>
+                            <AvatarFallback class="bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-3xl sm:text-4xl md:text-5xl font-semibold">
+                                {{ users.name?.charAt(0) }}
+                            </AvatarFallback>
+                        </Avatar>
+                        
+                        <!-- Glowing effect -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 rounded-full blur-2xl -z-10 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-700"></div>
                     </div>
                 </div>
             </div>
@@ -105,241 +162,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.portfolio-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #ffffff;
-    font-family: 'Arial', 'Helvetica', sans-serif;
-    overflow-x: hidden;
-}
-
-/* Navigation */
-.portfolio-nav {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 50px;
-    padding: 15px 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: auto;
-    max-width: calc(100vw - 40px);
-}
-
-.nav-content {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    position: relative;
-}
-
-.nav-logo {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 20px;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: #a0a0a0;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-
-/* Mobile Menu Toggle */
-.mobile-menu-toggle {
-    display: none;
-    flex-direction: column;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    gap: 3px;
-}
-
-.mobile-menu-toggle span {
-    width: 20px;
-    height: 2px;
-    background-color: #ffffff;
-    transition: all 0.3s ease;
-    border-radius: 2px;
-}
-
-.mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
-}
-
-/* Hero Section */
-.hero-section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    padding: 0 5%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.hero-content {
-    display: grid;
-    grid-template-columns: 60% 40%;
-    gap: 60px;
-    align-items: center;
-    width: 100%;
-}
-
-.hero-title {
-    font-size: 5rem;
-    font-weight: 900;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1.1;
-}
-
-.hero-subtitle {
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: #c0c0c0;
-    margin-bottom: 30px;
-    letter-spacing: 1px;
-}
-
-.hero-description {
-    font-size: 1.2rem;
-    color: #a0a0a0;
-    line-height: 1.6;
-    margin-bottom: 40px;
-}
-
-.hero-buttons {
-    display: flex;
-    gap: 20px;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.btn-secondary:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.avatar-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 400px;
-}
-
-.avatar {
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    position: relative;
-    overflow: hidden;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-image {
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-}
-
-.avatar-placeholder {
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    background: #1a1a2e;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-}
-
-.avatar-initials {
-    font-size: 4rem;
-    font-weight: 600;
-    color: #667eea;
-}
-
-.floating {
-    animation: float 6s ease-in-out infinite;
-}
-
-
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -365,140 +187,7 @@ onMounted(() => {
     animation: fadeInUp 1s ease-out forwards;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .portfolio-nav {
-        padding: 12px 25px;
-    }
-    
-    .nav-content {
-        gap: 20px;
-    }
-    
-    
-    .hero-title {
-        font-size: 4rem;
-    }
-    
-}
-
-@media (max-width: 768px) {
-    .portfolio-nav {
-        top: 15px;
-        padding: 10px 20px;
-        border-radius: 25px;
-        width: calc(100vw - 30px);
-    }
-    
-    .nav-content {
-        gap: 15px;
-        justify-content: space-between;
-    }
-    
-    .mobile-menu-toggle {
-        display: flex;
-    }
-    
-    .nav-links {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        margin-top: 10px;
-        padding: 20px;
-        flex-direction: column;
-        gap: 10px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-    }
-    
-    .nav-links.mobile-open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    
-    .hero-section {
-        padding: 100px 4% 0;
-    }
-    
-    .hero-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
-        text-align: center;
-    }
-    
-    .hero-title {
-        font-size: 3rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.2rem;
-    }
-    
-    .hero-description {
-        font-size: 1rem;
-    }
-    
-    .hero-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .btn-primary,
-    .btn-secondary {
-        width: 200px;
-        text-align: center;
-    }
-    
-    .avatar {
-        width: 250px;
-        height: 250px;
-    }
-    
-    .avatar-image,
-    .avatar-placeholder {
-        width: 230px;
-        height: 230px;
-    }
-    
-    .avatar-initials {
-        font-size: 3rem;
-    }
-    
-}
-
-@media (max-width: 480px) {
-    .portfolio-nav {
-        top: 10px;
-        padding: 8px 15px;
-        width: calc(100vw - 20px);
-    }
-    
-    .nav-logo {
-        font-size: 1rem;
-    }
-    
-    .hero-title {
-        font-size: 2.5rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1rem;
-        letter-spacing: 0.5px;
-    }
-    
-    .hero-description {
-        font-size: 0.9rem;
-    }
-    
+.floating {
+    animation: float 6s ease-in-out infinite;
 }
 </style>

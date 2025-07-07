@@ -20,7 +20,7 @@ class PortfolioController extends Controller
     public function about()
     {
         return Inertia::render('frontend/About', [
-            'title' => 'About - SROS THAI',
+            'title'       => 'About',
             'description' => 'Learn more about SROS THAI, our mission, and the team behind the platform.',
         ]);
     }
@@ -28,43 +28,31 @@ class PortfolioController extends Controller
     public function portfolio()
     {
         return Inertia::render('frontend/Portfolio', [
-            'title' => 'Portfolio - Anton F.',
-            'description' => 'Explore my collection of projects showcasing modern web development and innovative solutions.',
-            'projects' => [
-                [
-                    'id' => 1,
-                    'title' => 'Online Cinema Platform',
-                    'description' => 'A comprehensive streaming platform featuring user authentication, personalized recommendations, watchlists, and responsive design for seamless viewing across all devices.',
-                    'technologies' => ['React', 'Node.js', 'MongoDB', 'Express.js', 'Socket.io'],
-                    'category' => 'fullstack',
-                    'date' => 'September 2023',
-                    'status' => 'completed'
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'E-Commerce Dashboard',
-                    'description' => 'Modern admin dashboard for e-commerce management with real-time analytics, inventory tracking, and order management system.',
-                    'technologies' => ['Vue.js', 'TypeScript', 'PostgreSQL', 'Express.js', 'Chart.js'],
-                    'category' => 'frontend',
-                    'date' => 'June 2023',
-                    'status' => 'completed'
-                ]
-            ]
+            'title'       => 'Projects',
+            'description' => 'Explore my collection of projects showcasing modern web development and innovative solutions.'
         ]);
     }
 
     public function contact()
     {
         return Inertia::render('frontend/Contact', [
-            'title' => 'Contact - Anton F.',
+            'title'       => 'Contact',
             'description' => 'Get in touch with Anton F. for opportunities, collaborations, or tech discussions.',
+        ]);
+    }
+
+    public function hobby()
+    {
+        return Inertia::render('frontend/Hobby', [
+            'title'       => 'Hobby',
+            'description' => 'Explore my hobbies and interests outside of web development, including photography, travel, and more.',
         ]);
     }
 
     public function more()
     {
         return Inertia::render('frontend/More', [
-            'title'       => 'More - Anton F.',
+            'title'       => 'More',
             'description' => 'Additional content and features coming soon.',
         ]);
     }

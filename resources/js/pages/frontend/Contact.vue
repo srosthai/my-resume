@@ -1,7 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
-import { Facebook, Linkedin, Instagram, Send, Github, Mail, ExternalLink, Clock, Settings } from 'lucide-vue-next';
+import { Facebook, Linkedin, Instagram, Send, Github, Mail, ExternalLink, Clock, Settings, MessageSquare, Globe } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import DockNavigation from '@/components/DockNavigation.vue'
 
 const props = defineProps({
     title: String,
@@ -9,11 +16,6 @@ const props = defineProps({
 })
 
 const isVisible = ref(false)
-const isMobileMenuOpen = ref(false)
-
-const toggleMobileMenu = () => {
-    isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
 
 const socialLinks = [
     {
@@ -81,6 +83,12 @@ const websites = [
     // }
 ]
 
+const openLink = (url) => {
+    if (typeof window !== 'undefined') {
+        window.open(url, '_blank', 'noopener,noreferrer')
+    }
+}
+
 onMounted(() => {
     setTimeout(() => {
         isVisible.value = true
@@ -94,572 +102,193 @@ onMounted(() => {
         <meta name="description" :content="description" />
     </Head>
 
-    <div class="contact-container">
-        <!-- Navigation -->
-        <nav class="portfolio-nav">
-            <div class="nav-content">
-                <div class="nav-logo" hidden>Anton F.</div>
-                
-                <!-- Mobile Menu Toggle -->
-                <button 
-                    class="mobile-menu-toggle"
-                    @click="toggleMobileMenu"
-                    :class="{ 'active': isMobileMenuOpen }"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                
-                <!-- Navigation Links -->
-                <ul class="nav-links" :class="{ 'mobile-open': isMobileMenuOpen }">
-                    <li><Link href="/" class="nav-link">Home</Link></li>
-                    <li><Link href="/about" class="nav-link">About Me</Link></li>
-                    <li><Link href="/portfolio" class="nav-link">Portfolio</Link></li>
-                    <li><Link href="/contact" class="nav-link active">Contact</Link></li>
-                    <li><Link href="/more" class="nav-link">More</Link></li>
-                </ul>
-                
-                <!-- Search Input -->
-                <div class="nav-search" hidden>
-                    <input type="text" placeholder="Search..." class="search-input">
-                </div>
-            </div>
-        </nav>
+    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
+        <DockNavigation currentRoute="/contact" />
 
         <!-- Contact Hero Section -->
-        <section class="contact-hero">
-            <div class="hero-content">
-                <h1 class="page-title" :class="{ 'fade-in-up': isVisible }">Get In Touch</h1>
-                <p class="page-description" :class="{ 'fade-in-up': isVisible }">
+        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center relative">
+            <!-- Background decoration -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div class="space-y-6 relative z-10" :class="{ 'fade-in-up': isVisible }">
+                <div class="space-y-3">
+                    <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
+                        <MessageSquare class="w-3 h-3 mr-2" />
+                        Let's Connect
+                    </Badge>
+                    
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
+                        <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                            Get In Touch
+                        </span>
+                    </h1>
+                </div>
+                
+                <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
                     Let's connect and discuss opportunities, collaborations, or just have a friendly chat about technology.
                 </p>
             </div>
         </section>
 
         <!-- Social Media Section -->
-        <section class="social-section">
-            <div class="section-container">
-                <h2 class="section-title" :class="{ 'fade-in-up': isVisible }">Follow Me</h2>
-                <div class="social-grid">
-                    <a
-                        v-for="(social, index) in socialLinks"
-                        :key="index"
-                        :href="social.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="social-card"
-                        :class="{ 'fade-in-up': isVisible }"
-                        :style="{ 
-                            animationDelay: `${index * 0.1}s`,
-                            '--hover-color': social.color 
-                        }"
-                    >
-                        <div class="social-icon">
-                            <component :is="social.icon" />
+        <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-8 lg:mb-12" :class="{ 'fade-in-up': isVisible }">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4">
+                    <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                        Follow Me
+                    </span>
+                </h2>
+                <p class="text-muted-foreground max-w-2xl mx-auto">
+                    Connect with me across different platforms and stay updated with my latest work.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <Card
+                    v-for="(social, index) in socialLinks"
+                    :key="index"
+                    class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20 cursor-pointer group overflow-hidden"
+                    :class="{ 'fade-in-up': isVisible }"
+                    :style="{ animationDelay: `${index * 0.1}s` }"
+                    @click="openLink(social.url)"
+                >
+                    <CardContent class="flex items-center gap-4 p-4 lg:p-6">
+                        <div class="flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 bg-muted/50 rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <component :is="social.icon" class="w-6 h-6 lg:w-8 lg:h-8 text-foreground" />
                         </div>
-                        <div class="social-info">
-                            <h3 class="social-name">{{ social.name }}</h3>
-                            <p class="social-username">{{ social.username }}</p>
+                        <div class="flex-1">
+                            <h3 class="text-base lg:text-lg font-semibold text-foreground mb-1">{{ social.name }}</h3>
+                            <p class="text-muted-foreground text-sm">{{ social.username }}</p>
                         </div>
-                        <div class="social-arrow">→</div>
-                    </a>
-                </div>
+                        <div class="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all">→</div>
+                    </CardContent>
+                </Card>
             </div>
         </section>
 
         <!-- Websites Section -->
-        <section class="websites-section">
-            <div class="section-container">
-                <h2 class="section-title" :class="{ 'fade-in-up': isVisible }">My Websites</h2>
-                <div class="websites-grid">
-                    <a
-                        v-for="(website, index) in websites"
-                        :key="index"
-                        :href="website.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="website-card"
-                        :class="{ 'fade-in-up': isVisible }"
-                        :style="{ animationDelay: `${index * 0.2}s` }"
-                    >
-                        <div class="website-icon">
-                            <component :is="website.type === 'portfolio' ? ExternalLink : website.type === 'blog' ? Clock : Settings" />
+        <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-8 lg:mb-12" :class="{ 'fade-in-up': isVisible }">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4">
+                    <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                        My Websites
+                    </span>
+                </h2>
+                <p class="text-muted-foreground max-w-2xl mx-auto">
+                    Explore my online presence and discover the projects I've built.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 gap-4 lg:gap-6">
+                <Card
+                    v-for="(website, index) in websites"
+                    :key="index"
+                    class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/20 cursor-pointer group"
+                    :class="{ 'fade-in-up': isVisible }"
+                    :style="{ animationDelay: `${index * 0.2}s` }"
+                    @click="openLink(website.url)"
+                >
+                    <CardContent class="flex gap-4 lg:gap-5 p-4 lg:p-6">
+                        <div class="flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 bg-primary/10 rounded-xl flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <component :is="website.type === 'portfolio' ? ExternalLink : website.type === 'blog' ? Clock : Settings" class="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
                         </div>
-                        <div class="website-content">
-                            <h3 class="website-name">{{ website.name }}</h3>
-                            <p class="website-description">{{ website.description }}</p>
-                            <span class="website-url">{{ website.url }}</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg lg:text-xl font-semibold text-foreground mb-2">{{ website.name }}</h3>
+                            <p class="text-sm lg:text-base text-muted-foreground leading-relaxed mb-3">{{ website.description }}</p>
+                            <Badge variant="outline" class="bg-primary/5 text-primary border-primary/20">
+                                <Globe class="w-3 h-3 mr-1" />
+                                {{ website.url }}
+                            </Badge>
                         </div>
-                        <div class="website-arrow">↗</div>
-                    </a>
-                </div>
+                        <div class="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 group-hover:-translate-y-1 transition-all self-start">↗</div>
+                    </CardContent>
+                </Card>
             </div>
         </section>
 
         <!-- Contact Form Section -->
-        <section class="contact-form-section">
-            <div class="section-container">
-                <h2 class="section-title" :class="{ 'fade-in-up': isVisible }">Send a Message</h2>
-                <div class="contact-form-container" :class="{ 'fade-in-up': isVisible }">
-                    <form class="contact-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="name">Full Name</label>
-                                <input type="text" id="name" name="name" required>
+        <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-8 lg:mb-12" :class="{ 'fade-in-up': isVisible }">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4">
+                    <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                        Send a Message
+                    </span>
+                </h2>
+                <p class="text-muted-foreground max-w-2xl mx-auto">
+                    Have a question or want to work together? I'd love to hear from you.
+                </p>
+            </div>
+            <div class="max-w-2xl mx-auto" :class="{ 'fade-in-up': isVisible }">
+                <Card class="bg-card/50 backdrop-blur-sm border-border/50">
+                    <CardContent class="p-6 lg:p-8">
+                        <form class="space-y-4 lg:space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                                <div class="space-y-2">
+                                    <Label for="name" class="text-foreground font-medium">Full Name</Label>
+                                    <Input 
+                                        id="name" 
+                                        name="name" 
+                                        type="text" 
+                                        required
+                                        class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20"
+                                        placeholder="Enter your full name"
+                                    />
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="email" class="text-foreground font-medium">Email Address</Label>
+                                    <Input 
+                                        id="email" 
+                                        name="email" 
+                                        type="email" 
+                                        required
+                                        class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20"
+                                        placeholder="Enter your email address"
+                                    />
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="email">Email Address</label>
-                                <input type="email" id="email" name="email" required>
+                            
+                            <div class="space-y-2">
+                                <Label for="subject" class="text-foreground font-medium">Subject</Label>
+                                <Input 
+                                    id="subject" 
+                                    name="subject" 
+                                    type="text" 
+                                    required
+                                    class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20"
+                                    placeholder="Enter the subject"
+                                />
                             </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="subject">Subject</label>
-                            <input type="text" id="subject" name="subject" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" name="message" rows="6" required></textarea>
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <span>Send Message</span>
-                            <span class="btn-icon"><Send /></span>
-                        </button>
-                    </form>
-                </div>
+                            
+                            <div class="space-y-2">
+                                <Label for="message" class="text-foreground font-medium">Message</Label>
+                                <Textarea 
+                                    id="message" 
+                                    name="message" 
+                                    rows="6" 
+                                    required
+                                    class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20 resize-y"
+                                    placeholder="Enter your message"
+                                />
+                            </div>
+                            
+                            <Button 
+                                type="submit" 
+                                class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 lg:py-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/40"
+                                size="lg"
+                            >
+                                <span>Send Message</span>
+                                <Send class="ml-2 w-5 h-5" />
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
         </section>
     </div>
 </template>
 
 <style scoped>
-/* Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.contact-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #ffffff;
-    font-family: 'Arial', 'Helvetica', sans-serif;
-    overflow-x: hidden;
-}
-
-/* Navigation - Same as other pages */
-.portfolio-nav {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 50px;
-    padding: 15px 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: auto;
-    max-width: calc(100vw - 40px);
-}
-
-.nav-content {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    position: relative;
-}
-
-.nav-logo {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 20px;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: #a0a0a0;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-}
-
-.nav-search {
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 8px 16px;
-    color: #ffffff;
-    width: 150px;
-    transition: all 0.3s ease;
-}
-
-.search-input::placeholder {
-    color: #a0a0a0;
-}
-
-.search-input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.15);
-    width: 200px;
-}
-
-.mobile-menu-toggle {
-    display: none;
-    flex-direction: column;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    gap: 3px;
-}
-
-.mobile-menu-toggle span {
-    width: 20px;
-    height: 2px;
-    background-color: #ffffff;
-    transition: all 0.3s ease;
-    border-radius: 2px;
-}
-
-.mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
-}
-
-/* Contact Hero Section */
-.contact-hero {
-    padding: 120px 5% 80px;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.page-title {
-    font-size: 4rem;
-    font-weight: 900;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1.1;
-}
-
-.page-description {
-    font-size: 1.3rem;
-    color: #a0a0a0;
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-/* Sections */
-.section-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 80px 5%;
-}
-
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 60px;
-    text-align: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Social Media Grid */
-.social-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-}
-
-.social-card {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 25px;
-    text-decoration: none;
-    color: #ffffff;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.social-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transition: all 0.6s ease;
-}
-
-.social-card:hover::before {
-    left: 100%;
-}
-
-.social-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
-    border-color: var(--hover-color, rgba(255, 255, 255, 0.3));
-}
-
-.social-icon {
-    font-size: 2.5rem;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    flex-shrink: 0;
-}
-
-.social-info {
-    flex: 1;
-}
-
-.social-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #ffffff;
-}
-
-.social-username {
-    color: #a0a0a0;
-    font-size: 0.95rem;
-}
-
-.social-arrow {
-    font-size: 1.5rem;
-    color: #a0a0a0;
-    transition: all 0.3s ease;
-}
-
-.social-card:hover .social-arrow {
-    color: #ffffff;
-    transform: translateX(5px);
-}
-
-/* Websites Grid */
-.websites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 30px;
-}
-
-.website-card {
-    display: flex;
-    gap: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 30px;
-    text-decoration: none;
-    color: #ffffff;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.website-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-5px);
-    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
-}
-
-.website-icon {
-    font-size: 2.5rem;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    flex-shrink: 0;
-}
-
-.website-content {
-    flex: 1;
-}
-
-.website-name {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #ffffff;
-}
-
-.website-description {
-    color: #a0a0a0;
-    line-height: 1.5;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-}
-
-.website-url {
-    color: #667eea;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.website-arrow {
-    font-size: 1.5rem;
-    color: #a0a0a0;
-    transition: all 0.3s ease;
-    align-self: flex-start;
-}
-
-.website-card:hover .website-arrow {
-    color: #ffffff;
-    transform: translate(3px, -3px);
-}
-
-/* Contact Form */
-.contact-form-container {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.contact-form {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 40px;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-.form-group {
-    margin-bottom: 25px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #ffffff;
-    font-weight: 500;
-    font-size: 0.95rem;
-}
-
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    padding: 15px;
-    color: #ffffff;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    resize: vertical;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: #a0a0a0;
-}
-
-.submit-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #ffffff;
-    border: none;
-    padding: 18px 30px;
-    border-radius: 15px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-}
-
-.submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-}
-
-.btn-icon {
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-}
-
-.submit-btn:hover .btn-icon {
-    transform: translateX(3px);
-}
-
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -674,187 +303,5 @@ onMounted(() => {
 
 .fade-in-up {
     animation: fadeInUp 1s ease-out forwards;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .portfolio-nav {
-        padding: 12px 25px;
-    }
-    
-    .nav-content {
-        gap: 20px;
-    }
-    
-    .search-input {
-        width: 120px;
-    }
-    
-    .search-input:focus {
-        width: 150px;
-    }
-    
-    .page-title {
-        font-size: 3rem;
-    }
-    
-    .section-container {
-        padding: 60px 4%;
-    }
-}
-
-@media (max-width: 768px) {
-    .portfolio-nav {
-        top: 15px;
-        padding: 10px 20px;
-        border-radius: 25px;
-        width: calc(100vw - 30px);
-    }
-    
-    .nav-content {
-        gap: 15px;
-        justify-content: space-between;
-    }
-    
-    .mobile-menu-toggle {
-        display: flex;
-    }
-    
-    .nav-links {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        margin-top: 10px;
-        padding: 20px;
-        flex-direction: column;
-        gap: 10px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-    }
-    
-    .nav-links.mobile-open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    .nav-search {
-        display: none;
-    }
-    
-    .contact-hero {
-        padding: 100px 4% 60px;
-    }
-    
-    .page-title {
-        font-size: 2.5rem;
-    }
-    
-    .page-description {
-        font-size: 1.1rem;
-    }
-    
-    .section-container {
-        padding: 50px 4%;
-    }
-    
-    .section-title {
-        font-size: 2rem;
-        margin-bottom: 40px;
-    }
-    
-    .social-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .websites-grid {
-        grid-template-columns: 1fr;
-        gap: 25px;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .contact-form {
-        padding: 30px;
-    }
-}
-
-@media (max-width: 480px) {
-    .portfolio-nav {
-        top: 10px;
-        padding: 8px 15px;
-        width: calc(100vw - 20px);
-    }
-    
-    .nav-logo {
-        font-size: 1rem;
-    }
-    
-    .page-title {
-        font-size: 2rem;
-    }
-    
-    .page-description {
-        font-size: 1rem;
-    }
-    
-    .section-container {
-        padding: 40px 3%;
-    }
-    
-    .section-title {
-        font-size: 1.8rem;
-    }
-    
-    .social-card {
-        padding: 20px;
-        gap: 15px;
-    }
-    
-    .social-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 2rem;
-    }
-    
-    .social-name {
-        font-size: 1.1rem;
-    }
-    
-    .website-card {
-        padding: 25px;
-        gap: 15px;
-    }
-    
-    .website-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 2rem;
-    }
-    
-    .contact-form {
-        padding: 25px;
-    }
-    
-    .form-group input,
-    .form-group textarea {
-        padding: 12px;
-    }
-    
-    .submit-btn {
-        padding: 15px 25px;
-        font-size: 1rem;
-    }
 }
 </style>
