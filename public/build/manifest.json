@@ -278,6 +278,11 @@
       "_index-CgvbbPY4.js"
     ]
   },
+  "resources/css/app.css": {
+    "file": "assets/app-DvMsP1aR.css",
+    "src": "resources/js/app.ts",
+    "isEntry": true
+  },
   "resources/js/app.ts": {
     "file": "assets/app-GQNEK1T4.js",
     "name": "app",
