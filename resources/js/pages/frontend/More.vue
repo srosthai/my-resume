@@ -59,7 +59,7 @@ onMounted(() => {
                 <div class="grid grid-cols-1 gap-4 lg:gap-6" :class="{ 'fade-in-up': isVisible }">
                     <!-- Main Coming Soon Card -->
                     <div>
-                        <Card class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
+                        <Card class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-1 focus:-translate-y-1 hover:shadow-xl active:shadow-xl focus:shadow-xl hover:shadow-primary/10 active:shadow-primary/10 focus:shadow-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background">
                             <CardContent class="p-6 lg:p-8 text-center">
                                 <div class="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-full mb-6 lg:mb-8">
                                     <Construction class="w-8 h-8 lg:w-10 lg:h-10 text-primary" />

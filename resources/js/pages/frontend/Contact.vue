@@ -149,20 +149,23 @@ onMounted(() => {
                 <Card
                     v-for="(social, index) in socialLinks"
                     :key="index"
-                    class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20 cursor-pointer group overflow-hidden"
+                    class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 active:bg-card/90 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-lg active:shadow-xl focus:shadow-lg hover:shadow-primary/20 active:shadow-primary/30 focus:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer group overflow-hidden"
                     :class="{ 'fade-in-up': isVisible }"
                     :style="{ animationDelay: `${index * 0.1}s` }"
                     @click="openLink(social.url)"
+                    tabindex="0"
+                    @keydown.enter="openLink(social.url)"
+                    @keydown.space="openLink(social.url)"
                 >
                     <CardContent class="flex items-center gap-4 p-4 lg:p-6">
-                        <div class="flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 bg-muted/50 rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <div class="flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 bg-muted/50 rounded-xl flex-shrink-0 group-hover:scale-105 group-active:scale-110 group-focus:scale-105 transition-transform">
                             <component :is="social.icon" class="w-6 h-6 lg:w-8 lg:h-8 text-foreground" />
                         </div>
                         <div class="flex-1">
                             <h3 class="text-base lg:text-lg font-semibold text-foreground mb-1">{{ social.name }}</h3>
                             <p class="text-muted-foreground text-sm">{{ social.username }}</p>
                         </div>
-                        <div class="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all">→</div>
+                        <div class="text-muted-foreground group-hover:text-foreground group-active:text-foreground group-focus:text-foreground group-hover:translate-x-1 group-active:translate-x-2 group-focus:translate-x-1 transition-all">→</div>
                     </CardContent>
                 </Card>
             </div>
@@ -184,13 +187,16 @@ onMounted(() => {
                 <Card
                     v-for="(website, index) in websites"
                     :key="index"
-                    class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/20 cursor-pointer group"
+                    class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 active:bg-card/90 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-xl active:shadow-2xl focus:shadow-xl hover:shadow-primary/20 active:shadow-primary/30 focus:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer group"
                     :class="{ 'fade-in-up': isVisible }"
                     :style="{ animationDelay: `${index * 0.2}s` }"
                     @click="openLink(website.url)"
+                    tabindex="0"
+                    @keydown.enter="openLink(website.url)"
+                    @keydown.space="openLink(website.url)"
                 >
                     <CardContent class="flex gap-4 lg:gap-5 p-4 lg:p-6">
-                        <div class="flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 bg-primary/10 rounded-xl flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <div class="flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 bg-primary/10 rounded-xl flex-shrink-0 group-hover:bg-primary/20 group-active:bg-primary/30 group-focus:bg-primary/20 transition-colors">
                             <component :is="website.type === 'portfolio' ? ExternalLink : website.type === 'blog' ? Clock : Settings" class="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
                         </div>
                         <div class="flex-1">
@@ -201,7 +207,7 @@ onMounted(() => {
                                 {{ website.url }}
                             </Badge>
                         </div>
-                        <div class="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 group-hover:-translate-y-1 transition-all self-start">↗</div>
+                        <div class="text-muted-foreground group-hover:text-foreground group-active:text-foreground group-focus:text-foreground group-hover:translate-x-1 group-active:translate-x-2 group-focus:translate-x-1 group-hover:-translate-y-1 group-active:-translate-y-2 group-focus:-translate-y-1 transition-all self-start">↗</div>
                     </CardContent>
                 </Card>
             </div>
@@ -274,7 +280,7 @@ onMounted(() => {
                             
                             <Button 
                                 type="submit" 
-                                class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 lg:py-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/40"
+                                class="w-full bg-primary hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 text-primary-foreground font-semibold py-3 lg:py-4 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-lg active:shadow-xl focus:shadow-lg hover:shadow-primary/40 active:shadow-primary/50 focus:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
                                 size="lg"
                             >
                                 <span>Send Message</span>

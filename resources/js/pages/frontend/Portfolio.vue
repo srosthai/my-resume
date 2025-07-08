@@ -63,7 +63,7 @@ onMounted(() => {
         <DockNavigation currentRoute="/portfolio" />
 
         <!-- Portfolio Hero Section -->
-        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center">
+        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center hero-section">
             <div class="space-y-4" :class="{ 'fade-in-up': isVisible }">
                 <div class="flex items-center justify-center gap-3 mb-4">
                     <Badge variant="secondary" class="text-sm px-4 py-2">
@@ -85,7 +85,7 @@ onMounted(() => {
             <div class="flex justify-center flex-wrap gap-3 mb-8" :class="{ 'fade-in-up': isVisible }">
             <button 
                 @click="filterProjects('all')"
-                :class="selectedFilter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                :class="selectedFilter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent active:text-foreground bg-background'"
                 class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
             >
                 All Projects
@@ -94,7 +94,7 @@ onMounted(() => {
                 v-for="projectType in projectTypes"
                 :key="projectType.id"
                 @click="filterProjects(projectType.id)"
-                :class="selectedFilter === projectType.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                :class="selectedFilter === projectType.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent active:text-foreground bg-background'"
                 class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
             >
                 {{ projectType.name }}
@@ -122,23 +122,23 @@ onMounted(() => {
                     <button 
                         v-if="selectedFilter !== 'all'"
                         @click="filterProjects('all')"
-                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 active:bg-primary/80 transition-colors"
                     >
                         Show All Projects
                     </button>
                 </div>
             </div>
             
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 card-grid">
                 <Card
                     v-for="(project, index) in filteredProjects"
                     :key="project.id"
-                    class="bg-card/50 backdrop-blur-md border-border/50 hover:bg-card/70 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
+                    class="bg-card/50 backdrop-blur-md border-border/50 hover:bg-card/70 active:bg-card/60 transition-all duration-300 hover:-translate-y-2 active:translate-y-0 hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
                     :class="{ 'fade-in-up': isVisible }"
                     :style="{ animationDelay: `${index * 0.05}s` }"
                 >
                     <CardHeader class="p-0 relative overflow-hidden">
-                        <div class="h-36 lg:h-48 relative group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                        <div class="h-36 lg:h-48 relative group-hover:scale-105 group-active:scale-102 transition-transform duration-300 overflow-hidden">
                             <img 
                                 v-if="project.image" 
                                 :src="project.image" 
@@ -151,7 +151,7 @@ onMounted(() => {
                             >
                                 <Laptop class="w-12 h-12 text-primary-foreground/80" />
                             </div>
-                            <div class="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                 <div class="flex gap-4" v-if="project.links && Array.isArray(project.links) && project.links.length > 0">
                                     <a 
                                         v-for="(linkObj, index) in project.links.slice(0, 2)" 
@@ -159,7 +159,7 @@ onMounted(() => {
                                         :href="Object.values(linkObj)[0]" 
                                         target="_blank" 
                                         rel="noopener noreferrer" 
-                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card border border-border rounded-md transition-colors"
+                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card active:bg-card/60 border border-border rounded-md transition-colors"
                                     >
                                         <component 
                                             :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : Eye" 
@@ -191,7 +191,7 @@ onMounted(() => {
                                 v-for="tech in project.technologies"
                                 :key="tech"
                                 variant="outline"
-                                class="bg-accent/50 border-border text-foreground text-xs hover:bg-accent transition-all"
+                                class="bg-accent/50 border-border text-foreground text-xs hover:bg-accent active:bg-accent/70 transition-all"
                             >
                                 {{ tech }}
                             </Badge>

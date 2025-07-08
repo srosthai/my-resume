@@ -146,11 +146,11 @@ onMounted(() => {
                     </div>
 
                     <Card v-for="(item, index) in workExperience" :key="item.id"
-                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group relative md:ml-16"
-                        :class="{ 'fade-in-up': isVisible }" :style="{ animationDelay: `${index * 0.2}s` }">
+                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-1 focus:-translate-y-1 hover:shadow-lg active:shadow-lg focus:shadow-lg group relative md:ml-16 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        :class="{ 'fade-in-up': isVisible }" :style="{ animationDelay: `${index * 0.2}s` }" tabindex="0">
                         <!-- Timeline dot -->
                         <div
-                            class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 transition-transform">
+                            class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 group-active:scale-125 group-focus:scale-125 transition-transform">
                         </div>
 
                         <CardContent class="p-4 lg:p-6">
@@ -194,12 +194,12 @@ onMounted(() => {
                     </div>
 
                     <Card v-for="(item, index) in education" :key="item.id"
-                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group relative md:ml-16"
+                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-1 focus:-translate-y-1 hover:shadow-lg active:shadow-lg focus:shadow-lg group relative md:ml-16 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
                         :class="{ 'fade-in-up': isVisible }"
-                        :style="{ animationDelay: `${(index + workExperience.length) * 0.2}s` }">
+                        :style="{ animationDelay: `${(index + workExperience.length) * 0.2}s` }" tabindex="0">
                         <!-- Timeline dot -->
                         <div
-                            class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 transition-transform">
+                            class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 group-active:scale-125 group-focus:scale-125 transition-transform">
                         </div>
 
                         <CardContent class="p-4 lg:p-6">
@@ -238,17 +238,17 @@ onMounted(() => {
             <!-- Tech categories grid -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
                 <Card v-for="(tech, index) in techStacks" :key="tech.id" 
-                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl group overflow-hidden relative"
-                    :class="{ 'fade-in-up': isVisible }" :style="{ animationDelay: `${index * 0.05}s` }">
+                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-2 active:-translate-y-2 focus:-translate-y-2 hover:shadow-xl active:shadow-xl focus:shadow-xl group overflow-hidden relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    :class="{ 'fade-in-up': isVisible }" :style="{ animationDelay: `${index * 0.05}s` }" tabindex="0">
                     <!-- Hover gradient border -->
                     <div
-                        class="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                        class="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 opacity-0 group-hover:opacity-100 group-active:opacity-100 group-focus:opacity-100 transition-opacity duration-300 rounded-lg">
                     </div>
 
                     <CardContent class="p-3 lg:p-4 relative z-10">
                         <div class="flex items-start gap-2 lg:gap-3 mb-3">
                             <div
-                                class="p-2 lg:p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors duration-300 flex-shrink-0">
+                                class="p-2 lg:p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 group-active:bg-primary/20 group-focus:bg-primary/20 transition-colors duration-300 flex-shrink-0">
                                 <Avatar class="h-6 w-6 lg:h-8 lg:w-8">
                                     <AvatarImage :src="tech.logo" :alt="tech.name" class="object-contain p-1" />
                                     <AvatarFallback class="bg-primary/20 text-primary text-xs font-bold">
@@ -259,7 +259,7 @@ onMounted(() => {
 
                             <div class="flex-1 min-w-0">
                                 <h3
-                                    class="text-sm lg:text-base font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300 truncate">
+                                    class="text-sm lg:text-base font-bold text-foreground mb-1 group-hover:text-primary group-active:text-primary group-focus:text-primary transition-colors duration-300 truncate">
                                     {{ tech.name }}
                                 </h3>
                                 <Badge variant="outline"
@@ -270,7 +270,7 @@ onMounted(() => {
                         </div>
 
                         <p
-                            class="text-xs lg:text-sm text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300 line-clamp-2 lg:line-clamp-3">
+                            class="text-xs lg:text-sm text-muted-foreground leading-relaxed group-hover:text-foreground/80 group-active:text-foreground/80 group-focus:text-foreground/80 transition-colors duration-300 line-clamp-2 lg:line-clamp-3">
                             {{ tech.description }}
                         </p>
                     </CardContent>

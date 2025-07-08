@@ -67,7 +67,7 @@ const isActive = (href: string) => {
 </script>
 
 <template>
-  <div class="fixed top-3 sm:top-6 left-1/2 transform -translate-x-1/2 z-50 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] w-auto overflow-x-auto">
+  <div class="fixed top-3 sm:top-6 left-1/2 transform -translate-x-1/2 z-50 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] w-auto overflow-x-auto dock-container">
     <TooltipProvider>
       <Dock direction="middle" class="bg-background/80 backdrop-blur-xl border-border/30 shadow-xl px-1 md:px-2">
         <!-- Navigation Items -->
@@ -86,7 +86,7 @@ const isActive = (href: string) => {
                   'h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all duration-200',
                   isActive(item.href) 
                     ? 'bg-primary text-primary-foreground shadow-lg scale-110' 
-                    : 'hover:bg-accent hover:scale-105'
+                    : 'hover:bg-accent hover:scale-105 active:bg-accent active:scale-102 focus:bg-accent focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background'
                 )"
               >
                 <Link :href="item.href" :aria-label="item.label">
@@ -115,7 +115,7 @@ const isActive = (href: string) => {
                 asChild
                 variant="ghost"
                 size="icon"
-                class="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-accent hover:scale-105 transition-all duration-200"
+                class="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-accent hover:scale-105 active:bg-accent active:scale-102 focus:bg-accent focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background transition-all duration-200"
               >
                 <a 
                   :href="social.url" 
@@ -140,7 +140,7 @@ const isActive = (href: string) => {
         <DockIcon class="h-10 w-10 sm:h-12 sm:w-12 border-0">
           <Tooltip>
             <TooltipTrigger asChild>
-              <ThemeToggle class="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:scale-105 transition-all duration-200" />
+              <ThemeToggle class="h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:scale-105 active:scale-102 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background transition-all duration-200" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Toggle Theme</p>

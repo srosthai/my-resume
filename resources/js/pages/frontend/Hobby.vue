@@ -152,7 +152,7 @@ onMounted(() => {
                         'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',
                         selectedCategory === category
                             ? 'bg-primary text-primary-foreground border-primary shadow-lg'
-                            : 'bg-background/50 backdrop-blur-sm text-muted-foreground border-border/50 hover:bg-accent hover:text-foreground'
+                            : 'bg-background/50 backdrop-blur-sm text-muted-foreground border-border/50 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground focus:bg-accent focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20'
                     ]"
                 >
                     {{ category }}
@@ -172,19 +172,20 @@ onMounted(() => {
                 <Card
                     v-for="(hobby, index) in filteredHobbies"
                     :key="hobby.title"
-                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 group transform"
+                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-2 active:-translate-y-2 focus:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 active:shadow-xl active:shadow-primary/10 focus:shadow-xl focus:shadow-primary/10 group transform focus:outline-none focus:ring-2 focus:ring-primary/20"
                     :class="{ 'fade-in-up': isVisible }"
                     :style="{ animationDelay: `${index * 0.1}s` }"
+                    tabindex="0"
                 >
                     <CardContent class="p-4 lg:p-6">
                         <div class="flex flex-col items-center text-center space-y-4 lg:space-y-6">
-                            <div class="p-3 lg:p-4 rounded-full transition-all duration-300 group-hover:scale-110" :class="hobby.color">
+                            <div class="p-3 lg:p-4 rounded-full transition-all duration-300 group-hover:scale-110 group-active:scale-110 group-focus:scale-110" :class="hobby.color">
                                 <component :is="hobby.icon" class="w-6 h-6 lg:w-8 lg:h-8" />
                             </div>
                             
                             <div class="space-y-2 lg:space-y-3">
                                 <div class="flex flex-col items-center gap-2">
-                                    <h3 class="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                                    <h3 class="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary group-active:text-primary group-focus:text-primary transition-colors duration-300">
                                         {{ hobby.title }}
                                     </h3>
                                     <Badge variant="outline" class="text-xs px-2 py-1 bg-accent/20 border-accent text-accent-foreground">
@@ -192,7 +193,7 @@ onMounted(() => {
                                     </Badge>
                                 </div>
                                 
-                                <p class="text-sm lg:text-base text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
+                                <p class="text-sm lg:text-base text-muted-foreground leading-relaxed group-hover:text-foreground/80 group-active:text-foreground/80 group-focus:text-foreground/80 transition-colors duration-300">
                                     {{ hobby.description }}
                                 </p>
                             </div>
@@ -213,7 +214,7 @@ onMounted(() => {
                     </p>
                     <button
                         @click="filterHobbies('All')"
-                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                         Show All Hobbies
                     </button>
