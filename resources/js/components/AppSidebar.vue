@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-vue-next';
+import { BookUser, LayoutGrid, Users, GraduationCap, Briefcase, Layers, FolderOpenDot, Boxes } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -18,6 +18,36 @@ const mainNavItems: NavItem[] = [
         title: 'ME',
         href: '/me',
         icon: Users,
+    },
+    {
+        title: 'About Me',
+        href: '/about-me',
+        icon: BookUser,
+    },
+    {
+        title: 'Work Experience',
+        href: '/work-experience',
+        icon: Briefcase,
+    },
+    {
+        title: 'Education',
+        href: '/eductions',
+        icon: GraduationCap,
+    },
+    {
+        title: 'Tech Stack',
+        href: '/tech-stacks',
+        icon: Layers,
+    },
+    {
+        title: 'Project Types',
+        href: '/project-types',
+        icon: Boxes,
+    },
+    {
+        title: 'Projects',
+        href: '/projects',
+        icon: FolderOpenDot,
     }
 ];
 

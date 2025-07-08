@@ -6,9 +6,20 @@ use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\AboutMe;
+use App\Models\Education;
+use App\Models\Project;
+use App\Models\ProjectType;
+use App\Models\TechStack;
+use App\Models\WorkExperience;
 
 class PortfolioController extends Controller
 {
+    /**
+     * Display the home page with the latest user.
+     *
+     * @return \Inertia\Response
+     */
     public function home()
     {
         $users = User::latest()->first();
@@ -17,19 +28,67 @@ class PortfolioController extends Controller
         ]);
     }
 
+    /**
+     * Display the about page with user details.
+     *
+     * @return \Inertia\Response
+     */
     public function about()
     {
+        $aboutMe        = AboutMe::latest()->first() ?? [];
+        $workExperience = WorkExperience::orderBy('id')->get() ?? [];
+        $education      = Education::orderBy('id')->get() ?? [];
+        $techStacks     = TechStack::orderBy('id')->get() ?? [];
         return Inertia::render('frontend/About', [
-            'title'       => 'About',
-            'description' => 'Learn more about SROS THAI, our mission, and the team behind the platform.',
+            'title'          => 'About',
+            'description'    => 'Learn more about SROS THAI, our mission, and the team behind the platform.',
+            'aboutMe'        => $aboutMe,
+            'workExperience' => $workExperience,
+            'education'      => $education,
+            'techStacks'     => $techStacks,
         ]);
     }
 
-    public function portfolio()
+    /**
+     * Display the portfolio page with projects.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Inertia\Response
+     */
+    public function portfolio(Request $request)
     {
+        $query = Project::with('projectType');
+        
+        if ($request->has('type') && $request->type != '') {
+            $query->where('project_type_id', $request->type);
+        }
+        
+        if ($request->has('search') && $request->search != '') {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+        
+        $projects = $query->orderBy('created_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function ($project) {
+                $project->image = $project->image ? asset($project->image) : null;
+                return $project;
+            });
+            
+        $projectTypes = ProjectType::orderBy('name')->get();
+        
         return Inertia::render('frontend/Portfolio', [
-            'title'       => 'Projects',
-            'description' => 'Explore my collection of projects showcasing modern web development and innovative solutions.'
+            'title'        => 'Projects',
+            'description'  => 'Explore my projects, showcasing my skills in web development and design.',
+            'projects'     => $projects,
+            'projectTypes' => $projectTypes,
+            'filters'      => [
+                'type'     => $request->type ?? '',
+                'search'   => $request->search ?? '',
+            ],
         ]);
     }
 

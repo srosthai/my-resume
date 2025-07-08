@@ -10,111 +10,43 @@ import DockNavigation from '@/components/DockNavigation.vue'
 const props = defineProps({
     title: String,
     description: String,
-    projects: Array
+    projects: {
+        type: Array,
+        required: true
+    },
+    projectTypes: {
+        type: Array,
+        default: () => []
+    },
+    filters: {
+        type: Object,
+        default: () => ({ type: '', search: '' })
+    }
 })
 
 const isVisible       = ref(false)
 const selectedFilter = ref('all')
 
-const projectsData = [
-    {
-        id: 1,
-        title: 'Online Cinema Platform',
-        description: 'A comprehensive streaming platform featuring user authentication, personalized recommendations, watchlists, and responsive design for seamless viewing across all devices.',
-        image: '/api/placeholder/600/400',
-        technologies: ['React', 'Node.js', 'MongoDB', 'Express.js', 'Socket.io'],
-        category: 'fullstack',
-        date: 'September 2023',
-        status: 'completed',
-        links: {
-            demo: '#',
-            github: '#'
-        }
-    },
-    {
-        id: 2,
-        title: 'E-Commerce Dashboard',
-        description: 'Modern admin dashboard for e-commerce management with real-time analytics, inventory tracking, and order management system.',
-        image: '/api/placeholder/600/400',
-        technologies: ['Vue.js', 'TypeScript', 'PostgreSQL', 'Express.js', 'Chart.js'],
-        category: 'frontend',
-        date: 'June 2023',
-        status: 'completed',
-        links: {
-            demo: '#',
-            github: '#'
-        }
-    },
-    {
-        id: 3,
-        title: 'Task Management API',
-        description: 'RESTful API for task management with authentication, role-based permissions, file uploads, and real-time notifications.',
-        image: '/api/placeholder/600/400',
-        technologies: ['Go', 'PostgreSQL', 'Redis', 'Docker', 'JWT'],
-        category: 'backend',
-        date: 'March 2023',
-        status: 'completed',
-        links: {
-            demo: '#',
-            github: '#'
-        }
-    },
-    {
-        id: 4,
-        title: 'Social Media Analytics',
-        description: 'Data visualization platform for social media metrics with interactive charts, real-time updates, and export functionality.',
-        image: '/api/placeholder/600/400',
-        technologies: ['Next.js', 'D3.js', 'Python', 'FastAPI', 'PostgreSQL'],
-        category: 'fullstack',
-        date: 'December 2022',
-        status: 'completed',
-        links: {
-            demo: '#',
-            github: '#'
-        }
-    },
-    {
-        id: 5,
-        title: 'Mobile Banking App',
-        description: 'Cross-platform mobile application for banking services with biometric authentication and real-time transaction tracking.',
-        image: '/api/placeholder/600/400',
-        technologies: ['React Native', 'TypeScript', 'Node.js', 'MongoDB'],
-        category: 'mobile',
-        date: 'October 2022',
-        status: 'completed',
-        links: {
-            demo: '#',
-            github: '#'
-        }
-    },
-    {
-        id: 6,
-        title: 'AI Content Generator',
-        description: 'AI-powered platform for generating marketing content with natural language processing and customizable templates.',
-        image: '/api/placeholder/600/400',
-        technologies: ['Python', 'Flask', 'OpenAI API', 'React', 'PostgreSQL'],
-        category: 'ai',
-        date: 'August 2022',
-        status: 'completed',
-        links: {
-            demo: '#',
-            github: '#'
-        }
-    }
-]
-
-const filteredProjects = ref(projectsData)
+const filteredProjects = ref([])
 
 const filterProjects = (category) => {
     selectedFilter.value = category
     if (category === 'all') {
-        filteredProjects.value = projectsData
+        filteredProjects.value = props.projects
     } else {
-        filteredProjects.value = projectsData.filter(project => project.category === category)
+        filteredProjects.value = props.projects.filter(project => project.project_type?.id === category)
     }
+    console.log('Filtered projects:', filteredProjects.value)
 }
 
 onMounted(() => {
+    console.log('Props received:', props)
+    console.log('Projects:', props.projects)
+    console.log('Project Types:', props.projectTypes)
+    
+    // Initialize filtered projects
+    filteredProjects.value = props.projects || []
+    
     setTimeout(() => {
         isVisible.value = true
     }, 100)
@@ -151,73 +83,89 @@ onMounted(() => {
         <!-- Filter Section -->
         <section class="py-6 px-4 max-w-6xl mx-auto">
             <div class="flex justify-center flex-wrap gap-3 mb-8" :class="{ 'fade-in-up': isVisible }">
-                <button 
-                    @click="filterProjects('all')"
-                    :class="selectedFilter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
-                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-                >
-                    All Projects
-                </button>
-                <button 
-                    @click="filterProjects('fullstack')"
-                    :class="selectedFilter === 'fullstack' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
-                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-                >
-                    Full Stack
-                </button>
-                <button 
-                    @click="filterProjects('frontend')"
-                    :class="selectedFilter === 'frontend' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
-                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-                >
-                    Frontend
-                </button>
-                <button 
-                    @click="filterProjects('backend')"
-                    :class="selectedFilter === 'backend' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
-                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-                >
-                    Backend
-                </button>
-                <button 
-                    @click="filterProjects('mobile')"
-                    :class="selectedFilter === 'mobile' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
-                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-                >
-                    Mobile
-                </button>
-                <button 
-                    @click="filterProjects('ai')"
-                    :class="selectedFilter === 'ai' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
-                    class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-                >
-                    AI/ML
-                </button>
+            <button 
+                @click="filterProjects('all')"
+                :class="selectedFilter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+            >
+                All Projects
+            </button>
+            <button 
+                v-for="projectType in projectTypes"
+                :key="projectType.id"
+                @click="filterProjects(projectType.id)"
+                :class="selectedFilter === projectType.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent bg-background'"
+                class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+            >
+                {{ projectType.name }}
+            </button>
             </div>
         </section>
 
         <!-- Projects Section -->
         <section class="pb-12 px-4 max-w-6xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <!-- Debug Info -->
+            <div v-if="$page.props.debug" class="mb-4 p-4 bg-gray-100 rounded">
+                <p>Projects count: {{ projects.length }}</p>
+                <p>Filtered projects count: {{ filteredProjects.length }}</p>
+                <p>Project types count: {{ projectTypes.length }}</p>
+            </div>
+            
+            <!-- No Projects Message -->
+            <div v-if="filteredProjects.length === 0" class="text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <Folder class="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 class="text-lg font-semibold text-foreground mb-2">No Projects Found</h3>
+                    <p class="text-muted-foreground">
+                        {{ selectedFilter === 'all' ? 'No projects are available at the moment.' : 'No projects match the selected filter.' }}
+                    </p>
+                    <button 
+                        v-if="selectedFilter !== 'all'"
+                        @click="filterProjects('all')"
+                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                    >
+                        Show All Projects
+                    </button>
+                </div>
+            </div>
+            
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <Card
                     v-for="(project, index) in filteredProjects"
                     :key="project.id"
                     class="bg-card/50 backdrop-blur-md border-border/50 hover:bg-card/70 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
                     :class="{ 'fade-in-up': isVisible }"
-                    :style="{ animationDelay: `${index * 0.1}s` }"
+                    :style="{ animationDelay: `${index * 0.05}s` }"
                 >
                     <CardHeader class="p-0 relative overflow-hidden">
-                        <div class="h-36 lg:h-48 bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center relative group-hover:scale-105 transition-transform duration-300">
-                            <Laptop class="w-12 h-12 text-primary-foreground/80" />
+                        <div class="h-36 lg:h-48 relative group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                            <img 
+                                v-if="project.image" 
+                                :src="project.image" 
+                                :alt="project.title"
+                                class="w-full h-full object-cover"
+                            />
+                            <div 
+                                v-else 
+                                class="w-full h-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center"
+                            >
+                                <Laptop class="w-12 h-12 text-primary-foreground/80" />
+                            </div>
                             <div class="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="flex gap-4">
-                                    <a :href="project.links.demo" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card border border-border rounded-md transition-colors">
-                                        <Eye class="w-4 h-4 mr-2" />
-                                        Demo
-                                    </a>
-                                    <a :href="project.links.github" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card border border-border rounded-md transition-colors">
-                                        <Github class="w-4 h-4 mr-2" />
-                                        Code
+                                <div class="flex gap-4" v-if="project.links && Array.isArray(project.links) && project.links.length > 0">
+                                    <a 
+                                        v-for="(linkObj, index) in project.links.slice(0, 2)" 
+                                        :key="index"
+                                        :href="Object.values(linkObj)[0]" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card border border-border rounded-md transition-colors"
+                                    >
+                                        <component 
+                                            :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : Eye" 
+                                            class="w-4 h-4 mr-2" 
+                                        />
+                                        {{ Object.keys(linkObj)[0] }}
                                     </a>
                                 </div>
                             </div>
@@ -230,7 +178,7 @@ onMounted(() => {
                                 {{ project.title }}
                             </CardTitle>
                             <Badge variant="secondary" class="bg-primary/20 text-primary border-primary/30 text-xs shrink-0 ml-2">
-                                {{ project.date }}
+                                {{ project.project_type?.name || 'General' }}
                             </Badge>
                         </div>
                         
@@ -238,7 +186,7 @@ onMounted(() => {
                             {{ project.description }}
                         </CardDescription>
                         
-                        <div class="flex flex-wrap gap-1 mb-3">
+                        <div class="flex flex-wrap gap-1 mb-3" v-if="project.technologies && project.technologies.length > 0">
                             <Badge
                                 v-for="tech in project.technologies"
                                 :key="tech"
