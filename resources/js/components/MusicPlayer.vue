@@ -9,7 +9,8 @@ import {
   VolumeX, 
   Music,
   Minimize2,
-  Maximize2
+  Maximize2,
+  X
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -28,6 +29,7 @@ interface Song {
   src: string
   duration: number
 }
+
 const musicLibrary: Song[] = [
   {
     id: 1,
@@ -43,7 +45,8 @@ const currentSongIndex = ref(0)
 const currentTime = ref(0)
 const volume = ref(0.5)
 const isMuted = ref(false)
-const isMinimized = ref(false)
+const isMinimized = ref(true)  // Start minimized by default
+const isExpanded = ref(false)  // Controls full player visibility
 const audio = ref<HTMLAudioElement | null>(null)
 
 const currentSong = ref<Song>(musicLibrary[0])
@@ -127,6 +130,24 @@ const toggleMinimize = () => {
   isMinimized.value = !isMinimized.value
 }
 
+const toggleExpand = () => {
+  isExpanded.value = !isExpanded.value
+  if (!isExpanded.value) {
+    isMinimized.value = true
+  }
+}
+
+const handleMusicButtonClick = () => {
+  if (!isExpanded.value) {
+    // First click: expand the player
+    isExpanded.value = true
+    isMinimized.value = false
+  } else {
+    // Subsequent clicks: toggle play/pause
+    togglePlay()
+  }
+}
+
 onMounted(() => {
   audio.value = new Audio(currentSong.value.src)
   audio.value.volume = volume.value
@@ -179,14 +200,42 @@ watch(currentSongIndex, () => {
 </script>
 
 <template>
-  <div class="fixed bottom-4 left-4 right-4 z-40 pointer-events-none">
+  <!-- Small Floating Music Button (Always Visible) -->
+  <div class="fixed bottom-6 right-6 z-50 pointer-events-auto">
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            @click="handleMusicButtonClick"
+            size="lg"
+            class="h-14 w-14 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary active:bg-primary/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 active:scale-105"
+            :class="{
+              'animate-pulse': isPlaying && !isExpanded,
+              'bg-primary': isExpanded
+            }"
+          >
+            <component 
+              :is="isExpanded ? (isPlaying ? Pause : Play) : Music" 
+              class="w-6 h-6" 
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{{ isExpanded ? (isPlaying ? 'Pause Music' : 'Play Music') : 'Open Music Player' }}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  </div>
+
+  <!-- Expanded Music Player -->
+  <div 
+    v-if="isExpanded" 
+    class="fixed bottom-4 left-4 right-4 z-40 pointer-events-none"
+  >
     <div class="max-w-6xl mx-auto pointer-events-auto">
       <TooltipProvider>
         <Card 
-          class="bg-background/90 border-border/50 shadow-2xl transition-all duration-300"
-          :class="[
-            isMinimized ? 'w-auto ml-auto music-player-minimized' : 'w-full music-player'
-          ]"
+          class="bg-background/95 border-border/50 shadow-2xl transition-all duration-300 music-player"
         >
           <CardContent class="p-3">
             <!-- Minimized View -->
@@ -204,21 +253,39 @@ watch(currentSongIndex, () => {
                   <component :is="isPlaying ? Pause : Play" class="w-4 h-4" />
                 </Button>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    @click="toggleMinimize"
-                    size="sm"
-                    variant="ghost"
-                    class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
-                  >
-                    <Maximize2 class="w-3 h-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Expand Player</p>
-                </TooltipContent>
-              </Tooltip>
+              <div class="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      @click="toggleMinimize"
+                      size="sm"
+                      variant="ghost"
+                      class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                    >
+                      <Maximize2 class="w-3 h-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Expand Player</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      @click="toggleExpand"
+                      size="sm"
+                      variant="ghost"
+                      class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                    >
+                      <X class="w-3 h-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Close Player</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
 
             <!-- Full View -->
@@ -238,21 +305,39 @@ watch(currentSongIndex, () => {
                   </Badge>
                 </div>
                 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      @click="toggleMinimize"
-                      size="sm"
-                      variant="ghost"
-                      class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent ml-2"
-                    >
-                      <Minimize2 class="w-3 h-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Minimize Player</p>
-                  </TooltipContent>
-                </Tooltip>
+                <div class="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        @click="toggleMinimize"
+                        size="sm"
+                        variant="ghost"
+                        class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                      >
+                        <Minimize2 class="w-3 h-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Minimize Player</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        @click="toggleExpand"
+                        size="sm"
+                        variant="ghost"
+                        class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                      >
+                        <X class="w-3 h-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Close Player</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
 
               <!-- Progress Bar -->
@@ -279,6 +364,7 @@ watch(currentSongIndex, () => {
                         size="sm"
                         variant="ghost"
                         class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                        :disabled="musicLibrary.length <= 1"
                       >
                         <SkipBack class="w-4 h-4" />
                       </Button>
@@ -310,6 +396,7 @@ watch(currentSongIndex, () => {
                         size="sm"
                         variant="ghost"
                         class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                        :disabled="musicLibrary.length <= 1"
                       >
                         <SkipForward class="w-4 h-4" />
                       </Button>
@@ -393,5 +480,19 @@ watch(currentSongIndex, () => {
   background: hsl(var(--accent));
   height: 8px;
   border-radius: 4px;
+}
+
+/* Music button pulse animation */
+@keyframes music-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+  }
+}
+
+.animate-pulse {
+  animation: music-pulse 2s infinite;
 }
 </style>
