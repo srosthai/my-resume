@@ -304,4 +304,30 @@
             scroll-behavior: auto;
         }
     }
+    
+    /* Music player specific styles */
+    .music-player {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+    
+    .music-player-minimized {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    
+    /* Enhanced slider animations */
+    .slider {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .slider:hover {
+        transform: scaleY(1.1);
+    }
+    
+    @media (hover: none) and (pointer: coarse) {
+        .slider:hover {
+            transform: none;
+        }
+    }
 }

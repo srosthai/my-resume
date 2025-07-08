@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Download, ArrowRight, Github, Linkedin, Mail } from 'lucide-vue-next'
 import DockNavigation from '@/components/DockNavigation.vue'
+import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
     users: {
@@ -65,6 +66,9 @@ const animateText = () => {
     <div class="min-h-screen lg:h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans lg:overflow-hidden transition-all duration-300">
         <!-- Dock Navigation -->
         <DockNavigation currentRoute="/" />
+        
+        <!-- Music Player -->
+        <MusicPlayer />
 
         <!-- Hero Section -->
         <section id="home" class="min-h-screen lg:h-full flex items-center px-4 py-8 lg:py-0 max-w-6xl mx-auto relative hero-section">

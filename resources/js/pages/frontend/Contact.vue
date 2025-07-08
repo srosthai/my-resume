@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import DockNavigation from '@/components/DockNavigation.vue'
+import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
     title: String,
@@ -104,6 +105,9 @@ onMounted(() => {
 
     <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
         <DockNavigation currentRoute="/contact" />
+        
+        <!-- Music Player -->
+        <MusicPlayer />
 
         <!-- Contact Hero Section -->
         <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center relative">

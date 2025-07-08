@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Construction, Wrench, Clock } from 'lucide-vue-next'
 import DockNavigation from '@/components/DockNavigation.vue'
+import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
     title: String,
@@ -28,6 +29,9 @@ onMounted(() => {
 
     <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
         <DockNavigation currentRoute="/more" />
+        
+        <!-- Music Player -->
+        <MusicPlayer />
 
         <!-- More Content Section -->
         <section class="min-h-screen flex items-center justify-center px-4 max-w-6xl mx-auto relative">
