@@ -2,11 +2,9 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { 
   Play, 
-  Pause, 
+  Pause,
   SkipBack, 
   SkipForward, 
-  Volume2, 
-  VolumeX, 
   Music,
   Minimize2,
   Maximize2,
@@ -26,30 +24,29 @@ interface Song {
   id: number
   title: string
   artist: string
-  src: string
+  src: string  
   duration: number
 }
 
-const musicLibrary: Song[] = [
+const musicLibrary = ref<Song[]>([
   {
     id: 1,
     title: "បងក្រ",
-    artist: "Tena Feat. YCN Rakhie",
-    src: "/audio/bong-kror.mp3",
+    artist: "Tena Feat. YCN Rakhie Original Version",
+    src: "https://www.youtube.com/watch?v=-IQcA1jmb3I&list=RD-IQcA1jmb3I&start_radio=1",
     duration: 250
   }
-]
+])
 
 const isPlaying = ref(false)
 const currentSongIndex = ref(0)
 const currentTime = ref(0)
-const volume = ref(0.5)
-const isMuted = ref(false)
-const isMinimized = ref(true)  // Start minimized by default
-const isExpanded = ref(false)  // Controls full player visibility
-const audio = ref<HTMLAudioElement | null>(null)
+const isMinimized = ref(true) 
+const isExpanded  = ref(false)
+const youtubePlayer = ref<any>(null)
+const playerReady = ref(false)
 
-const currentSong = ref<Song>(musicLibrary[0])
+const currentSong = ref<Song>(musicLibrary.value[0])
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60)
@@ -58,15 +55,12 @@ const formatTime = (seconds: number): string => {
 }
 
 const togglePlay = () => {
-  if (!audio.value) return
+  if (!playerReady.value || !youtubePlayer.value) return
   
   if (isPlaying.value) {
-    audio.value.pause()
+    youtubePlayer.value.pauseVideo()
   } else {
-    audio.value.play().catch((error) => {
-      console.warn('Audio play failed:', error)
-      isPlaying.value = false
-    })
+    youtubePlayer.value.playVideo()
   }
 }
 
@@ -74,13 +68,13 @@ const previousSong = () => {
   if (currentSongIndex.value > 0) {
     currentSongIndex.value--
   } else {
-    currentSongIndex.value = musicLibrary.length - 1
+    currentSongIndex.value = musicLibrary.value.length - 1
   }
   loadCurrentSong()
 }
 
 const nextSong = () => {
-  if (currentSongIndex.value < musicLibrary.length - 1) {
+  if (currentSongIndex.value < musicLibrary.value.length - 1) {
     currentSongIndex.value++
   } else {
     currentSongIndex.value = 0
@@ -89,40 +83,50 @@ const nextSong = () => {
 }
 
 const loadCurrentSong = () => {
-  currentSong.value = musicLibrary[currentSongIndex.value]
-  if (audio.value) {
-    audio.value.src = currentSong.value.src
-    audio.value.load()
-    if (isPlaying.value) {
-      audio.value.play().catch((error) => {
-        console.warn('Audio play failed:', error)
-        isPlaying.value = false
-      })
+  if (musicLibrary.value.length === 0) {
+    console.warn('No songs in music library')
+    return
+  }
+  
+  if (currentSongIndex.value >= musicLibrary.value.length) {
+    console.warn('Invalid song index:', currentSongIndex.value)
+    currentSongIndex.value = 0
+  }
+  
+  currentSong.value = musicLibrary.value[currentSongIndex.value]
+  isPlaying.value = false
+  currentTime.value = 0
+  
+  console.log('Loading song:', currentSong.value)
+  
+  if (playerReady.value && youtubePlayer.value && currentSong.value?.src) {
+    const videoId = extractYouTubeId(currentSong.value.src)
+    if (videoId) {
+      console.log('Loading YouTube video:', videoId)
+      try {
+        youtubePlayer.value.loadVideoById(videoId)
+      } catch (error) {
+        console.error('Error loading video:', error)
+      }
+    } else {
+      console.error('Cannot extract video ID from:', currentSong.value.src)
     }
   }
 }
 
-const toggleMute = () => {
-  if (!audio.value) return
-  
-  isMuted.value = !isMuted.value
-  audio.value.muted = isMuted.value
-}
-
-const updateVolume = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  volume.value = parseFloat(target.value)
-  if (audio.value) {
-    audio.value.volume = volume.value
+const openYouTube = () => {
+  if (currentSong.value?.src) {
+    window.open(currentSong.value.src, '_blank')
+  } else {
+    console.warn('No current song URL to open')
   }
 }
 
-const updateProgress = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const newTime = parseFloat(target.value)
-  currentTime.value = newTime
-  if (audio.value) {
-    audio.value.currentTime = newTime
+const openCurrentSongYouTube = () => {
+  if (currentSong.value?.src) {
+    window.open(currentSong.value.src, '_blank')
+  } else {
+    console.warn('No current song URL to open')
   }
 }
 
@@ -139,58 +143,172 @@ const toggleExpand = () => {
 
 const handleMusicButtonClick = () => {
   if (!isExpanded.value) {
-    // First click: expand the player
     isExpanded.value = true
     isMinimized.value = false
   } else {
-    // Subsequent clicks: toggle play/pause
     togglePlay()
   }
 }
 
-onMounted(() => {
-  audio.value = new Audio(currentSong.value.src)
-  audio.value.volume = volume.value
+// YouTube Player API functions
+const initYouTubePlayer = () => {
+  if (!window.YT) {
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    const firstScriptTag = document.getElementsByTagName('script')[0]
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+    
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady
+  } else {
+    onYouTubeIframeAPIReady()
+  }
+}
+
+const onYouTubeIframeAPIReady = () => {
+  if (!currentSong.value || !currentSong.value.src) {
+    console.error('No current song or src available for YouTube player')
+    return
+  }
   
-  // Audio event listeners
-  audio.value.addEventListener('loadedmetadata', () => {
-    if (audio.value) {
-      currentSong.value.duration = audio.value.duration
-    }
-  })
+  const videoId = extractYouTubeId(currentSong.value.src)
+  if (!videoId) {
+    console.error('Cannot extract YouTube video ID from:', currentSong.value.src)
+    return
+  }
   
-  audio.value.addEventListener('timeupdate', () => {
-    if (audio.value) {
-      currentTime.value = audio.value.currentTime
-    }
-  })
+  console.log('Initializing YouTube player with video ID:', videoId)
   
-  audio.value.addEventListener('play', () => {
+  try {
+    youtubePlayer.value = new window.YT.Player('youtube-player', {
+      height: '0',
+      width: '0',
+      videoId: videoId,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        disablekb: 1,
+        fs: 0,
+        iv_load_policy: 3,
+        modestbranding: 1,
+        rel: 0,
+        showinfo: 0
+      },
+      events: {
+        onReady: onPlayerReady,
+        onStateChange: onPlayerStateChange
+      }
+    })
+  } catch (error) {
+    console.error('Error creating YouTube player:', error)
+  }
+}
+
+const onPlayerReady = () => {
+  playerReady.value = true
+}
+
+const onPlayerStateChange = (event: any) => {
+  if (event.data === window.YT.PlayerState.PLAYING) {
     isPlaying.value = true
-  })
-  
-  audio.value.addEventListener('pause', () => {
+    startTimeUpdate()
+  } else if (event.data === window.YT.PlayerState.PAUSED) {
     isPlaying.value = false
-  })
-  
-  audio.value.addEventListener('ended', () => {
+  } else if (event.data === window.YT.PlayerState.ENDED) {
+    isPlaying.value = false
     nextSong()
-  })
+  }
+}
+
+let timeUpdateInterval: number | null = null
+
+const startTimeUpdate = () => {
+  if (timeUpdateInterval) clearInterval(timeUpdateInterval)
   
-  audio.value.addEventListener('error', (e) => {
-    console.warn('Audio error:', e)
-    isPlaying.value = false
-    // Try next song if current one fails to load
-    if (musicLibrary.length > 1) {
-      setTimeout(() => nextSong(), 1000)
+  timeUpdateInterval = setInterval(() => {
+    if (youtubePlayer.value && isPlaying.value) {
+      currentTime.value = Math.floor(youtubePlayer.value.getCurrentTime())
     }
-  })
+  }, 1000)
+}
+
+const updateProgress = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const newTime = parseFloat(target.value)
+  currentTime.value = newTime
+  if (youtubePlayer.value && playerReady.value) {
+    youtubePlayer.value.seekTo(newTime)
+  }
+}
+
+const extractYouTubeId = (url: string | undefined): string | null => {
+  if (!url || typeof url !== 'string') {
+    console.warn('Invalid YouTube URL:', url)
+    return null
+  }
+  
+  try {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)
+    return match ? match[1] : null
+  } catch (error) {
+    console.error('Error extracting YouTube ID from URL:', url, error)
+    return null
+  }
+}
+
+const loadSongs = async () => {
+  try {
+    const response = await fetch('/api/popular-songs')
+    if (response.ok) {
+      const songs = await response.json()
+      if (songs && songs.length > 0) {
+        console.log('Loaded songs from API:', songs) // Debug log
+        
+        // Map API response to expected format with validation
+        musicLibrary.value = songs.map((song: any) => {
+          const mappedSong = {
+            id: song.id || 0,
+            title: song.title || 'Unknown Title',
+            artist: song.artist || 'Unknown Artist',
+            src: song.url || song.src || '',  // Check both 'url' and 'src' fields
+            duration: song.duration || 180
+          }
+          
+          // Validate YouTube URL
+          if (!mappedSong.src || !extractYouTubeId(mappedSong.src)) {
+            console.warn('Invalid YouTube URL for song:', mappedSong.title, mappedSong.src)
+          }
+          
+          return mappedSong
+        }).filter(song => extractYouTubeId(song.src)) // Only keep songs with valid YouTube URLs
+        
+        if (musicLibrary.value.length > 0) {
+          currentSong.value = musicLibrary.value[0]
+          currentSongIndex.value = 0
+          console.log('Current song set to:', currentSong.value) // Debug log
+        } else {
+          console.warn('No valid YouTube URLs found in songs')
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load songs from API:', error)
+  }
+}
+
+onMounted(async () => {
+  // Load songs from API first
+  await loadSongs()
+  
+  // Initialize YouTube player
+  initYouTubePlayer()
 })
 
 onUnmounted(() => {
-  if (audio.value) {
-    audio.value.pause()
-    audio.value.src = ''
+  if (timeUpdateInterval) {
+    clearInterval(timeUpdateInterval)
+  }
+  if (youtubePlayer.value) {
+    youtubePlayer.value.destroy()
   }
 })
 
@@ -200,7 +318,6 @@ watch(currentSongIndex, () => {
 </script>
 
 <template>
-  <!-- Small Floating Music Button (Always Visible) -->
   <div class="fixed bottom-6 right-6 z-50 pointer-events-auto">
     <TooltipProvider>
       <Tooltip>
@@ -407,32 +524,28 @@ watch(currentSongIndex, () => {
                   </Tooltip>
                 </div>
 
-                <!-- Volume Control -->
+                <!-- Song Info -->
                 <div class="hidden sm:flex items-center gap-2">
+                  <Badge variant="secondary" class="text-xs">
+                    {{ currentSongIndex + 1 }}/{{ musicLibrary.length }}
+                  </Badge>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        @click="toggleMute"
+                        @click="openCurrentSongYouTube"
                         size="sm"
                         variant="ghost"
-                        class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                        class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent text-red-600"
                       >
-                        <component :is="isMuted ? VolumeX : Volume2" class="w-4 h-4" />
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{{ isMuted ? 'Unmute' : 'Mute' }}</p>
+                      <p>Watch on YouTube</p>
                     </TooltipContent>
                   </Tooltip>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    :value="volume"
-                    @input="updateVolume"
-                    class="w-20 h-2 bg-accent rounded-lg appearance-none cursor-pointer slider"
-                  />
                 </div>
               </div>
             </div>
@@ -441,6 +554,9 @@ watch(currentSongIndex, () => {
       </TooltipProvider>
     </div>
   </div>
+
+  <!-- Hidden YouTube Player -->
+  <div id="youtube-player" style="display: none;"></div>
 </template>
 
 <style scoped>

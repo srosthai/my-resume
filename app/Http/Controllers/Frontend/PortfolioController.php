@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\AboutMe;
 use App\Models\Education;
+use App\Models\PopularSong;
 use App\Models\Project;
 use App\Models\ProjectType;
 use App\Models\TechStack;
@@ -92,6 +93,11 @@ class PortfolioController extends Controller
         ]);
     }
 
+    /**
+     * Display the contact page.
+     *
+     * @return \Inertia\Response
+     */
     public function contact()
     {
         return Inertia::render('frontend/Contact', [
@@ -100,6 +106,11 @@ class PortfolioController extends Controller
         ]);
     }
 
+    /**
+     * Display the hobby page.
+     *
+     * @return \Inertia\Response
+     */
     public function hobby()
     {
         return Inertia::render('frontend/Hobby', [
@@ -108,6 +119,11 @@ class PortfolioController extends Controller
         ]);
     }
 
+    /**
+     * Display the more page.
+     *
+     * @return \Inertia\Response
+     */
     public function more()
     {
         return Inertia::render('frontend/More', [

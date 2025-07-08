@@ -10,6 +10,7 @@ use App\Http\Controllers\Backend\ProjectTypeController;
 use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Frontend\PortfolioController;
 use App\Http\Controllers\Backend\WorkExperienceController;
+use App\Http\Controllers\Backend\PopularSongController;
 
 // Public Frontend Routes
 Route::get('/', [PortfolioController::class, 'home'])->name('home');
@@ -18,6 +19,9 @@ Route::get('/portfolio', [PortfolioController::class, 'portfolio'])->name('portf
 Route::get('/contact', [PortfolioController::class, 'contact'])->name('contact');
 Route::get('/hobby', [PortfolioController::class, 'hobby'])->name('hobby');
 Route::get('/more', [PortfolioController::class, 'more'])->name('more');
+
+// API Routes for Frontend
+Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])->name('api.popular-songs');
 
 // Dashboard Route
 Route::get('dashboard', function () {
@@ -83,6 +87,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('backend/projects/{project}/edit', [ProjectController::class, 'edit'])->name('backend.projects.edit');
     Route::match(['PUT', 'POST'], 'backend/projects/{project}', [ProjectController::class, 'update'])->name('backend.projects.update');
     Route::delete('backend/projects/{project}', [ProjectController::class, 'destroy'])->name('backend.projects.destroy');
+
+    //Popular Songs Routes
+    Route::get('popular-songs', [PopularSongController::class, 'index'])->name('popular-songs');
+    Route::get('backend/popular-songs/create', [PopularSongController::class, 'create'])->name('backend.popular-songs.create');
+    Route::post('backend/popular-songs', [PopularSongController::class, 'store'])->name('backend.popular-songs.store');
+    Route::get('backend/popular-songs/{popularSong}', [PopularSongController::class, 'show'])->name('backend.popular-songs.show');
+    Route::get('backend/popular-songs/{popularSong}/edit', [PopularSongController::class, 'edit'])->name('backend.popular-songs.edit');
+    Route::put('backend/popular-songs/{popularSong}', [PopularSongController::class, 'update'])->name('backend.popular-songs.update');
+    Route::delete('backend/popular-songs/{popularSong}', [PopularSongController::class, 'destroy'])->name('backend.popular-songs.destroy');
 });
 
 require __DIR__ . '/settings.php';
