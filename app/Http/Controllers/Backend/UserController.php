@@ -54,7 +54,7 @@ class UserController extends Controller
             $image      = $request->file('image');
             $imageName  = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('uploads/users'), $imageName);
-            $userData['image'] = $imageName;
+            $userData['image'] = 'uploads/users/' . $imageName;
         }
 
         User::create($userData);

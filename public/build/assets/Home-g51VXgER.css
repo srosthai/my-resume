@@ -1,0 +1,1 @@
+@keyframes fadeInUp-feb7da61{0%{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}@keyframes float-feb7da61{0%,to{transform:translateY(0)}50%{transform:translateY(-10px)}}.fade-in-up[data-v-feb7da61]{animation:fadeInUp-feb7da61 1s ease-out forwards}.floating[data-v-feb7da61]{animation:float-feb7da61 6s ease-in-out infinite}

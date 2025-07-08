@@ -74,31 +74,56 @@ const animateText = () => {
                 <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-8 items-center w-full relative z-10">
-                <div class="space-y-4 lg:space-y-4" :class="{ 'fade-in-up': isVisible }">
-                    <div class="space-y-3">
-                        <Badge variant="outline" class="w-fit px-3 py-1.5 bg-primary/10 border-primary/20 text-primary">
+            <div class="flex flex-col lg:grid lg:grid-cols-[3fr_2fr] gap-6 sm:gap-8 lg:gap-12 items-center w-full relative z-10">
+                <!-- Avatar Section - Shows first on mobile -->
+                <div class="flex justify-center items-center relative order-1 lg:order-2 mt-12 lg:mt-0" :class="{ 'fade-in-up': isVisible }">
+                    <div class="relative group">
+                        <!-- Decorative rings -->
+                        <div class="absolute inset-0 rounded-full border-2 border-primary/20 scale-110 group-hover:scale-125 transition-transform duration-700"></div>
+                        <div class="absolute inset-0 rounded-full border border-primary/10 scale-125 group-hover:scale-140 transition-transform duration-1000"></div>
+                        
+                        <Avatar class="w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 floating border-4 border-background shadow-2xl relative z-10">
+                            <AvatarImage 
+                                v-if="users.image" 
+                                :src="users.image.startsWith('http') ? users.image : `/${users.image}`" 
+                                :alt="users.name" 
+                                class="object-cover"
+                            />
+                            <AvatarFallback class="bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-semibold">
+                                {{ users.name?.charAt(0) }}
+                            </AvatarFallback>
+                        </Avatar>
+                        
+                        <!-- Glowing effect -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 rounded-full blur-2xl -z-10 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-700"></div>
+                    </div>
+                </div>
+
+                <!-- Content Section - Shows second on mobile -->
+                <div class="space-y-4 sm:space-y-6 lg:space-y-8 text-center lg:text-left order-2 lg:order-1" :class="{ 'fade-in-up': isVisible }">
+                    <div class="space-y-3 sm:space-y-4">
+                        <Badge variant="outline" class="w-fit px-3 py-1.5 bg-primary/10 border-primary/20 text-primary mx-auto lg:mx-0">
                             <Sparkles class="w-3 h-3 mr-2" />
                             Software Developer
                         </Badge>
                         
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
+                        <h1 class="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
                             <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
                                 {{ animatedText }}<span class="animate-pulse">|</span>
                             </span>
                         </h1>
                         
-                        <h2 class="text-base sm:text-lg md:text-xl font-medium text-muted-foreground tracking-wide">
+                        <h2 class="text-sm xs:text-base sm:text-lg md:text-xl font-medium text-muted-foreground tracking-wide">
                             {{ users.position }}
                         </h2>
                     </div>
                     
-                    <p class="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
+                    <p class="text-sm xs:text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
                         {{ users.description }}
                     </p>
                     
                     <!-- Social Links -->
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center lg:justify-start gap-3">
                         <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
                             <a href="https://github.com/Sovannthai" target="_blank" rel="noopener noreferrer">
                                 <Github class="h-4 w-4" />
@@ -117,7 +142,7 @@ const animateText = () => {
                     </div>
                     
                     <!-- CTA Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex flex-col xs:flex-row gap-3 justify-center lg:justify-start">
                         <Button asChild class="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
                             <Link href="/about" class="flex items-center gap-2">
                                 <span>Details About Me</span>
@@ -130,30 +155,6 @@ const animateText = () => {
                                 View Portfolio
                             </Link>
                         </Button>
-                    </div>
-                </div>
-                
-                <!-- Avatar Section -->
-                <div class="flex justify-center items-center relative" :class="{ 'fade-in-up': isVisible }">
-                    <div class="relative group">
-                        <!-- Decorative rings -->
-                        <div class="absolute inset-0 rounded-full border-2 border-primary/20 scale-110 group-hover:scale-125 transition-transform duration-700"></div>
-                        <div class="absolute inset-0 rounded-full border border-primary/10 scale-125 group-hover:scale-140 transition-transform duration-1000"></div>
-                        
-                        <Avatar class="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 floating border-4 border-background shadow-2xl relative z-10">
-                            <AvatarImage 
-                                v-if="users.image" 
-                                :src="users.image.startsWith('http') ? users.image : `/${users.image}`" 
-                                :alt="users.name" 
-                                class="object-cover"
-                            />
-                            <AvatarFallback class="bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-3xl sm:text-4xl md:text-5xl font-semibold">
-                                {{ users.name?.charAt(0) }}
-                            </AvatarFallback>
-                        </Avatar>
-                        
-                        <!-- Glowing effect -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 rounded-full blur-2xl -z-10 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-700"></div>
                     </div>
                 </div>
             </div>
