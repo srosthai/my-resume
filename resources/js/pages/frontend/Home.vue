@@ -67,7 +67,7 @@ const animateText = () => {
         <DockNavigation currentRoute="/" />
 
         <!-- Hero Section -->
-        <section id="home" class="min-h-screen lg:h-full flex items-center px-4 py-8 lg:py-0 max-w-6xl mx-auto relative">
+        <section id="home" class="min-h-screen lg:h-full flex items-center px-4 py-8 lg:py-0 max-w-6xl mx-auto relative hero-section">
             <!-- Background decoration -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
                 <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
@@ -77,10 +77,10 @@ const animateText = () => {
             <div class="flex flex-col lg:grid lg:grid-cols-[3fr_2fr] gap-6 sm:gap-8 lg:gap-12 items-center w-full relative z-10">
                 <!-- Avatar Section - Shows first on mobile -->
                 <div class="flex justify-center items-center relative order-1 lg:order-2 mt-12 lg:mt-0" :class="{ 'fade-in-up': isVisible }">
-                    <div class="relative group">
+                    <div class="relative group avatar-container">
                         <!-- Decorative rings -->
-                        <div class="absolute inset-0 rounded-full border-2 border-primary/20 scale-110 group-hover:scale-125 transition-transform duration-700"></div>
-                        <div class="absolute inset-0 rounded-full border border-primary/10 scale-125 group-hover:scale-140 transition-transform duration-1000"></div>
+                        <div class="absolute inset-0 rounded-full border-2 border-primary/20 scale-110 group-hover:scale-125 group-active:scale-115 transition-transform duration-700"></div>
+                        <div class="absolute inset-0 rounded-full border border-primary/10 scale-125 group-hover:scale-140 group-active:scale-130 transition-transform duration-1000"></div>
                         
                         <Avatar class="w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 floating border-4 border-background shadow-2xl relative z-10">
                             <AvatarImage 
@@ -95,7 +95,7 @@ const animateText = () => {
                         </Avatar>
                         
                         <!-- Glowing effect -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 rounded-full blur-2xl -z-10 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-700"></div>
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 rounded-full blur-2xl -z-10 group-hover:from-primary/20 group-hover:to-primary/10 group-active:from-primary/15 group-active:to-primary/8 transition-all duration-700"></div>
                     </div>
                 </div>
 
@@ -124,17 +124,17 @@ const animateText = () => {
                     
                     <!-- Social Links -->
                     <div class="flex items-center justify-center lg:justify-start gap-3">
-                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
+                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent active:bg-accent focus:bg-accent transition-colors">
                             <a href="https://github.com/Sovannthai" target="_blank" rel="noopener noreferrer">
                                 <Github class="h-4 w-4" />
                             </a>
                         </Button>
-                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
+                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent active:bg-accent focus:bg-accent transition-colors">
                             <a href="https://www.linkedin.com/in/sros-thai-b491b42ab/" target="_blank" rel="noopener noreferrer">
                                 <Linkedin class="h-4 w-4" />
                             </a>
                         </Button>
-                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent">
+                        <Button asChild size="icon" variant="ghost" class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent active:bg-accent focus:bg-accent transition-colors">
                             <a href="mailto:srosthai00@gmail.com" rel="noopener noreferrer">
                                 <Mail class="h-4 w-4" />
                             </a>
@@ -143,13 +143,13 @@ const animateText = () => {
                     
                     <!-- CTA Buttons -->
                     <div class="flex flex-col xs:flex-row gap-3 justify-center lg:justify-start">
-                        <Button asChild class="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+                        <Button asChild class="bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-medium px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 active:translate-y-0 hover:shadow-lg group">
                             <Link href="/about" class="flex items-center gap-2">
                                 <span>Details About Me</span>
                                 <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" class="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-accent px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 group">
+                        <Button asChild variant="outline" class="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-accent active:bg-accent px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 active:translate-y-0 group">
                             <Link href="/portfolio" class="flex items-center gap-2">
                                 <Download class="h-4 w-4 transition-transform group-hover:translate-y-1" />
                                 View Portfolio

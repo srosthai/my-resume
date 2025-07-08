@@ -29,7 +29,7 @@ const currentTheme = computed(() =>
       <Button 
         variant="ghost" 
         size="icon"
-        class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent hover:text-accent-foreground transition-all duration-200"
+        class="h-9 w-9 bg-background/50 backdrop-blur-sm border border-border/50 hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background transition-all duration-200"
       >
         <component 
           :is="currentTheme.icon" 
@@ -47,7 +47,7 @@ const currentTheme = computed(() =>
         v-for="theme in themes"
         :key="theme.key"
         @click="updateAppearance(theme.key)"
-        class="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+        class="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none transition-colors"
         :class="{ 'bg-accent text-accent-foreground': appearance === theme.key }"
       >
         <component :is="theme.icon" class="h-4 w-4" />

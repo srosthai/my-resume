@@ -164,4 +164,144 @@
     body {
         @apply bg-background text-foreground;
     }
+    
+    /* Touch-friendly mobile enhancements */
+    @media (hover: none) and (pointer: coarse) {
+        /* Disable hover effects on touch devices */
+        .hover\:scale-105:hover {
+            transform: none;
+        }
+        .hover\:-translate-y-1:hover {
+            transform: none;
+        }
+        .hover\:-translate-y-2:hover {
+            transform: none;
+        }
+        .hover\:translate-x-1:hover {
+            transform: none;
+        }
+        .hover\:translate-y-1:hover {
+            transform: none;
+        }
+        .hover\:shadow-lg:hover {
+            box-shadow: none;
+        }
+        .hover\:shadow-xl:hover {
+            box-shadow: none;
+        }
+        
+        /* Larger touch targets */
+        button, a, [role="button"] {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* Prevent text selection on touch */
+        .select-none {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Improve scrolling on iOS */
+        .overflow-auto, .overflow-y-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Prevent zoom on input focus */
+        input, textarea, select {
+            font-size: 16px;
+        }
+        
+        /* Better touch feedback */
+        button:active, a:active, [role="button"]:active {
+            transform: scale(0.95);
+        }
+    }
+    
+    /* Enhanced active states for better mobile feedback */
+    .active\:scale-102:active {
+        transform: scale(1.02);
+    }
+    
+    .active\:translate-y-0:active {
+        transform: translateY(0);
+    }
+    
+    .group-active\:scale-115.group:active {
+        transform: scale(1.15);
+    }
+    
+    .group-active\:scale-130.group:active {
+        transform: scale(1.30);
+    }
+    
+    .group-active\:scale-102.group:active {
+        transform: scale(1.02);
+    }
+    
+    .group-active\:from-primary\/15.group:active {
+        --tw-gradient-from: hsl(var(--primary) / 0.15);
+    }
+    
+    .group-active\:to-primary\/8.group:active {
+        --tw-gradient-to: hsl(var(--primary) / 0.08);
+    }
+    
+    .group-active\:opacity-100.group:active {
+        opacity: 1;
+    }
+    
+    /* Mobile-specific improvements */
+    @media (max-width: 767px) {
+        /* Ensure dock navigation doesn't overflow */
+        .dock-container {
+            max-width: calc(100vw - 1rem);
+            overflow-x: auto;
+        }
+        
+        /* Improve card spacing on mobile */
+        .card-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        /* Better spacing for hero sections */
+        .hero-section {
+            padding: 2rem 1rem;
+        }
+        
+        /* Ensure avatars don't get too large */
+        .avatar-container {
+            max-width: 280px;
+            max-height: 280px;
+        }
+    }
+    
+    /* Tablet optimizations */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .card-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+    }
+    
+    /* Smooth scrolling for navigation */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+        
+        html {
+            scroll-behavior: auto;
+        }
+    }
 }
