@@ -1,0 +1,21 @@
+Audio Files for Music Player
+============================
+
+To use the music player, you need to add MP3 files to this directory:
+
+Required files:
+- background-music-1.mp3
+- background-music-2.mp3  
+- background-music-3.mp3
+
+You can find free music at:
+- Freesound.org
+- Pixabay Music
+- YouTube Audio Library
+- Incompetech.com
+
+Make sure to use royalty-free music for your portfolio!
+
+File format: MP3
+Recommended quality: 128-320 kbps
+Max file size: 10MB per file

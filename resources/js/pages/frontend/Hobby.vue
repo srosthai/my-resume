@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Heart, Gamepad2, Palette, Music, Book, Code2, Coffee, Dumbbell, Camera, Plane, Terminal } from 'lucide-vue-next'
 import DockNavigation from '@/components/DockNavigation.vue'
+import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
     title: String,
@@ -114,6 +115,9 @@ onMounted(() => {
 
     <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
         <DockNavigation currentRoute="/hobby" />
+        
+        <!-- Music Player -->
+        <MusicPlayer />
 
         <!-- Hobbies Hero Section -->
         <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto relative">
