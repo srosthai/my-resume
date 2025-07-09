@@ -19,6 +19,7 @@ Route::get('/portfolio', [PortfolioController::class, 'portfolio'])->name('portf
 Route::get('/contact', [PortfolioController::class, 'contact'])->name('contact');
 Route::get('/hobby', [PortfolioController::class, 'hobby'])->name('hobby');
 Route::get('/more', [PortfolioController::class, 'more'])->name('more');
+Route::get('/resume', [PortfolioController::class, 'resume'])->name('resume');
 
 // API Routes for Frontend
 Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])->name('api.popular-songs');

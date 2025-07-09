@@ -148,8 +148,8 @@ const animateText = () => {
                     <!-- CTA Buttons -->
                     <div class="flex flex-col xs:flex-row gap-3 justify-center lg:justify-start">
                         <Button asChild class="bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-medium px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 active:translate-y-0 hover:shadow-lg group">
-                            <Link href="/about" class="flex items-center gap-2">
-                                <span>Details About Me</span>
+                            <Link href="/resume" class="flex items-center gap-2">
+                                <span>Resume</span>
                                 <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </Button>

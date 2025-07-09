@@ -131,4 +131,37 @@ class PortfolioController extends Controller
             'description' => 'Additional content and features coming soon.',
         ]);
     }
+
+    /**
+     * Display the resume page.
+     *
+     * @return \Inertia\Response
+     */
+    public function resume()
+    {
+        $users          = User::latest()->first();
+        $aboutMe        = AboutMe::latest()->first() ?? [];
+        $workExperience = WorkExperience::orderBy('id')->get() ?? [];
+        $education      = Education::orderBy('id')->get() ?? [];
+        $techStacks     = TechStack::orderBy('id')->get() ?? [];
+        $projects       = Project::with('projectType')
+            ->orderBy('created_at', 'desc')
+            ->limit(6)
+            ->get()
+            ->map(function ($project) {
+                $project->image = $project->image ? asset($project->image) : null;
+                return $project;
+            });
+
+        return Inertia::render('frontend/Resume', [
+            'title'          => 'Resume - ' . ($users->name ?? 'Professional Resume'),
+            'description'    => 'Professional resume showcasing experience, skills, and achievements.',
+            'users'          => $users,
+            'aboutMe'        => $aboutMe,
+            'workExperience' => $workExperience,
+            'education'      => $education,
+            'techStacks'     => $techStacks,
+            'projects'       => $projects,
+        ]);
+    }
 }
