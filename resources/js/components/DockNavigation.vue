@@ -12,7 +12,8 @@ import {
   Linkedin,
   Phone,
   Command,
-  Send
+  Send,
+  FileText
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -38,6 +39,7 @@ const navigationItems = [
   { href: '/', icon: Home, label: 'Home' },
   { href: '/about', icon: User, label: 'About' },
   { href: '/portfolio', icon: Briefcase, label: 'Projects' },
+  { href: '/resume', icon: FileText, label: 'Resume' },
   { href: '/contact', icon: Phone, label: 'Contact' },
   { href: '/hobby', icon: Command, label: 'Hobbies' },
   { href: '/more', icon: MoreHorizontal, label: 'More' },
