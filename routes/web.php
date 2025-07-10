@@ -11,6 +11,7 @@ use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Frontend\PortfolioController;
 use App\Http\Controllers\Backend\WorkExperienceController;
 use App\Http\Controllers\Backend\PopularSongController;
+use App\Http\Controllers\DashboardController;
 
 // Public Frontend Routes
 Route::get('/', [PortfolioController::class, 'home'])->name('home');
@@ -25,9 +26,9 @@ Route::get('/resume', [PortfolioController::class, 'resume'])->name('resume');
 Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])->name('api.popular-songs');
 
 // Dashboard Route
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Authenticated Routes
 Route::middleware(['auth', 'verified'])->group(function () {
