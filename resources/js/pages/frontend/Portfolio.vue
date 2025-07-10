@@ -133,82 +133,130 @@ onMounted(() => {
                 </div>
             </div>
             
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 card-grid">
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 card-grid">
                 <Card
                     v-for="(project, index) in filteredProjects"
                     :key="project.id"
-                    class="bg-card/50 backdrop-blur-md border-border/50 hover:bg-card/70 active:bg-card/60 transition-all duration-300 hover:-translate-y-2 active:translate-y-0 hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
+                    class="group overflow-hidden bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5"
                     :class="{ 'fade-in-up': isVisible }"
                     :style="{ animationDelay: `${index * 0.05}s` }"
                 >
-                    <CardHeader class="p-0 relative overflow-hidden">
-                        <div class="h-36 lg:h-48 relative group-hover:scale-105 group-active:scale-102 transition-transform duration-300 overflow-hidden">
-                            <img 
-                                v-if="project.image" 
-                                :src="project.image" 
-                                :alt="project.title"
-                                class="w-full h-full object-cover"
-                            />
-                            <div 
-                                v-else 
-                                class="w-full h-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center"
-                            >
-                                <Laptop class="w-12 h-12 text-primary-foreground/80" />
-                            </div>
-                            <div class="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="flex gap-4" v-if="project.links && Array.isArray(project.links) && project.links.length > 0">
-                                    <a 
-                                        v-for="(linkObj, index) in project.links.slice(0, 2)" 
-                                        :key="index"
-                                        :href="Object.values(linkObj)[0]" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground bg-card/80 hover:bg-card active:bg-card/60 border border-border rounded-md transition-colors"
-                                    >
-                                        <component 
-                                            :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : Eye" 
-                                            class="w-4 h-4 mr-2" 
-                                        />
-                                        {{ Object.keys(linkObj)[0] }}
-                                    </a>
-                                </div>
-                            </div>
+                    <!-- Project Image -->
+                    <div class="relative overflow-hidden h-48 md:h-52">
+                        <img 
+                            v-if="project.image" 
+                            :src="project.image" 
+                            :alt="project.title"
+                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div 
+                            v-else 
+                            class="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex items-center justify-center"
+                        >
+                            <Laptop class="w-12 h-12 text-primary/60" />
                         </div>
-                    </CardHeader>
-                    
-                    <CardContent class="p-4 lg:p-6">
-                        <div class="flex justify-between items-start mb-3">
-                            <CardTitle class="text-base lg:text-lg font-semibold text-foreground line-clamp-2">
-                                {{ project.title }}
-                            </CardTitle>
-                            <Badge variant="secondary" class="bg-primary/20 text-primary border-primary/30 text-xs shrink-0 ml-2">
+                        
+                        <!-- Project Type Badge -->
+                        <div class="absolute top-3 right-3">
+                            <Badge variant="secondary" class="bg-background/90 text-foreground border-border/50 text-xs backdrop-blur-sm">
                                 {{ project.project_type?.name || 'General' }}
                             </Badge>
                         </div>
                         
-                        <CardDescription class="text-muted-foreground text-sm leading-relaxed mb-3 line-clamp-2 lg:line-clamp-3">
-                            {{ project.description }}
-                        </CardDescription>
+                        <!-- Hover Overlay with Actions -->
+                        <div class="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="flex gap-2" v-if="project.links && Array.isArray(project.links) && project.links.length > 0">
+                                <a 
+                                    v-for="(linkObj, linkIndex) in project.links.slice(0, 2)" 
+                                    :key="linkIndex"
+                                    :href="Object.values(linkObj)[0]" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-foreground bg-background/90 hover:bg-background border border-border rounded-lg transition-colors shadow-sm"
+                                >
+                                    <component 
+                                        :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : Eye" 
+                                        class="w-4 h-4 mr-2" 
+                                    />
+                                    {{ Object.keys(linkObj)[0] }}
+                                </a>
+                            </div>
+                            <div v-else class="flex gap-2">
+                                <div class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground bg-background/90 border border-border rounded-lg">
+                                    <Eye class="w-4 h-4 mr-2" />
+                                    View Project
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Project Content -->
+                    <CardContent class="p-4 space-y-3">
+                        <div class="space-y-2">
+                            <CardTitle class="text-lg font-semibold text-foreground leading-tight line-clamp-2">
+                                {{ project.title }}
+                            </CardTitle>
+                            
+                            <CardDescription class="text-muted-foreground text-sm leading-relaxed line-clamp-2">
+                                {{ project.description }}
+                            </CardDescription>
+                        </div>
                         
-                        <div class="flex flex-wrap gap-1 mb-3" v-if="project.technologies && project.technologies.length > 0">
+                        <!-- Technologies -->
+                        <div class="flex flex-wrap gap-1.5" v-if="project.technologies && project.technologies.length > 0">
                             <Badge
-                                v-for="tech in project.technologies"
+                                v-for="tech in project.technologies.slice(0, 4)"
                                 :key="tech"
                                 variant="outline"
-                                class="bg-accent/50 border-border text-foreground text-xs hover:bg-accent active:bg-accent/70 transition-all"
+                                class="bg-accent/30 border-accent text-accent-foreground text-xs px-2 py-1 font-medium"
                             >
                                 {{ tech }}
+                            </Badge>
+                            <Badge
+                                v-if="project.technologies.length > 4"
+                                variant="outline"
+                                class="bg-muted/50 border-muted text-muted-foreground text-xs px-2 py-1"
+                            >
+                                +{{ project.technologies.length - 4 }}
+                            </Badge>
+                        </div>
+                        
+                        <!-- Tech Stack from database -->
+                        <div class="flex flex-wrap gap-1.5" v-else-if="project.tech_stack">
+                            <Badge
+                                v-for="tech in project.tech_stack.split(',').slice(0, 4)"
+                                :key="tech"
+                                variant="outline"
+                                class="bg-accent/30 border-accent text-accent-foreground text-xs px-2 py-1 font-medium"
+                            >
+                                {{ tech.trim() }}
+                            </Badge>
+                            <Badge
+                                v-if="project.tech_stack.split(',').length > 4"
+                                variant="outline"
+                                class="bg-muted/50 border-muted text-muted-foreground text-xs px-2 py-1"
+                            >
+                                +{{ project.tech_stack.split(',').length - 4 }}
                             </Badge>
                         </div>
                     </CardContent>
                     
-                    <CardFooter class="px-4 lg:px-6 pb-4 lg:pb-6 pt-0">
+                    <!-- Project Footer -->
+                    <CardFooter class="px-4 pb-4 pt-0">
                         <div class="flex justify-between items-center w-full">
                             <div class="flex items-center gap-1 text-muted-foreground">
-                                <Star class="w-4 h-4" />
-                                <span class="text-sm">Featured</span>
+                                <Star class="w-3.5 h-3.5" />
+                                <span class="text-xs font-medium">Featured</span>
                             </div>
-                            <Badge class="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 capitalize">
+                            <Badge 
+                                v-if="project.status"
+                                :class="{
+                                    'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': project.status === 'completed',
+                                    'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30': project.status === 'in-progress',
+                                    'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30': project.status === 'pending'
+                                }"
+                                class="text-xs font-medium capitalize"
+                            >
                                 {{ project.status }}
                             </Badge>
                         </div>
