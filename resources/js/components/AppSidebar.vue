@@ -53,6 +53,11 @@ const mainNavItems: NavItem[] = [
         title: 'Music',
         href: '/popular-songs',
         icon: Music4,
+    },
+    {
+        title: 'Notes',
+        href: '/notes',
+        icon: BookUser,
     }
 ];
 

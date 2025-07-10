@@ -11,6 +11,7 @@ use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Frontend\PortfolioController;
 use App\Http\Controllers\Backend\WorkExperienceController;
 use App\Http\Controllers\Backend\PopularSongController;
+use App\Http\Controllers\Backend\NoteController;
 use App\Http\Controllers\DashboardController;
 
 // Public Frontend Routes
@@ -21,6 +22,7 @@ Route::get('/contact', [PortfolioController::class, 'contact'])->name('contact')
 Route::get('/hobby', [PortfolioController::class, 'hobby'])->name('hobby');
 Route::get('/more', [PortfolioController::class, 'more'])->name('more');
 Route::get('/resume', [PortfolioController::class, 'resume'])->name('resume');
+Route::get('/note', [PortfolioController::class, 'note'])->name('note');
 
 // API Routes for Frontend
 Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])->name('api.popular-songs');
@@ -98,6 +100,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('backend/popular-songs/{popularSong}/edit', [PopularSongController::class, 'edit'])->name('backend.popular-songs.edit');
     Route::put('backend/popular-songs/{popularSong}', [PopularSongController::class, 'update'])->name('backend.popular-songs.update');
     Route::delete('backend/popular-songs/{popularSong}', [PopularSongController::class, 'destroy'])->name('backend.popular-songs.destroy');
+
+    //Notes Routes
+    Route::get('notes', [NoteController::class, 'index'])->name('notes.index');
+    Route::get('notes/create', [NoteController::class, 'create'])->name('notes.create');
+    Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('notes/{note}', [NoteController::class, 'show'])->name('notes.show');
+    Route::get('notes/{note}/edit', [NoteController::class, 'edit'])->name('notes.edit');
+    Route::patch('notes/{note}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::patch('notes/{note}/toggle-featured', [NoteController::class, 'toggleFeatured'])->name('notes.toggle-featured');
+    Route::post('notes/{note}/duplicate', [NoteController::class, 'duplicate'])->name('notes.duplicate');
 });
 
 require __DIR__ . '/settings.php';

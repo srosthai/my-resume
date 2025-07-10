@@ -13,6 +13,7 @@ use App\Models\Project;
 use App\Models\ProjectType;
 use App\Models\TechStack;
 use App\Models\WorkExperience;
+use App\Models\Note;
 
 class PortfolioController extends Controller
 {
@@ -163,5 +164,23 @@ class PortfolioController extends Controller
             'techStacks'     => $techStacks,
             'projects'       => $projects,
         ]);
+    }
+
+    /**
+     * Display the note page.
+     *
+     * @return \Inertia\Response
+     */
+    public function note()
+    {
+        $notes = Note::published()
+            ->orderBy('is_featured', 'desc')
+            ->orderBy('published_at', 'desc')
+            ->get();
+        return Inertia::render('frontend/Note', [
+            'title'          => 'My Notes',
+            'description'    => 'My collection of programming notes and tutorials',
+            'notes'          => $notes,
+        ]); 
     }
 }

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,7 +27,8 @@ import {
   Languages,
   Wrench,
   Network,
-  Brain
+  Brain,
+  Book
 } from 'lucide-vue-next'
 import DockNavigation from '@/components/DockNavigation.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
@@ -219,6 +220,12 @@ const popularArticles = [
                 <Linkedin class="h-4 w-4" />
                 LinkedIn
               </a>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/note" class="flex items-center gap-2">
+                <Book class="h-4 w-4" />
+                Notes
+              </Link>
             </Button>
           </div>
         </div>
