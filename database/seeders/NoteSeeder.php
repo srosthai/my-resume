@@ -13,7 +13,7 @@ class NoteSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::first(); // Get the first user or create one if needed
+        $user = User::first();
         
         if (!$user) {
             $user = User::create([

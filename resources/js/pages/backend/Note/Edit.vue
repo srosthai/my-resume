@@ -174,8 +174,7 @@ const selectCategory = (category) => {
                         <div>
                             <Label for="category">Category *</Label>
                             <div class="space-y-2">
-                                <Input v-if="availableCategories.length === 0 || newCategory" v-model="newCategory"
-                                    placeholder="Enter new category"
+                                <Input v-model="newCategory" placeholder="Enter new category"
                                     @keyup.enter="form.category = newCategory; newCategory = ''" />
                                 <div v-if="availableCategories.length > 0" class="flex flex-wrap gap-2">
                                     <Button v-for="category in availableCategories" :key="category"
