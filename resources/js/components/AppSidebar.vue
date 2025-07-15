@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookUser, LayoutGrid, Users, GraduationCap, Briefcase, Layers, FolderOpenDot, Boxes, Music4 } from 'lucide-vue-next';
+import { BookUser, Boxes, Briefcase, FolderOpenDot, GraduationCap, Layers, LayoutGrid, Music4, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -58,7 +58,7 @@ const mainNavItems: NavItem[] = [
         title: 'Notes',
         href: '/notes',
         icon: BookUser,
-    }
+    },
 ];
 
 const footerNavItems: NavItem[] = [];
