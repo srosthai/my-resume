@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 interface DockIconProps {
-  class?: string
+    class?: string;
 }
 
-defineProps<DockIconProps>()
+defineProps<DockIconProps>();
 </script>
 
 <template>
-  <div
-    :class="cn(
-      'group flex aspect-square cursor-pointer items-center justify-center rounded-full border',
-      $props.class,
-    )"
-  >
-    <slot />
-  </div>
+    <div :class="cn('group flex aspect-square cursor-pointer items-center justify-center rounded-full border', $props.class)">
+        <slot />
+    </div>
 </template>

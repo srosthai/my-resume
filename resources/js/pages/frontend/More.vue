@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,10 +7,10 @@ import { FileText, ImageIcon, Music, Award, Camera, Play, Pause, SkipBack, SkipF
 import DockNavigation from '@/components/DockNavigation.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
-const props = defineProps({
-    title: String,
-    description: String
-})
+defineProps<{
+    title: string
+    description: string
+}>()
 
 const isVisible = ref(false)
 const activeTab = ref('certificate')
@@ -44,7 +44,7 @@ const playlist = ref([
         youtubeUrl: "https://www.youtube.com/watch?v=-IQcA1jmb3I&list=RD-IQcA1jmb3I&start_radio=1",
         youtubeId: "-IQcA1jmb3I&list",
         duration: "0:04:10",
-        genre: "Lo-fi"
+        genre: "Song"
     },
     {
         id: 2,
@@ -54,7 +54,7 @@ const playlist = ref([
         youtubeUrl: "https://www.youtube.com/watch?v=VangtodgL0Y&list=RDVangtodgL0Y&start_radio=1",
         youtubeId: "VangtodgL0Y",
         duration: "0:03:41",
-        genre: "Lo-fi"
+        genre: "Song"
     },
     {
         id: 3,
@@ -64,7 +64,7 @@ const playlist = ref([
         youtubeUrl: "https://www.youtube.com/watch?v=JLevKPoa6BI&list=RD8oLi5b4w4PQ&index=2",
         youtubeId: "JLevKPoa6BI",
         duration: "0:02:26",
-        genre: "Lo-fi"
+        genre: "Song"
     },
     {
         id: 4,
@@ -74,7 +74,7 @@ const playlist = ref([
         youtubeUrl: "https://www.youtube.com/watch?v=8oLi5b4w4PQ&list=RD8oLi5b4w4PQ&start_radio=1&rv=-IQcA1jmb3I",
         youtubeId: "8oLi5b4w4PQ",
         duration: "0:03:47",
-        genre: "Lo-fi"
+        genre: "Song"
     },
 ])
 
@@ -249,12 +249,19 @@ const toggleRepeat = () => {
 }
 
 const tabs = [
-    { id: 'certificate', name: 'My Certificate', icon: FileText },
-    { id: 'gallery', name: 'My Gallery', icon: ImageIcon },
-    { id: 'music', name: 'My Music', icon: Music }
+    { id: 'certificate', name: 'My Certificate', icon: FileText, route: '/more?tab=certificate' },
+    { id: 'gallery', name: 'My Gallery', icon: ImageIcon, route: '/more?tab=gallery' },
+    { id: 'music', name: 'My Music', icon: Music, route: '/more?tab=music' }
 ]
 
 onMounted(() => {
+    // Check URL parameters for active tab
+    const urlParams = new URLSearchParams(window.location.search)
+    const tabParam = urlParams.get('tab')
+    if (tabParam && ['certificate', 'gallery', 'music'].includes(tabParam)) {
+        activeTab.value = tabParam
+    }
+    
     setTimeout(() => {
         isVisible.value = true
     }, 100)
@@ -295,7 +302,7 @@ onUnmounted(() => {
         <meta name="description" :content="description" />
     </Head>
 
-    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
+    <div class="min-h-screen bg-gradient-to-br from-background via-slate-50/5 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
         <DockNavigation currentRoute="/more" />
         
         <!-- Music Player -->
@@ -305,268 +312,144 @@ onUnmounted(() => {
         <section class="min-h-screen py-20 px-4 max-w-6xl mx-auto relative">
             <!-- Background decoration -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+                <div class="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/8 to-accent/8 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-secondary/8 to-primary/8 rounded-full blur-3xl"></div>
+                <div class="absolute top-1/3 left-1/3 w-72 h-72 bg-gradient-to-br from-accent/4 to-muted/4 rounded-full blur-2xl"></div>
             </div>
             
             <div class="max-w-4xl mx-auto space-y-8 lg:space-y-12 relative z-10">
                 <!-- Header -->
-                <div class="text-center space-y-4 lg:space-y-6" :class="{ 'fade-in-up': isVisible }">
-                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
-                        <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-                            More About Me
-                        </span>
-                    </h1>
+                <div class="text-center space-y-6 lg:space-y-8" :class="{ 'fade-in-up': isVisible }">
+                    <div class="relative">
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-2">
+                            <span class="bg-gradient-to-br from-foreground via-primary/80 to-accent/80 bg-clip-text text-transparent">
+                                More About Me
+                            </span>
+                        </h1>
+                        <div class="absolute -top-2 -right-2 w-4 h-4 bg-primary/20 rounded-full blur-sm"></div>
+                        <div class="absolute -bottom-2 -left-2 w-3 h-3 bg-accent/20 rounded-full blur-sm"></div>
+                    </div>
                     
-                    <p class="text-base lg:text-lg text-muted-foreground leading-relaxed">
-                        Explore my certificates, gallery, and music collection
+                    <p class="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+                        Discover my professional journey through certifications, creative projects, and personal interests
                     </p>
                 </div>
 
                 <!-- Tab Navigation -->
                 <div class="flex justify-center" :class="{ 'fade-in-up': isVisible }">
-                    <div class="flex bg-muted/50 backdrop-blur-sm border border-border/50 rounded-lg p-1">
-                        <button 
+                    <div class="flex bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-1.5 shadow-lg">
+                        <Link
                             v-for="tab in tabs" 
                             :key="tab.id"
-                            @click="activeTab = tab.id"
+                            :href="tab.route"
                             :class="[
-                                'flex items-center gap-2 px-4 py-3 rounded-md font-medium transition-all duration-200',
+                                'flex items-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md',
                                 activeTab === tab.id 
-                                    ? 'bg-background text-foreground shadow-sm' 
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' 
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
                             ]"
                         >
-                            <component :is="tab.icon" class="w-4 h-4" />
-                            {{ tab.name }}
-                        </button>
+                            <component :is="tab.icon" class="w-5 h-5" />
+                            <span class="text-sm font-medium">{{ tab.name }}</span>
+                        </Link>
                     </div>
                 </div>
 
                 <!-- Tab Content -->
                 <div class="transition-all duration-300" :class="{ 'fade-in-up': isVisible }">
                     <!-- My Certificate Tab -->
-                    <div v-if="activeTab === 'certificate'" class="space-y-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div v-if="activeTab === 'certificate'" class="space-y-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
                             <!-- Web Development Certificate -->
-                            <Card class="group bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 overflow-hidden">
-                                <!-- Certificate Image -->
-                                <div class="relative h-48 sm:h-56 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-blue-600/20 overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="text-center text-white/90">
-                                            <Award class="w-16 h-16 mx-auto mb-3 drop-shadow-lg" />
-                                            <div class="text-sm font-medium uppercase tracking-widest opacity-80">Certificate</div>
+                            <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-600/15 aspect-[4/3] cursor-pointer transform transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-primary/25">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center text-white/95">
+                                        <div class="p-6 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 mb-4">
+                                            <Award class="w-16 h-16 mx-auto drop-shadow-lg" />
                                         </div>
+                                        <div class="text-sm font-semibold uppercase tracking-widest opacity-90">Full Stack Web Development</div>
+                                        <div class="text-xs font-medium opacity-80 mt-2">Professional Certificate</div>
                                     </div>
-                                    <!-- Modern overlay pattern -->
-                                    <div class="absolute top-4 right-4 w-20 h-20 border border-white/20 rounded-full"></div>
-                                    <div class="absolute bottom-4 left-4 w-12 h-12 border border-white/20 rounded-full"></div>
                                 </div>
-                                
-                                <CardContent class="p-6 space-y-4">
-                                    <!-- Title & Subtitle -->
-                                    <div class="space-y-2">
-                                        <h3 class="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                                            Full Stack Web Development
-                                        </h3>
-                                        <p class="text-base text-primary font-medium">
-                                            Professional Certification Program
-                                        </p>
-                                    </div>
-                                    
-                                    <!-- Description -->
-                                    <p class="text-sm text-muted-foreground leading-relaxed">
-                                        Comprehensive certification covering modern web development technologies including Vue.js, Laravel, Node.js, database management, API development, and deployment strategies. Completed with practical projects and real-world applications.
-                                    </p>
-                                    
-                                    <!-- Year & Technologies -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                                        <div class="flex items-center gap-2">
-                                            <Badge variant="default" class="bg-primary/10 text-primary border-primary/20 font-medium">
-                                                2023 - 2024
-                                            </Badge>
-                                            <Badge variant="outline" class="text-xs">
-                                                Certified
-                                            </Badge>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1">
-                                            <Badge variant="secondary" class="text-xs">Vue.js</Badge>
-                                            <Badge variant="secondary" class="text-xs">Laravel</Badge>
-                                            <Badge variant="secondary" class="text-xs">Node.js</Badge>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                <!-- Modern overlay pattern -->
+                                <div class="absolute top-6 right-6 w-24 h-24 border border-white/15 rounded-full animate-pulse"></div>
+                                <div class="absolute bottom-6 left-6 w-16 h-16 border border-white/15 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/10 rounded-full animate-pulse" style="animation-delay: 1s"></div>
+                            </div>
 
                             <!-- UI/UX Design Certificate -->
-                            <Card class="group bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 overflow-hidden">
-                                <!-- Certificate Image -->
-                                <div class="relative h-48 sm:h-56 bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-green-600/20 overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="text-center text-white/90">
-                                            <Award class="w-16 h-16 mx-auto mb-3 drop-shadow-lg" />
-                                            <div class="text-sm font-medium uppercase tracking-widest opacity-80">Certificate</div>
+                            <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/15 via-teal-500/15 to-green-600/15 aspect-[4/3] cursor-pointer transform transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-primary/25">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center text-white/95">
+                                        <div class="p-6 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 mb-4">
+                                            <Award class="w-16 h-16 mx-auto drop-shadow-lg" />
                                         </div>
+                                        <div class="text-sm font-semibold uppercase tracking-widest opacity-90">UI/UX Design Professional</div>
+                                        <div class="text-xs font-medium opacity-80 mt-2">Advanced Design Certificate</div>
                                     </div>
-                                    <!-- Modern overlay pattern -->
-                                    <div class="absolute top-4 right-4 w-20 h-20 border border-white/20 rounded-full"></div>
-                                    <div class="absolute bottom-4 left-4 w-12 h-12 border border-white/20 rounded-full"></div>
                                 </div>
-                                
-                                <CardContent class="p-6 space-y-4">
-                                    <!-- Title & Subtitle -->
-                                    <div class="space-y-2">
-                                        <h3 class="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                                            UI/UX Design Professional
-                                        </h3>
-                                        <p class="text-base text-primary font-medium">
-                                            Advanced Design Certification
-                                        </p>
-                                    </div>
-                                    
-                                    <!-- Description -->
-                                    <p class="text-sm text-muted-foreground leading-relaxed">
-                                        Advanced certification in user interface and user experience design principles, covering design thinking, prototyping, user research, accessibility standards, and modern design tools including Figma, Adobe XD, and Sketch.
-                                    </p>
-                                    
-                                    <!-- Year & Technologies -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                                        <div class="flex items-center gap-2">
-                                            <Badge variant="default" class="bg-primary/10 text-primary border-primary/20 font-medium">
-                                                2022 - 2023
-                                            </Badge>
-                                            <Badge variant="outline" class="text-xs">
-                                                Certified
-                                            </Badge>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1">
-                                            <Badge variant="secondary" class="text-xs">Figma</Badge>
-                                            <Badge variant="secondary" class="text-xs">Adobe XD</Badge>
-                                            <Badge variant="secondary" class="text-xs">Sketch</Badge>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                <!-- Modern overlay pattern -->
+                                <div class="absolute top-6 right-6 w-24 h-24 border border-white/15 rounded-full animate-pulse"></div>
+                                <div class="absolute bottom-6 left-6 w-16 h-16 border border-white/15 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/10 rounded-full animate-pulse" style="animation-delay: 1s"></div>
+                            </div>
 
                             <!-- JavaScript Development Certificate -->
-                            <Card class="group bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 overflow-hidden">
-                                <!-- Certificate Image -->
-                                <div class="relative h-48 sm:h-56 bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-red-500/20 overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="text-center text-white/90">
-                                            <Award class="w-16 h-16 mx-auto mb-3 drop-shadow-lg" />
-                                            <div class="text-sm font-medium uppercase tracking-widest opacity-80">Certificate</div>
+                            <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-red-500/20 aspect-[4/3] cursor-pointer transform transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-primary/25">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center text-white/95">
+                                        <div class="p-6 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 mb-4">
+                                            <Award class="w-16 h-16 mx-auto drop-shadow-lg" />
                                         </div>
+                                        <div class="text-sm font-semibold uppercase tracking-widest opacity-90">Advanced JavaScript Developer</div>
+                                        <div class="text-xs font-medium opacity-80 mt-2">ES6+ & Modern Frameworks</div>
                                     </div>
-                                    <!-- Modern overlay pattern -->
-                                    <div class="absolute top-4 right-4 w-20 h-20 border border-white/20 rounded-full"></div>
-                                    <div class="absolute bottom-4 left-4 w-12 h-12 border border-white/20 rounded-full"></div>
                                 </div>
-                                
-                                <CardContent class="p-6 space-y-4">
-                                    <!-- Title & Subtitle -->
-                                    <div class="space-y-2">
-                                        <h3 class="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                                            Advanced JavaScript Developer
-                                        </h3>
-                                        <p class="text-base text-primary font-medium">
-                                            ES6+ & Modern Frameworks
-                                        </p>
-                                    </div>
-                                    
-                                    <!-- Description -->
-                                    <p class="text-sm text-muted-foreground leading-relaxed">
-                                        Specialized certification in advanced JavaScript development including ES6+, async programming, testing frameworks, performance optimization, and modern JavaScript frameworks with emphasis on React and Vue.js ecosystems.
-                                    </p>
-                                    
-                                    <!-- Year & Technologies -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                                        <div class="flex items-center gap-2">
-                                            <Badge variant="default" class="bg-primary/10 text-primary border-primary/20 font-medium">
-                                                2023 - 2024
-                                            </Badge>
-                                            <Badge variant="outline" class="text-xs">
-                                                Certified
-                                            </Badge>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1">
-                                            <Badge variant="secondary" class="text-xs">ES6+</Badge>
-                                            <Badge variant="secondary" class="text-xs">React</Badge>
-                                            <Badge variant="secondary" class="text-xs">Vue.js</Badge>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                <!-- Modern overlay pattern -->
+                                <div class="absolute top-6 right-6 w-24 h-24 border border-white/15 rounded-full animate-pulse"></div>
+                                <div class="absolute bottom-6 left-6 w-16 h-16 border border-white/15 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/10 rounded-full animate-pulse" style="animation-delay: 1s"></div>
+                            </div>
 
                             <!-- Cloud Computing Certificate -->
-                            <Card class="group bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 overflow-hidden">
-                                <!-- Certificate Image -->
-                                <div class="relative h-48 sm:h-56 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="text-center text-white/90">
-                                            <Award class="w-16 h-16 mx-auto mb-3 drop-shadow-lg" />
-                                            <div class="text-sm font-medium uppercase tracking-widest opacity-80">Certificate</div>
+                            <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 aspect-[4/3] cursor-pointer transform transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-primary/25">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center text-white/95">
+                                        <div class="p-6 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 mb-4">
+                                            <Award class="w-16 h-16 mx-auto drop-shadow-lg" />
                                         </div>
+                                        <div class="text-sm font-semibold uppercase tracking-widest opacity-90">Cloud Computing Specialist</div>
+                                        <div class="text-xs font-medium opacity-80 mt-2">AWS Solutions Architecture</div>
                                     </div>
-                                    <!-- Modern overlay pattern -->
-                                    <div class="absolute top-4 right-4 w-20 h-20 border border-white/20 rounded-full"></div>
-                                    <div class="absolute bottom-4 left-4 w-12 h-12 border border-white/20 rounded-full"></div>
                                 </div>
-                                
-                                <CardContent class="p-6 space-y-4">
-                                    <!-- Title & Subtitle -->
-                                    <div class="space-y-2">
-                                        <h3 class="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                                            Cloud Computing Specialist
-                                        </h3>
-                                        <p class="text-base text-primary font-medium">
-                                            AWS Solutions Architecture
-                                        </p>
-                                    </div>
-                                    
-                                    <!-- Description -->
-                                    <p class="text-sm text-muted-foreground leading-relaxed">
-                                        Professional certification in cloud computing and AWS solutions architecture, covering serverless applications, containerization, microservices, cloud security, and scalable infrastructure design and deployment.
-                                    </p>
-                                    
-                                    <!-- Year & Technologies -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                                        <div class="flex items-center gap-2">
-                                            <Badge variant="default" class="bg-primary/10 text-primary border-primary/20 font-medium">
-                                                2024 - Present
-                                            </Badge>
-                                            <Badge variant="outline" class="text-xs">
-                                                In Progress
-                                            </Badge>
-                                        </div>
-                                        <div class="flex flex-wrap gap-1">
-                                            <Badge variant="secondary" class="text-xs">AWS</Badge>
-                                            <Badge variant="secondary" class="text-xs">Docker</Badge>
-                                            <Badge variant="secondary" class="text-xs">Kubernetes</Badge>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                <!-- Modern overlay pattern -->
+                                <div class="absolute top-6 right-6 w-24 h-24 border border-white/15 rounded-full animate-pulse"></div>
+                                <div class="absolute bottom-6 left-6 w-16 h-16 border border-white/15 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/10 rounded-full animate-pulse" style="animation-delay: 1s"></div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- My Gallery Tab -->
-                    <div v-if="activeTab === 'gallery'" class="space-y-8">
+                    <div v-if="activeTab === 'gallery'" class="space-y-10">
                         <!-- Modern Gallery Grid -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                             <!-- Portfolio Website -->
-                            <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-indigo-600/30 aspect-square cursor-pointer transform transition-all duration-500 hover:scale-105 hover:rotate-1 hover:shadow-2xl hover:shadow-primary/25">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+                            <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-indigo-600/20 aspect-square cursor-pointer transform transition-all duration-700 hover:scale-110 hover:rotate-2 hover:shadow-2xl hover:shadow-primary/30">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/15"></div>
                                 <div class="absolute inset-0 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                                    <Camera class="w-8 h-8 sm:w-12 sm:h-12 text-white drop-shadow-lg" />
+                                    <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+                                        <Camera class="w-8 h-8 sm:w-12 sm:h-12 text-white drop-shadow-lg" />
+                                    </div>
                                 </div>
                                 <!-- Floating elements -->
-                                <div class="absolute top-3 right-3 w-4 h-4 bg-white/20 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                                <div class="absolute bottom-3 left-3 w-6 h-6 border border-white/30 rounded-full group-hover:rotate-45 transition-transform duration-300"></div>
+                                <div class="absolute top-4 right-4 w-6 h-6 bg-white/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                <div class="absolute bottom-4 left-4 w-8 h-8 border border-white/30 rounded-full group-hover:rotate-45 transition-transform duration-500"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white/10 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
                             </div>
 
                             <!-- E-commerce App -->
@@ -641,17 +524,19 @@ onUnmounted(() => {
                         </div>
 
                         <!-- Large Featured Images -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mt-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-12">
                             <!-- Featured Project 1 -->
-                            <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600/40 via-purple-600/40 to-pink-600/40 aspect-video cursor-pointer transform transition-all duration-700 hover:scale-[1.02] hover:shadow-3xl hover:shadow-primary/30">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
+                            <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600/30 via-purple-600/30 to-pink-600/30 aspect-video cursor-pointer transform transition-all duration-700 hover:scale-[1.03] hover:shadow-3xl hover:shadow-primary/35">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
                                 <div class="absolute inset-0 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                                    <Camera class="w-16 h-16 text-white drop-shadow-2xl" />
+                                    <div class="p-6 rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20">
+                                        <Camera class="w-16 h-16 text-white drop-shadow-2xl" />
+                                    </div>
                                 </div>
                                 <!-- Animated decorative elements -->
-                                <div class="absolute top-6 right-6 w-8 h-8 bg-white/20 rounded-full group-hover:scale-125 group-hover:rotate-180 transition-all duration-500"></div>
-                                <div class="absolute bottom-6 left-6 w-12 h-12 border-2 border-white/30 rounded-full group-hover:rotate-90 transition-transform duration-500"></div>
-                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/20 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                                <div class="absolute top-8 right-8 w-10 h-10 bg-white/20 rounded-full group-hover:scale-125 group-hover:rotate-180 transition-all duration-500"></div>
+                                <div class="absolute bottom-8 left-8 w-14 h-14 border-2 border-white/30 rounded-full group-hover:rotate-90 transition-transform duration-500"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-28 h-28 border border-white/20 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
                             </div>
 
                             <!-- Featured Project 2 -->
@@ -669,17 +554,17 @@ onUnmounted(() => {
                     </div>
 
                     <!-- My Music Tab -->
-                    <div v-if="activeTab === 'music'" class="space-y-6">
+                    <div v-if="activeTab === 'music'" class="space-y-8">
                         <!-- Hidden YouTube Player -->
                         <div id="youtube-player-music" style="display: none;"></div>
                         <!-- Current Playing Card -->
-                        <Card class="bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 backdrop-blur-sm border border-border/50 overflow-hidden">
+                        <Card class="bg-gradient-to-br from-purple-500/15 via-pink-500/15 to-indigo-500/15 backdrop-blur-xl border border-border/60 overflow-hidden rounded-3xl shadow-2xl">
                             <CardContent class="p-0">
                                 <div class="flex flex-col lg:flex-row">
                                     <!-- Album Art & Track Info -->
-                                    <div class="flex flex-col sm:flex-row lg:flex-col xl:flex-row p-6 lg:w-1/2">
-                                        <div class="relative mb-4 sm:mb-0 sm:mr-6 lg:mr-0 lg:mb-4 xl:mr-6 xl:mb-0">
-                                            <div class="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 xl:w-32 xl:h-32 rounded-2xl overflow-hidden shadow-xl">
+                                    <div class="flex flex-col sm:flex-row lg:flex-col xl:flex-row p-8 lg:w-1/2">
+                                        <div class="relative mb-6 sm:mb-0 sm:mr-8 lg:mr-0 lg:mb-6 xl:mr-8 xl:mb-0">
+                                            <div class="w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 xl:w-36 xl:h-36 rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/20">
                                                 <img 
                                                     :src="playlist[currentTrack].albumArt" 
                                                     :alt="playlist[currentTrack].title"
@@ -700,17 +585,17 @@ onUnmounted(() => {
                                         </div>
                                         
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-xl font-bold text-foreground mb-2 truncate">
+                                            <h3 class="text-2xl font-bold text-foreground mb-3 truncate">
                                                 {{ playlist[currentTrack].title }}
                                             </h3>
-                                            <p class="text-muted-foreground mb-2 truncate">
+                                            <p class="text-muted-foreground mb-3 truncate text-lg">
                                                 {{ playlist[currentTrack].artist }}
                                             </p>
-                                            <div class="flex items-center gap-2 mb-4">
-                                                <Badge variant="secondary" class="text-xs">
+                                            <div class="flex items-center gap-3 mb-6">
+                                                <Badge variant="secondary" class="text-sm px-3 py-1 bg-purple-100 text-purple-700 border-purple-200">
                                                     {{ playlist[currentTrack].genre }}
                                                 </Badge>
-                                                <span class="text-xs text-muted-foreground">
+                                                <span class="text-sm text-muted-foreground">
                                                     {{ playlist[currentTrack].duration }}
                                                 </span>
                                             </div>
@@ -734,9 +619,9 @@ onUnmounted(() => {
                                     </div>
                                     
                                     <!-- Controls -->
-                                    <div class="flex flex-col justify-center p-6 lg:w-1/2 border-t lg:border-t-0 lg:border-l border-border/50">
+                                    <div class="flex flex-col justify-center p-8 lg:w-1/2 border-t lg:border-t-0 lg:border-l border-border/60">
                                         <!-- Main Controls -->
-                                        <div class="flex items-center justify-center gap-4 mb-6">
+                                        <div class="flex items-center justify-center gap-6 mb-8">
                                             <button 
                                                 @click="toggleShuffle"
                                                 class="p-2 rounded-full transition-colors duration-200"
@@ -807,13 +692,13 @@ onUnmounted(() => {
                         </Card>
 
                         <!-- Playlist -->
-                        <Card class="bg-card/50 backdrop-blur-sm border border-border/50">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Music class="w-5 h-5" />
+                        <Card class="bg-card/60 backdrop-blur-xl border border-border/60 rounded-3xl shadow-xl">
+                            <CardHeader class="pb-4">
+                                <CardTitle class="flex items-center gap-3 text-xl">
+                                    <Music class="w-6 h-6" />
                                     Coding Playlist
                                 </CardTitle>
-                                <CardDescription>{{ playlist.length }} tracks • Perfect for focus sessions</CardDescription>
+                                <CardDescription class="text-base">{{ playlist.length }} tracks • Perfect for focus sessions</CardDescription>
                             </CardHeader>
                             <CardContent class="p-0">
                                 <div class="space-y-1">
@@ -926,7 +811,44 @@ onUnmounted(() => {
 
 .slider::-moz-range-track {
     background: hsl(var(--accent));
-    height: 8px;
-    border-radius: 4px;
+    height: 10px;
+    border-radius: 5px;
+}
+
+/* Button hover effects */
+button {
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Glass morphism effect for cards */
+.backdrop-blur-xl {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Enhanced shadows */
+.shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.shadow-3xl {
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+}
+
+/* Ring utilities */
+.ring-2 {
+    box-shadow: 0 0 0 2px;
+}
+
+.ring-white\/20 {
+    --tw-ring-color: rgb(255 255 255 / 0.2);
 }
 </style>

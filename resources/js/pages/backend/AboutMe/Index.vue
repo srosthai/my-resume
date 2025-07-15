@@ -1,63 +1,60 @@
 <script setup>
-import { ref } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import Icon from '@/components/Icon.vue'
+import Icon from '@/components/Icon.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     aboutMes: {
         type: Array,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'About Me', href: '/about-me' }
-]
+    { title: 'About Me', href: '/about-me' },
+];
 
-const showDeleteConfirm = ref(false)
-const itemToDelete = ref(null)
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref(null);
 
 const confirmDelete = (item) => {
-    itemToDelete.value = item
-    showDeleteConfirm.value = true
-}
+    itemToDelete.value = item;
+    showDeleteConfirm.value = true;
+};
 
 const deleteItem = () => {
     if (itemToDelete.value) {
-        router.delete(route('backend.about-me.destroy', itemToDelete.value.id))
-        showDeleteConfirm.value = false
-        itemToDelete.value = null
+        router.delete(route('backend.about-me.destroy', itemToDelete.value.id));
+        showDeleteConfirm.value = false;
+        itemToDelete.value = null;
     }
-}
+};
 
 const cancelDelete = () => {
-    showDeleteConfirm.value = false
-    itemToDelete.value = null
-}
+    showDeleteConfirm.value = false;
+    itemToDelete.value = null;
+};
 
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString()
-}
+    return new Date(dateString).toLocaleDateString();
+};
 </script>
 
 <template>
     <Head title="About Me Management" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="space-y-6 p-4">
             <Card>
                 <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <CardTitle>About Me Management</CardTitle>
-                        <CardDescription>
-                            View and manage your about me information
-                        </CardDescription>
+                        <CardDescription> View and manage your about me information </CardDescription>
                     </div>
                     <div>
                         <Link href="/backend/about-me/create">
@@ -70,16 +67,16 @@ const formatDate = (dateString) => {
                 </CardHeader>
                 <CardContent>
                     <div class="overflow-x-auto">
-                        <table class="w-full hover:table-hover">
+                        <table class="hover:table-hover w-full">
                             <thead class="bg-gray-100 dark:bg-gray-800">
                                 <tr class="border-b">
-                                    <th class="text-left p-4">#</th>
-                                    <th class="text-left p-4">Title</th>
-                                    <th class="text-left p-4">Location</th>
-                                    <th class="text-left p-4">Experience</th>
-                                    <th class="text-left p-4">Focus</th>
-                                    <th class="text-left p-4">Created</th>
-                                    <th class="text-left p-4">Actions</th>
+                                    <th class="p-4 text-left">#</th>
+                                    <th class="p-4 text-left">Title</th>
+                                    <th class="p-4 text-left">Location</th>
+                                    <th class="p-4 text-left">Experience</th>
+                                    <th class="p-4 text-left">Focus</th>
+                                    <th class="p-4 text-left">Created</th>
+                                    <th class="p-4 text-left">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -100,11 +97,7 @@ const formatDate = (dateString) => {
                                                     Edit
                                                 </Button>
                                             </Link>
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm" 
-                                                @click="confirmDelete(item)"
-                                            >
+                                            <Button variant="destructive" size="sm" @click="confirmDelete(item)">
                                                 <Icon name="trash" class="h-4 w-4" />
                                                 Delete
                                             </Button>
@@ -112,9 +105,7 @@ const formatDate = (dateString) => {
                                     </td>
                                 </tr>
                                 <tr v-if="aboutMes.length === 0">
-                                    <td colspan="7" class="text-center py-8 text-muted-foreground">
-                                        No about me records found
-                                    </td>
+                                    <td colspan="7" class="py-8 text-center text-muted-foreground">No about me records found</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -124,12 +115,10 @@ const formatDate = (dateString) => {
         </div>
 
         <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div class="bg-background rounded-lg p-6 max-w-md w-full mx-4">
-                <h3 class="text-lg font-semibold mb-4">Confirm Delete</h3>
-                <p class="text-muted-foreground mb-6">
-                    Are you sure you want to delete this about me record? This action cannot be undone.
-                </p>
+        <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-lg bg-background p-6">
+                <h3 class="mb-4 text-lg font-semibold">Confirm Delete</h3>
+                <p class="mb-6 text-muted-foreground">Are you sure you want to delete this about me record? This action cannot be undone.</p>
                 <div class="flex justify-end gap-3">
                     <Button variant="outline" @click="cancelDelete">Cancel</Button>
                     <Button variant="destructive" @click="deleteItem">Delete</Button>
