@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Dock, DockIcon } from '@/components/magicui';
 import ThemeToggle from '@/components/ThemeToggle.vue';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/vue3';
-import { Briefcase, Command, FileText, Github, Home, Linkedin, MoreHorizontal, Phone, Send, User } from 'lucide-vue-next';
+import { Briefcase, Command, FileText, Github, Home, Linkedin, MoreHorizontal, Phone, Send, User, Mail } from 'lucide-vue-next';
+import { h } from 'vue';
 
 interface Props {
     currentRoute?: string;
@@ -16,33 +17,68 @@ const props = withDefaults(defineProps<Props>(), {
     currentRoute: '/',
 });
 
-const navigationItems = [
-    { href: '/', icon: Home, label: 'Home' },
-    { href: '/about', icon: User, label: 'About' },
-    { href: '/portfolio', icon: Briefcase, label: 'Projects' },
-    { href: '/resume', icon: FileText, label: 'Resume' },
-    { href: '/contact', icon: Phone, label: 'Contact' },
-    { href: '/hobby', icon: Command, label: 'Hobbies' },
-    { href: '/more', icon: MoreHorizontal, label: 'More' },
-];
+// Custom icon components similar to the MagicUI example
+const Icons = {
+    linkedin: (props: any) => h('svg', {
+        viewBox: '0 0 24 24',
+        xmlns: 'http://www.w3.org/2000/svg',
+        ...props
+    }, [
+        h('title', {}, 'LinkedIn'),
+        h('path', {
+            fill: 'currentColor',
+            d: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z'
+        })
+    ]),
+    github: (props: any) => h('svg', {
+        viewBox: '0 0 438.549 438.549',
+        ...props
+    }, [
+        h('path', {
+            fill: 'currentColor',
+            d: 'M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z'
+        })
+    ]),
+    telegram: (props: any) => h(Send, props),
+    email: (props: any) => h(Mail, props)
+};
 
-const socialLinks = [
-    {
-        name: 'GitHub',
-        url: 'https://github.com/Sovannthai',
-        icon: Github,
+// Data structure similar to MagicUI example
+const DATA = {
+    navbar: [
+        { href: '/', icon: Home, label: 'Home' },
+        { href: '/about', icon: User, label: 'About' },
+        { href: '/portfolio', icon: Briefcase, label: 'Projects' },
+        { href: '/resume', icon: FileText, label: 'Resume' },
+        { href: '/contact', icon: Phone, label: 'Contact' },
+        { href: '/hobby', icon: Command, label: 'Hobbies' },
+        { href: '/more', icon: MoreHorizontal, label: 'More' },
+    ],
+    contact: {
+        social: {
+            GitHub: {
+                name: 'GitHub',
+                url: 'https://github.com/Sovannthai',
+                icon: Icons.github,
+            },
+            LinkedIn: {
+                name: 'LinkedIn',
+                url: 'https://www.linkedin.com/in/sros-thai-b491b42ab/',
+                icon: Icons.linkedin,
+            },
+            Telegram: {
+                name: 'Telegram',
+                url: 'https://t.me/HE_Sovanthai',
+                icon: Icons.telegram,
+            },
+            Email: {
+                name: 'Send Email',
+                url: 'mailto:srosthai00@gmail.com',
+                icon: Icons.email,
+            },
+        },
     },
-    {
-        name: 'LinkedIn',
-        url: 'https://www.linkedin.com/in/sros-thai-b491b42ab/',
-        icon: Linkedin,
-    },
-    {
-        name: 'Telegram',
-        url: 'https://t.me/HE_Sovanthai',
-        icon: Send,
-    },
-];
+};
 
 const isActive = (href: string) => {
     return props.currentRoute === href;
@@ -50,76 +86,82 @@ const isActive = (href: string) => {
 </script>
 
 <template>
-    <div
-        class="dock-container fixed top-3 left-1/2 z-50 w-auto max-w-[calc(100vw-1rem)] -translate-x-1/2 transform overflow-x-auto sm:top-6 sm:max-w-[calc(100vw-2rem)]"
-    >
+    <div class="fixed top-2 left-1/2 z-50 flex w-auto -translate-x-1/2 transform flex-col items-center justify-center sm:top-4 lg:top-6 px-2 sm:px-4">
         <TooltipProvider>
-            <Dock direction="middle" class="border-border/30 bg-background/80 px-1 shadow-xl backdrop-blur-xl md:px-2">
+            <Dock 
+                direction="middle" 
+                data-dock
+                class="w-full max-w-[calc(100vw-1rem)] sm:max-w-none"
+            >
                 <!-- Navigation Items -->
-                <DockIcon v-for="item in navigationItems" :key="item.label" class="h-10 w-10 border-0 sm:h-12 sm:w-12">
+                <DockIcon 
+                    v-for="item in DATA.navbar" 
+                    :key="item.label"
+                    class="transition-colors duration-300"
+                >
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button
-                                asChild
-                                :variant="isActive(item.href) ? 'default' : 'ghost'"
-                                size="icon"
-                                :class="
-                                    cn(
-                                        'h-8 w-8 rounded-full transition-all duration-200 sm:h-10 sm:w-10',
-                                        isActive(item.href)
-                                            ? 'scale-110 bg-primary text-primary-foreground shadow-lg'
-                                            : 'hover:scale-105 hover:bg-accent focus:scale-105 focus:bg-accent focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background focus:outline-none active:scale-102 active:bg-accent',
-                                    )
-                                "
+                            <Link
+                                :href="item.href"
+                                :aria-label="item.label"
+                                :class="cn(
+                                    'flex h-full w-full items-center justify-center rounded-full transition-all duration-300 ease-out touch-manipulation active:scale-95',
+                                    isActive(item.href) 
+                                        ? 'bg-primary text-primary-foreground shadow-lg ring-1 ring-primary/30' 
+                                        : 'hover:bg-accent hover:text-accent-foreground active:bg-accent'
+                                )"
+                                style="will-change: transform;"
                             >
-                                <Link :href="item.href" :aria-label="item.label">
-                                    <component :is="item.icon" class="h-3 w-3 sm:h-4 sm:w-4" />
-                                </Link>
-                            </Button>
+                                <component :is="item.icon" class="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 shrink-0" />
+                            </Link>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" class="mb-2 hidden sm:block">
                             <p>{{ item.label }}</p>
                         </TooltipContent>
                     </Tooltip>
                 </DockIcon>
 
                 <!-- Separator -->
-                <Separator orientation="vertical" class="mx-0.5 hidden h-6 sm:mx-1 sm:block sm:h-8" />
+                <div class="mx-0.5 h-4 w-px bg-border/50 sm:mx-1 sm:h-6 hidden sm:block"></div>
 
                 <!-- Social Links -->
-                <DockIcon v-for="social in socialLinks" :key="social.name" class="hidden h-10 w-10 border-0 sm:block sm:h-12 sm:w-12">
+                <DockIcon 
+                    v-for="[name, social] in Object.entries(DATA.contact.social)" 
+                    :key="name"
+                    class="hidden sm:flex transition-colors duration-300"
+                >
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button
-                                asChild
-                                variant="ghost"
-                                size="icon"
-                                class="h-8 w-8 rounded-full transition-all duration-200 hover:scale-105 hover:bg-accent focus:scale-105 focus:bg-accent focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background focus:outline-none active:scale-102 active:bg-accent sm:h-10 sm:w-10"
+                            <a
+                                :href="social.url"
+                                :aria-label="social.name"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex h-full w-full items-center justify-center rounded-full transition-all duration-300 ease-out hover:bg-accent hover:text-accent-foreground active:bg-accent active:scale-95 touch-manipulation"
+                                style="will-change: transform;"
                             >
-                                <a :href="social.url" target="_blank" rel="noopener noreferrer" :aria-label="social.name">
-                                    <component :is="social.icon" class="h-3 w-3 sm:h-4 sm:w-4" />
-                                </a>
-                            </Button>
+                                <component :is="social.icon" class="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 shrink-0" />
+                            </a>
                         </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{{ social.name }}</p>
+                        <TooltipContent side="bottom" class="mb-2">
+                            <p>{{ name }}</p>
                         </TooltipContent>
                     </Tooltip>
                 </DockIcon>
 
                 <!-- Separator -->
-                <Separator orientation="vertical" class="mx-0.5 hidden h-6 sm:mx-1 sm:block sm:h-8" />
+                <div class="mx-0.5 h-4 w-px bg-border/50 sm:mx-1 sm:h-6 hidden sm:block"></div>
 
                 <!-- Theme Toggle -->
-                <DockIcon class="h-10 w-10 border-0 sm:h-12 sm:w-12">
+                <DockIcon class="transition-colors duration-300">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <ThemeToggle
-                                class="h-8 w-8 rounded-full transition-all duration-200 hover:scale-105 focus:scale-105 focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus:ring-offset-background focus:outline-none active:scale-102 sm:h-10 sm:w-10"
-                            />
+                            <div class="flex h-full w-full items-center justify-center">
+                                <ThemeToggle class="rounded-full border-0 bg-transparent transition-all duration-300 ease-out hover:bg-accent active:bg-accent active:scale-95 touch-manipulation" style="will-change: transform;" />
+                            </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Toggle Theme</p>
+                        <TooltipContent side="bottom" class="mb-2 hidden sm:block">
+                            <p>Theme</p>
                         </TooltipContent>
                     </Tooltip>
                 </DockIcon>

@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { 
-  Mail, 
-  Github, 
-  Linkedin, 
+import {
+  Mail,
+  Github,
+  Linkedin,
   Globe,
   MapPin,
   Calendar,
@@ -157,6 +157,7 @@ const popularArticles = [
 </script>
 
 <template>
+
   <Head>
     <title>{{ title }}</title>
     <meta name="description" :content="description" />
@@ -165,22 +166,18 @@ const popularArticles = [
   <div class="min-h-screen bg-background text-foreground">
     <!-- Dock Navigation -->
     <DockNavigation currentRoute="/resume" />
-    
+
     <!-- Music Player -->
     <MusicPlayer />
 
     <!-- Header/Hero Section -->
     <section class="py-12 lg:py-20 px-4 max-w-4xl mx-auto" :class="{ 'fade-in-up': isVisible }">
-      <div class="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+      <div class="flex flex-col lg:flex-row gap-8 items-center lg:items-start mt-10">
         <!-- Profile Picture -->
         <div class="flex-shrink-0">
           <Avatar class="w-32 h-32 md:w-40 md:h-40 border-4 border-primary/20">
-            <AvatarImage 
-              v-if="users.image" 
-              :src="users.image.startsWith('http') ? users.image : `/${users.image}`" 
-              :alt="users.name" 
-              class="object-cover"
-            />
+            <AvatarImage v-if="users.image" :src="users.image.startsWith('http') ? users.image : `/${users.image}`"
+              :alt="users.name" class="object-cover" />
             <AvatarFallback class="bg-primary/10 text-primary text-3xl md:text-4xl font-semibold">
               {{ users.name?.charAt(0) }}
             </AvatarFallback>
@@ -216,15 +213,16 @@ const popularArticles = [
               </a>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <a href="https://www.linkedin.com/in/sros-thai-b491b42ab/" target="_blank" class="flex items-center gap-2">
+              <a href="https://www.linkedin.com/in/sros-thai-b491b42ab/" target="_blank"
+                class="flex items-center gap-2">
                 <Linkedin class="h-4 w-4" />
                 LinkedIn
               </a>
             </Button>
             <Button asChild size="sm" variant="outline">
               <Link href="/note" class="flex items-center gap-2">
-                <Book class="h-4 w-4" />
-                Notes
+              <Book class="h-4 w-4" />
+              Notes
               </Link>
             </Button>
           </div>
@@ -333,7 +331,7 @@ const popularArticles = [
                   <div class="md:w-1/3">
                     <div class="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                       <Calendar class="h-4 w-4" />
-                      {{ work.from  }} - {{ work.to || 'Present' }}
+                      {{ work.from }} - {{ work.to || 'Present' }}
                     </div>
                     <div class="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin class="h-4 w-4" />
@@ -346,7 +344,8 @@ const popularArticles = [
                     <div v-if="work.responsibilities" class="space-y-1">
                       <p class="text-sm text-muted-foreground">Key Responsibilities:</p>
                       <ul class="text-sm space-y-1 ml-4">
-                        <li v-for="responsibility in work.responsibilities.split('\n')" :key="responsibility" class="list-disc">
+                        <li v-for="responsibility in work.responsibilities.split('\n')" :key="responsibility"
+                          class="list-disc">
                           {{ responsibility }}
                         </li>
                       </ul>
@@ -482,7 +481,8 @@ const popularArticles = [
           </CardHeader>
           <CardContent>
             <div class="grid gap-4 md:grid-cols-2">
-              <div v-for="(project, index) in projects.slice(0, 4)" :key="index" class="border rounded-lg p-4 space-y-2">
+              <div v-for="(project, index) in projects.slice(0, 4)" :key="index"
+                class="border rounded-lg p-4 space-y-2">
                 <div class="flex justify-between items-start">
                   <h3 class="font-semibold">{{ project.title }}</h3>
                   <Button v-if="project.link" asChild size="sm" variant="ghost">
@@ -499,7 +499,7 @@ const popularArticles = [
                 </div>
               </div>
             </div>
-            
+
             <!-- Show more projects link -->
             <div v-if="projects.length > 1" class="text-center mt-6">
               <Button asChild variant="outline">
@@ -529,6 +529,7 @@ const popularArticles = [
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
