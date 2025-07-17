@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
-import { Facebook, Linkedin, Instagram, Send, Github, Mail, ExternalLink, Clock, Settings, MessageSquare, Globe } from 'lucide-vue-next'
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Facebook, Linkedin, Instagram, Send, Github, Mail, ExternalLink, Clock, Settings, MessageSquare, Globe, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -16,7 +16,40 @@ const props = defineProps({
     description: String
 })
 
-const isVisible = ref(false)
+const isVisible          = ref(false)
+const showSuccessMessage = ref(false)
+const showErrorMessage   = ref(false)
+const errorMessage       = ref('')
+
+// Form data using Inertia's useForm
+const form = useForm({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+})
+
+// Form submission handler
+const submitForm = () => {
+    form.post(route('contact.send'), {
+        onSuccess: () => {
+            showSuccessMessage.value = true
+            showErrorMessage.value = false
+            form.reset()
+            setTimeout(() => {
+                showSuccessMessage.value = false
+            }, 5000)
+        },
+        onError: (errors) => {
+            showErrorMessage.value = true
+            showSuccessMessage.value = false
+            errorMessage.value = errors.message || 'Failed to send message. Please try again.'
+            setTimeout(() => {
+                showErrorMessage.value = false
+            }, 5000)
+        }
+    })
+}
 
 const socialLinks = [
     {
@@ -69,19 +102,7 @@ const websites = [
         url: 'http://sovannthai.vercel.app/',
         description: 'My main portfolio website showcasing all projects and skills',
         type: 'portfolio'
-    },
-    // {
-    //     name: 'Tech Blog',
-    //     url: 'https://blog.antonf.dev',
-    //     description: 'Technical articles and tutorials about web development',
-    //     type: 'blog'
-    // },
-    // {
-    //     name: 'Code Snippets',
-    //     url: 'https://snippets.antonf.dev',
-    //     description: 'Useful code snippets and development resources',
-    //     type: 'resources'
-    // }
+    }
 ]
 
 const openLink = (url) => {
@@ -230,31 +251,45 @@ onMounted(() => {
                 </p>
             </div>
             <div class="max-w-2xl mx-auto" :class="{ 'fade-in-up': isVisible }">
+                <!-- Success Message -->
+                <div v-if="showSuccessMessage" class="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg flex items-center text-green-800">
+                    <CheckCircle class="w-5 h-5 mr-3 flex-shrink-0" />
+                    <span>Message sent successfully! I'll get back to you soon.</span>
+                </div>
+
+                <!-- Error Message -->
+                <div v-if="showErrorMessage" class="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg flex items-center text-red-800">
+                    <AlertCircle class="w-5 h-5 mr-3 flex-shrink-0" />
+                    <span>{{ errorMessage }}</span>
+                </div>
+
                 <Card class="bg-card/50 backdrop-blur-sm border-border/50">
                     <CardContent class="p-6 lg:p-8">
-                        <form class="space-y-4 lg:space-y-6">
+                        <form @submit.prevent="submitForm" class="space-y-4 lg:space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                                 <div class="space-y-2">
                                     <Label for="name" class="text-foreground font-medium">Full Name</Label>
                                     <Input 
                                         id="name" 
-                                        name="name" 
+                                        v-model="form.name"
                                         type="text" 
                                         required
-                                        class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20"
+                                        :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20', form.errors.name ? 'border-red-500' : '']"
                                         placeholder="Enter your full name"
                                     />
+                                    <span v-if="form.errors.name" class="text-red-500 text-sm">{{ form.errors.name }}</span>
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="email" class="text-foreground font-medium">Email Address</Label>
                                     <Input 
                                         id="email" 
-                                        name="email" 
+                                        v-model="form.email"
                                         type="email" 
                                         required
-                                        class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20"
+                                        :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20', form.errors.email ? 'border-red-500' : '']"
                                         placeholder="Enter your email address"
                                     />
+                                    <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
                                 </div>
                             </div>
                             
@@ -262,32 +297,36 @@ onMounted(() => {
                                 <Label for="subject" class="text-foreground font-medium">Subject</Label>
                                 <Input 
                                     id="subject" 
-                                    name="subject" 
+                                    v-model="form.subject"
                                     type="text" 
                                     required
-                                    class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20"
+                                    :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20', form.errors.subject ? 'border-red-500' : '']"
                                     placeholder="Enter the subject"
                                 />
+                                <span v-if="form.errors.subject" class="text-red-500 text-sm">{{ form.errors.subject }}</span>
                             </div>
                             
                             <div class="space-y-2">
                                 <Label for="message" class="text-foreground font-medium">Message</Label>
                                 <Textarea 
                                     id="message" 
-                                    name="message" 
+                                    v-model="form.message"
                                     rows="6" 
                                     required
-                                    class="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20 resize-y"
+                                    :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20 resize-y', form.errors.message ? 'border-red-500' : '']"
                                     placeholder="Enter your message"
                                 />
+                                <span v-if="form.errors.message" class="text-red-500 text-sm">{{ form.errors.message }}</span>
                             </div>
                             
                             <Button 
                                 type="submit" 
-                                class="w-full bg-primary hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 text-primary-foreground font-semibold py-3 lg:py-4 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-lg active:shadow-xl focus:shadow-lg hover:shadow-primary/40 active:shadow-primary/50 focus:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+                                :disabled="form.processing"
+                                class="w-full bg-primary hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 text-primary-foreground font-semibold py-3 lg:py-4 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-lg active:shadow-xl focus:shadow-lg hover:shadow-primary/40 active:shadow-primary/50 focus:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
                                 size="lg"
                             >
-                                <span>Send Message</span>
+                                <span v-if="form.processing">Sending...</span>
+                                <span v-else>Send Message</span>
                                 <Send class="ml-2 w-5 h-5" />
                             </Button>
                         </form>
