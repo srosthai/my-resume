@@ -138,7 +138,7 @@ onMounted(() => {
                 <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
             </div>
             
-            <div class="space-y-6 relative z-10" :class="{ 'fade-in-up': isVisible }">
+            <div class="space-y-6 relative z-10 mt-5" :class="{ 'fade-in-up': isVisible }">
                 <div class="space-y-3">
                     <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
                         <MessageSquare class="w-3 h-3 mr-2" />
@@ -197,7 +197,7 @@ onMounted(() => {
         </section>
 
         <!-- Websites Section -->
-        <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
+        <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto" hidden>
             <div class="text-center mb-8 lg:mb-12" :class="{ 'fade-in-up': isVisible }">
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4">
                     <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">

@@ -156,10 +156,10 @@ const animateText = () => {
                             </a>
                         </Button>
                         <Button asChild variant="ghost" size="sm" class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
-                            <a href="mailto:srosthai00@gmail.com" rel="noopener noreferrer" class="flex items-center gap-2 text-sm sm:text-base">
+                            <Link href="/contact" class="flex items-center gap-2 text-sm sm:text-base">
                                 <Mail class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
-                                <span class="font-medium tracking-wide">Email</span>
-                            </a>
+                                <span class="font-medium tracking-wide">Contact</span>
+                            </Link>
                         </Button>
                         <Button asChild variant="ghost" size="sm" class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
                             <Link href="/note" class="flex items-center gap-2 text-sm sm:text-base">
