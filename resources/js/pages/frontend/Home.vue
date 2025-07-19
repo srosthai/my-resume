@@ -62,23 +62,26 @@ const animateText = () => {
     <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
-        <meta name="keywords" content="software developer, portfolio, Vue.js, Laravel, web development, full stack developer" />
+        <meta name="keywords"
+            content="software developer, portfolio, Vue.js, Laravel, web development, full stack developer" />
         <meta name="author" :content="users.name" />
-        
+
         <!-- Open Graph Meta Tags -->
         <meta property="og:title" :content="title" />
         <meta property="og:description" :content="description" />
-        <meta property="og:image" :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/default-og-image.jpg`" />
+        <meta property="og:image"
+            :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/default-og-image.jpg`" />
         <meta property="og:url" :content="$page.url" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" :content="users.name + ' - Portfolio'" />
-        
+
         <!-- Twitter Card Meta Tags -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" :content="title" />
         <meta name="twitter:description" :content="description" />
-        <meta name="twitter:image" :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/default-og-image.jpg`" />
-        
+        <meta name="twitter:image"
+            :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/default-og-image.jpg`" />
+
         <!-- Additional SEO Meta Tags -->
         <meta name="robots" content="index, follow" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -164,28 +167,34 @@ const animateText = () => {
 
                     <!-- Social Links -->
                     <div class="flex items-center justify-center lg:justify-start gap-4 sm:gap-6">
-                        <Button asChild variant="ghost" size="sm" class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
-                            <a href="https://github.com/Sovannthai" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm sm:text-base">
+                        <Button asChild variant="ghost" size="sm"
+                            class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
+                            <a href="https://github.com/Sovannthai" target="_blank" rel="noopener noreferrer"
+                                class="flex items-center gap-2 text-sm sm:text-base">
                                 <Github class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
                                 <span class="font-medium tracking-wide">GitHub</span>
                             </a>
                         </Button>
-                        <Button asChild variant="ghost" size="sm" class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
-                            <a href="https://www.linkedin.com/in/sros-thai-b491b42ab/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm sm:text-base">
+                        <Button asChild variant="ghost" size="sm"
+                            class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
+                            <a href="https://www.linkedin.com/in/sros-thai-b491b42ab/" target="_blank"
+                                rel="noopener noreferrer" class="flex items-center gap-2 text-sm sm:text-base">
                                 <Linkedin class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
                                 <span class="font-medium tracking-wide">LinkedIn</span>
                             </a>
                         </Button>
-                        <Button asChild variant="ghost" size="sm" class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
+                        <Button asChild variant="ghost" size="sm"
+                            class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
                             <Link href="/contact" class="flex items-center gap-2 text-sm sm:text-base">
-                                <Mail class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
-                                <span class="font-medium tracking-wide">Contact</span>
+                            <Mail class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
+                            <span class="font-medium tracking-wide">Contact</span>
                             </Link>
                         </Button>
-                        <Button asChild variant="ghost" size="sm" class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
+                        <Button asChild variant="ghost" size="sm"
+                            class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
                             <Link href="/note" class="flex items-center gap-2 text-sm sm:text-base">
-                                <Book class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
-                                <span class="font-medium tracking-wide">Note</span>
+                            <Book class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
+                            <span class="font-medium tracking-wide">Note</span>
                             </Link>
                         </Button>
                     </div>
@@ -203,7 +212,7 @@ const animateText = () => {
                             class="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-accent active:bg-accent px-6 py-3 text-sm transition-all duration-300 hover:-translate-y-1 active:translate-y-0 group">
                             <Link href="/portfolio" class="flex items-center gap-2">
                             <Download class="h-4 w-4 transition-transform group-hover:translate-y-1" />
-                            View Portfolio
+                            Projects
                             </Link>
                         </Button>
                     </div>
