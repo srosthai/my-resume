@@ -161,6 +161,27 @@ const popularArticles = [
   <Head>
     <title>{{ title }}</title>
     <meta name="description" :content="description" />
+    <meta name="keywords" content="resume, CV, professional experience, software developer, skills, work history" />
+    <meta name="author" :content="users.name || 'Software Developer'" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" :content="title" />
+    <meta property="og:description" :content="description" />
+    <meta property="og:image" :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/resume-og-image.jpg`" />
+    <meta property="og:url" :content="$page.url" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" :content="users.name + ' - Resume'" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" :content="title" />
+    <meta name="twitter:description" :content="description" />
+    <meta name="twitter:image" :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/resume-og-image.jpg`" />
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="canonical" :href="$page.url" />
   </Head>
 
   <div class="min-h-screen bg-background text-foreground">

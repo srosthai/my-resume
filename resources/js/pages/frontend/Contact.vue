@@ -122,6 +122,27 @@ onMounted(() => {
     <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
+        <meta name="keywords" content="contact, get in touch, hire developer, collaboration, software development services" />
+        <meta name="author" content="Software Developer" />
+        
+        <!-- Open Graph Meta Tags -->
+        <meta property="og:title" :content="title" />
+        <meta property="og:description" :content="description" />
+        <meta property="og:image" content="/contact-og-image.jpg" />
+        <meta property="og:url" :content="$page.url" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Contact - Developer Portfolio" />
+        
+        <!-- Twitter Card Meta Tags -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" :content="title" />
+        <meta name="twitter:description" :content="description" />
+        <meta name="twitter:image" content="/contact-og-image.jpg" />
+        
+        <!-- Additional SEO Meta Tags -->
+        <meta name="robots" content="index, follow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="canonical" :href="$page.url" />
     </Head>
 
     <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
