@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
-import { Laptop, Eye, Github, Folder, Star } from 'lucide-vue-next'
+import { Laptop, Eye, Github, Folder, Star, ArrowLeft, ChevronLeft, ChevronRight, Calendar, User, ExternalLink } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,6 +27,8 @@ const props = defineProps({
 
 const isVisible       = ref(false)
 const selectedFilter = ref('all')
+const selectedProject = ref(null)
+const showDetails = ref(false)
 
 const filteredProjects = ref([])
 
@@ -38,6 +40,44 @@ const filterProjects = (category) => {
         filteredProjects.value = props.projects.filter(project => project.project_type?.id === category)
     }
     console.log('Filtered projects:', filteredProjects.value)
+}
+
+const openProjectDetails = (project) => {
+    selectedProject.value = project
+    showDetails.value = true
+    // Reset animation trigger
+    isVisible.value = false
+    setTimeout(() => {
+        isVisible.value = true
+    }, 50)
+}
+
+const closeProjectDetails = () => {
+    showDetails.value = false
+    selectedProject.value = null
+    // Reset animation trigger
+    isVisible.value = false
+    setTimeout(() => {
+        isVisible.value = true
+    }, 50)
+}
+
+const navigateToProject = (direction) => {
+    const currentIndex = filteredProjects.value.findIndex(p => p.id === selectedProject.value.id)
+    let nextIndex
+    
+    if (direction === 'next') {
+        nextIndex = (currentIndex + 1) % filteredProjects.value.length
+    } else {
+        nextIndex = currentIndex === 0 ? filteredProjects.value.length - 1 : currentIndex - 1
+    }
+    
+    // Smooth transition between projects
+    isVisible.value = false
+    setTimeout(() => {
+        selectedProject.value = filteredProjects.value[nextIndex]
+        isVisible.value = true
+    }, 150)
 }
 
 onMounted(() => {
@@ -88,7 +128,7 @@ onMounted(() => {
         <MusicPlayer />
 
         <!-- Portfolio Hero Section -->
-        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center hero-section">
+        <section v-if="!showDetails" class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center hero-section mt-5">
             <div class="space-y-4" :class="{ 'fade-in-up': isVisible }">
                 <div class="flex items-center justify-center gap-3 mb-4">
                     <Badge variant="secondary" class="text-sm px-4 py-2">
@@ -104,9 +144,37 @@ onMounted(() => {
                 </p>
             </div>
         </section>
+        
+        <!-- Project Detail Hero Section -->
+        <section v-if="showDetails && selectedProject" class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto mt-5">
+            <div class="space-y-4" :class="{ 'fade-in-up': isVisible }">
+                <!-- Back Button -->
+                <div class="flex items-center gap-4 mb-6">
+                    <button 
+                        @click="closeProjectDetails"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-accent/50 hover:bg-accent rounded-lg transition-colors"
+                    >
+                        <ArrowLeft class="w-4 h-4" />
+                        Back to Portfolio
+                    </button>
+                    <Badge variant="secondary" class="text-sm px-3 py-1">
+                        {{ selectedProject.project_type?.name || 'General' }}
+                    </Badge>
+                </div>
+                
+                <div class="text-left">
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent leading-tight mb-4">
+                        {{ selectedProject.title }}
+                    </h1>
+                    <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-4xl">
+                        {{ selectedProject.description }}
+                    </p>
+                </div>
+            </div>
+        </section>
 
         <!-- Filter Section -->
-        <section class="py-6 px-4 max-w-6xl mx-auto">
+        <section v-if="!showDetails" class="py-6 px-4 max-w-6xl mx-auto">
             <div class="flex justify-center flex-wrap gap-3 mb-8" :class="{ 'fade-in-up': isVisible }">
             <button 
                 @click="filterProjects('all')"
@@ -127,8 +195,8 @@ onMounted(() => {
             </div>
         </section>
 
-        <!-- Projects Section -->
-        <section class="pb-12 px-4 max-w-6xl mx-auto">
+        <!-- Projects Grid Section -->
+        <section v-if="!showDetails" class="pb-12 px-4 max-w-6xl mx-auto">
             <!-- Debug Info -->
             <div v-if="$page.props.debug" class="mb-4 p-4 bg-gray-100 rounded">
                 <p>Projects count: {{ projects.length }}</p>
@@ -158,9 +226,10 @@ onMounted(() => {
                 <Card
                     v-for="(project, index) in filteredProjects"
                     :key="project.id"
-                    class="group overflow-hidden bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5"
+                    class="group overflow-hidden bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 cursor-pointer"
                     :class="{ 'fade-in-up': isVisible }"
                     :style="{ animationDelay: `${index * 0.05}s` }"
+                    @click="openProjectDetails(project)"
                 >
                     <!-- Project Image -->
                     <div class="relative overflow-hidden h-48 md:h-52">
@@ -184,29 +253,11 @@ onMounted(() => {
                             </Badge>
                         </div>
                         
-                        <!-- Hover Overlay with Actions -->
-                        <div class="absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                            <div class="flex gap-2" v-if="project.links && Array.isArray(project.links) && project.links.length > 0">
-                                <a 
-                                    v-for="(linkObj, linkIndex) in project.links.slice(0, 2)" 
-                                    :key="linkIndex"
-                                    :href="Object.values(linkObj)[0]" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-foreground bg-background/90 hover:bg-background border border-border rounded-lg transition-colors shadow-sm"
-                                >
-                                    <component 
-                                        :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : Eye" 
-                                        class="w-4 h-4 mr-2" 
-                                    />
-                                    {{ Object.keys(linkObj)[0] }}
-                                </a>
-                            </div>
-                            <div v-else class="flex gap-2">
-                                <div class="inline-flex items-center px-3 py-2 text-sm font-medium text-muted-foreground bg-background/90 border border-border rounded-lg">
-                                    <Eye class="w-4 h-4 mr-2" />
-                                    View Project
-                                </div>
+                        <!-- Click to view details overlay -->
+                        <div class="absolute inset-0 bg-background/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <Eye class="w-8 h-8 mx-auto mb-2 text-primary" />
+                                <p class="text-sm font-medium text-foreground">Click to view details</p>
                             </div>
                         </div>
                     </div>
@@ -285,6 +336,187 @@ onMounted(() => {
                 </Card>
             </div>
         </section>
+        
+        <!-- Project Details Page -->
+        <section v-if="showDetails && selectedProject" class="pb-12 px-4 max-w-7xl mx-auto">
+            <div class="space-y-8" :class="{ 'fade-in-up': isVisible }">
+                
+                <!-- Project Image -->
+                <div class="relative overflow-hidden rounded-xl h-64 sm:h-80 md:h-96 lg:h-[28rem] shadow-2xl">
+                    <img 
+                        v-if="selectedProject.image" 
+                        :src="selectedProject.image" 
+                        :alt="selectedProject.title"
+                        class="w-full h-full object-cover"
+                    />
+                    <div 
+                        v-else 
+                        class="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex items-center justify-center"
+                    >
+                        <Laptop class="w-16 h-16 md:w-24 md:h-24 text-primary/60" />
+                    </div>
+                    
+                    <!-- Project Links Overlay -->
+                    <div class="absolute top-4 right-4 flex flex-col sm:flex-row gap-2" v-if="selectedProject.links && Array.isArray(selectedProject.links) && selectedProject.links.length > 0">
+                        <a 
+                            v-for="(linkObj, linkIndex) in selectedProject.links" 
+                            :key="linkIndex"
+                            :href="Object.values(linkObj)[0]" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-foreground bg-background/90 hover:bg-background border border-border rounded-lg transition-colors shadow-sm backdrop-blur-sm"
+                        >
+                            <component 
+                                :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : ExternalLink" 
+                                class="w-4 h-4 mr-2" 
+                            />
+                            <span class="hidden sm:inline">{{ Object.keys(linkObj)[0] }}</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Project Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Main Content -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- About Section -->
+                        <Card class="p-6">
+                            <h3 class="text-xl font-semibold text-foreground mb-4">About This Project</h3>
+                            <p class="text-muted-foreground leading-relaxed text-base">
+                                {{ selectedProject.description }}
+                            </p>
+                        </Card>
+                        
+                        <!-- Technologies -->
+                        <Card class="p-6" v-if="(selectedProject.technologies && selectedProject.technologies.length > 0) || selectedProject.tech_stack">
+                            <h3 class="text-xl font-semibold text-foreground mb-4">Technologies Used</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <!-- From technologies array -->
+                                <template v-if="selectedProject.technologies && selectedProject.technologies.length > 0">
+                                    <Badge
+                                        v-for="tech in selectedProject.technologies"
+                                        :key="tech"
+                                        variant="outline"
+                                        class="bg-accent/30 border-accent text-accent-foreground text-sm px-3 py-2 font-medium"
+                                    >
+                                        {{ tech }}
+                                    </Badge>
+                                </template>
+                                <!-- From tech_stack string -->
+                                <template v-else-if="selectedProject.tech_stack">
+                                    <Badge
+                                        v-for="tech in selectedProject.tech_stack.split(',')"
+                                        :key="tech"
+                                        variant="outline"
+                                        class="bg-accent/30 border-accent text-accent-foreground text-sm px-3 py-2 font-medium"
+                                    >
+                                        {{ tech.trim() }}
+                                    </Badge>
+                                </template>
+                            </div>
+                        </Card>
+                        
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        
+                        <!-- Project Info -->
+                        <Card class="p-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">Project Info</h3>
+                            <div class="space-y-4">
+                                
+                                <!-- Status -->
+                                <div v-if="selectedProject.status">
+                                    <h4 class="text-sm font-medium text-foreground mb-2">Status</h4>
+                                    <Badge 
+                                        :class="{
+                                            'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': selectedProject.status === 'completed',
+                                            'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30': selectedProject.status === 'in-progress',
+                                            'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30': selectedProject.status === 'pending'
+                                        }"
+                                        class="text-sm font-medium capitalize"
+                                    >
+                                        {{ selectedProject.status }}
+                                    </Badge>
+                                </div>
+                                
+                                <!-- Date -->
+                                <div v-if="selectedProject.created_at">
+                                    <h4 class="text-sm font-medium text-foreground mb-2">Created</h4>
+                                    <div class="flex items-center gap-2 text-muted-foreground">
+                                        <Calendar class="w-4 h-4" />
+                                        <span class="text-sm">{{ new Date(selectedProject.created_at).toLocaleDateString() }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Type -->
+                                <div>
+                                    <h4 class="text-sm font-medium text-foreground mb-2">Category</h4>
+                                    <Badge variant="secondary" class="text-sm">
+                                        {{ selectedProject.project_type?.name || 'General' }}
+                                    </Badge>
+                                </div>
+                                
+                            </div>
+                        </Card>
+                        
+                        <!-- Project Links -->
+                        <Card class="p-6" v-if="selectedProject.links && Array.isArray(selectedProject.links) && selectedProject.links.length > 0">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">Project Links</h3>
+                            <div class="space-y-3">
+                                <a 
+                                    v-for="(linkObj, linkIndex) in selectedProject.links" 
+                                    :key="linkIndex"
+                                    :href="Object.values(linkObj)[0]" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    class="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent transition-colors w-full"
+                                >
+                                    <component 
+                                        :is="Object.keys(linkObj)[0].toLowerCase().includes('github') ? Github : ExternalLink" 
+                                        class="w-5 h-5 text-primary" 
+                                    />
+                                    <span class="font-medium">{{ Object.keys(linkObj)[0] }}</span>
+                                </a>
+                            </div>
+                        </Card>
+                        
+                    </div>
+                    
+                </div>
+                
+                <!-- Navigation to Other Projects -->
+                <Card class="p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <button 
+                            @click="navigateToProject('prev')"
+                            class="flex items-center gap-2 px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground bg-accent/50 hover:bg-accent rounded-lg transition-colors w-full sm:w-auto"
+                            :disabled="filteredProjects.length <= 1"
+                        >
+                            <ChevronLeft class="w-4 h-4" />
+                            Previous Project
+                        </button>
+                        
+                        <span class="text-sm text-muted-foreground font-medium">
+                            {{ filteredProjects.findIndex(p => p.id === selectedProject.id) + 1 }} of {{ filteredProjects.length }} projects
+                        </span>
+                        
+                        <button 
+                            @click="navigateToProject('next')"
+                            class="flex items-center gap-2 px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground bg-accent/50 hover:bg-accent rounded-lg transition-colors w-full sm:w-auto"
+                            :disabled="filteredProjects.length <= 1"
+                        >
+                            Next Project
+                            <ChevronRight class="w-4 h-4" />
+                        </button>
+                    </div>
+                </Card>
+                
+            </div>
+        </section>
     </div>
 </template>
 
@@ -302,6 +534,51 @@ onMounted(() => {
 }
 
 .fade-in-up {
-    animation: fadeInUp 1s ease-out forwards;
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Smooth transitions for view switching */
+.min-h-screen {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+    .grid-cols-1.lg\:grid-cols-3 {
+        gap: 1rem;
+    }
+    
+    .space-y-6 > * + * {
+        margin-top: 1rem;
+    }
+    
+    .space-y-8 > * + * {
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .px-4 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .gap-8 {
+        gap: 1rem;
+    }
+    
+    .p-6 {
+        padding: 1rem;
+    }
+    
+    .px-6 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .py-3 {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
 }
 </style>
