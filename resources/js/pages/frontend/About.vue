@@ -44,8 +44,12 @@ onMounted(() => {
     <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
-        <meta name="keywords" content="about me, software developer, experience, education, skills, professional background" />
-        <meta name="author" :content="aboutMe.title || 'Software Developer'" />
+        <meta name="keywords" content="about me, software developer, experience, education, skills, professional background, SROS THAI, Cambodia developer" />
+        <meta name="author" :content="aboutMe.title || 'SROS THAI - Software Developer'" />
+        <meta name="language" content="en" />
+        <meta name="geo.region" content="KH" />
+        <meta name="geo.country" content="Cambodia" />
+        <meta name="theme-color" content="#2563eb" />
         
         <!-- Open Graph Meta Tags -->
         <meta property="og:title" :content="title" />
@@ -62,9 +66,38 @@ onMounted(() => {
         <meta name="twitter:image" content="/about-og-image.jpg" />
         
         <!-- Additional SEO Meta Tags -->
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <link rel="canonical" :href="$page.url" />
+        
+        <!-- JSON-LD Structured Data -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About {{ aboutMe.title || 'SROS THAI' }}",
+          "description": "{{ description }}",
+          "url": "{{ $page.url }}",
+          "mainEntity": {
+            "@type": "Person",
+            "name": "{{ aboutMe.title || 'SROS THAI' }}",
+            "jobTitle": "Software Developer",
+            "description": "{{ aboutMe.description || 'Professional software developer with expertise in modern web technologies' }}",
+            "knowsAbout": [
+              "Vue.js", "Laravel", "JavaScript", "PHP", "Web Development", "Software Development"
+            ],
+            "workLocation": {
+              "@type": "Place",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "KH"
+              }
+            }
+          }
+        }
+        </script>
     </Head>
 
     <div
