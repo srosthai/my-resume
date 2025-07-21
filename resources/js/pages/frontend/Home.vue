@@ -63,8 +63,12 @@ const animateText = () => {
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
         <meta name="keywords"
-            content="software developer, portfolio, Vue.js, Laravel, web development, full stack developer" />
-        <meta name="author" :content="users.name" />
+            content="software developer, portfolio, Vue.js, Laravel, web development, full stack developer, SROS THAI, professional developer, Cambodia developer" />
+        <meta name="author" :content="users.name || 'SROS THAI'" />
+        <meta name="language" content="en" />
+        <meta name="geo.region" content="KH" />
+        <meta name="geo.country" content="Cambodia" />
+        <meta name="theme-color" content="#2563eb" />
 
         <!-- Open Graph Meta Tags -->
         <meta property="og:title" :content="title" />
@@ -83,9 +87,37 @@ const animateText = () => {
             :content="users.image ? (users.image.startsWith('http') ? users.image : `${$page.url}/${users.image}`) : `${$page.url}/default-og-image.jpg`" />
 
         <!-- Additional SEO Meta Tags -->
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <link rel="canonical" :href="$page.url" />
+        
+        <!-- JSON-LD Structured Data -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "{{ users.name || 'SROS THAI' }} - Portfolio",
+          "description": "{{ description }}",
+          "url": "{{ $page.url }}",
+          "author": {
+            "@type": "Person",
+            "name": "{{ users.name || 'SROS THAI' }}",
+            "jobTitle": "Software Developer",
+            "url": "{{ $page.url }}",
+            "sameAs": [
+              "https://github.com/Sovannthai",
+              "https://www.linkedin.com/in/sros-thai-b491b42ab/"
+            ]
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ $page.url }}/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+        </script>
     </Head>
 
     <div

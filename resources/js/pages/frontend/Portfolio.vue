@@ -98,8 +98,12 @@ onMounted(() => {
     <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
-        <meta name="keywords" content="portfolio, projects, web development, mobile apps, Vue.js, Laravel, programming projects" />
-        <meta name="author" content="Software Developer" />
+        <meta name="keywords" content="portfolio, projects, web development, mobile apps, Vue.js, Laravel, programming projects, SROS THAI, Cambodia developer" />
+        <meta name="author" content="SROS THAI - Software Developer" />
+        <meta name="language" content="en" />
+        <meta name="geo.region" content="KH" />
+        <meta name="geo.country" content="Cambodia" />
+        <meta name="theme-color" content="#2563eb" />
         
         <!-- Open Graph Meta Tags -->
         <meta property="og:title" :content="title" />
@@ -116,9 +120,52 @@ onMounted(() => {
         <meta name="twitter:image" content="/portfolio-og-image.jpg" />
         
         <!-- Additional SEO Meta Tags -->
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <link rel="canonical" :href="$page.url" />
+        
+        <!-- JSON-LD Structured Data -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Portfolio - {{ title }}",
+          "description": "{{ description }}",
+          "url": "{{ $page.url }}",
+          "author": {
+            "@type": "Person",
+            "name": "SROS THAI",
+            "jobTitle": "Software Developer",
+            "url": "{{ $page.url.replace('/portfolio', '') }}"
+          },
+          "mainEntity": {
+            "@type": "ItemList",
+            "name": "Software Development Projects",
+            "description": "Collection of web development and software projects by SROS THAI",
+            "numberOfItems": "{{ projects.length }}",
+            "itemListElement": []
+          },
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "{{ $page.url.replace('/portfolio', '') }}"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Portfolio",
+                "item": "{{ $page.url }}"
+              }
+            ]
+          }
+        }
+        </script>
     </Head>
 
     <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
