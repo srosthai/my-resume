@@ -4,7 +4,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Heart, Gamepad2, Palette, Music, Book, Code2, Coffee, Dumbbell, Camera, Plane, Terminal } from 'lucide-vue-next'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
@@ -134,11 +134,11 @@ onMounted(() => {
         <link rel="canonical" :href="$page.url" />
     </Head>
 
-    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        <DockNavigation currentRoute="/hobby" />
-        
+    <FrontendLayout currentRoute="/hobby">
         <!-- Music Player -->
         <MusicPlayer />
+        
+        <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
 
         <!-- Hobbies Hero Section -->
         <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto relative">
@@ -246,7 +246,8 @@ onMounted(() => {
                 </div>
             </div>
         </section>
-    </div>
+        </div>
+    </FrontendLayout>
 </template>
 
 <style scoped>

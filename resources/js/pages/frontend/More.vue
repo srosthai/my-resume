@@ -4,7 +4,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { FileText, ImageIcon, Music, Award, Camera, Play, Pause, SkipBack, SkipForward, Volume2, Heart, Shuffle, Repeat } from 'lucide-vue-next'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
 defineProps<{
@@ -323,11 +323,11 @@ onUnmounted(() => {
         <link rel="canonical" :href="$page.url" />
     </Head>
 
-    <div class="min-h-screen bg-gradient-to-br from-background via-slate-50/5 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        <DockNavigation currentRoute="/more" />
-        
+    <FrontendLayout currentRoute="/more">
         <!-- Music Player -->
         <MusicPlayer />
+        
+        <div class="min-h-screen bg-gradient-to-br from-background via-slate-50/5 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
 
         <!-- More Content Section -->
         <section class="min-h-screen py-20 px-4 max-w-6xl mx-auto relative">
@@ -778,7 +778,8 @@ onUnmounted(() => {
                 </div>
             </div>
         </section>
-    </div>
+        </div>
+    </FrontendLayout>
 </template>
 
 <style scoped>

@@ -5,8 +5,10 @@ import { Laptop, Eye, Github, Folder, Star, ArrowLeft, ChevronLeft, ChevronRight
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
+import BentoGrid from '@/components/ui/bento-grid.vue'
+import BentoGridItem from '@/components/ui/bento-grid-item.vue'
 
 const props = defineProps({
     title: String,
@@ -29,6 +31,7 @@ const isVisible       = ref(false)
 const selectedFilter = ref('all')
 const selectedProject = ref(null)
 const showDetails = ref(false)
+const showAllProjects = ref(false)
 
 const filteredProjects = ref([])
 
@@ -80,6 +83,17 @@ const navigateToProject = (direction) => {
     }, 150)
 }
 
+const getProjectIcon = (project) => {
+    if (!project.project_type) return Laptop
+    if (project.project_type?.name?.toLowerCase().includes('web')) return Github
+    return Folder
+}
+
+const getBentoItemClass = (index) => {
+    // Make every 3rd and 6th item span 2 columns for better layout
+    return (index === 3 || index === 6) ? "md:col-span-2" : ""
+}
+
 onMounted(() => {
     console.log('Props received:', props)
     console.log('Projects:', props.projects)
@@ -95,7 +109,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head>
+    <FrontendLayout currentRoute="/portfolio">
+        <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
         <meta name="keywords" content="portfolio, projects, web development, mobile apps, Vue.js, Laravel, programming projects, SROS THAI, Cambodia developer" />
@@ -125,51 +140,9 @@ onMounted(() => {
         <meta name="format-detection" content="telephone=no" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <link rel="canonical" :href="$page.url" />
-        
-        <!-- JSON-LD Structured Data -->
-        <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          "name": "Portfolio - {{ title }}",
-          "description": "{{ description }}",
-          "url": "{{ $page.url }}",
-          "author": {
-            "@type": "Person",
-            "name": "SROS THAI",
-            "jobTitle": "Software Developer",
-            "url": "{{ $page.url.replace('/portfolio', '') }}"
-          },
-          "mainEntity": {
-            "@type": "ItemList",
-            "name": "Software Development Projects",
-            "description": "Collection of web development and software projects by SROS THAI",
-            "numberOfItems": "{{ projects.length }}",
-            "itemListElement": []
-          },
-          "breadcrumb": {
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Home",
-                "item": "{{ $page.url.replace('/portfolio', '') }}"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "Portfolio",
-                "item": "{{ $page.url }}"
-              }
-            ]
-          }
-        }
-        </script>
-    </Head>
+        </Head>
 
-    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        <DockNavigation currentRoute="/portfolio" />
+        <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
         
         <!-- Music Player -->
         <MusicPlayer />
@@ -269,119 +242,120 @@ onMounted(() => {
                 </div>
             </div>
             
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 card-grid">
-                <Card
+            <!-- Projects Bento Grid -->
+            <BentoGrid v-else class="max-w-4xl mx-auto">
+                <BentoGridItem
                     v-for="(project, index) in filteredProjects"
                     :key="project.id"
-                    class="group overflow-hidden bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 cursor-pointer"
-                    :class="{ 'fade-in-up': isVisible }"
-                    :style="{ animationDelay: `${index * 0.05}s` }"
+                    :title="project.title"
+                    :description="project.description"
+                    :icon="getProjectIcon(project)"
+                    :class="getBentoItemClass(index)"
                     @click="openProjectDetails(project)"
                 >
-                    <!-- Project Image -->
-                    <div class="relative overflow-hidden h-48 md:h-52">
-                        <img 
-                            v-if="project.image" 
-                            :src="project.image" 
-                            :alt="project.title"
-                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div 
-                            v-else 
-                            class="w-full h-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex items-center justify-center"
-                        >
-                            <Laptop class="w-12 h-12 text-primary/60" />
-                        </div>
-                        
-                        <!-- Project Type Badge -->
-                        <div class="absolute top-3 right-3">
-                            <Badge variant="secondary" class="bg-background/90 text-foreground border-border/50 text-xs backdrop-blur-sm">
-                                {{ project.project_type?.name || 'General' }}
-                            </Badge>
-                        </div>
-                        
-                        <!-- Click to view details overlay -->
-                        <div class="absolute inset-0 bg-background/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                            <div class="text-center">
-                                <Eye class="w-8 h-8 mx-auto mb-2 text-primary" />
-                                <p class="text-sm font-medium text-foreground">Click to view details</p>
+                    <template #header>
+                        <div class="flex flex-1 w-full h-full min-h-[6rem] rounded-xl relative overflow-hidden">
+                            <!-- Project Image -->
+                            <img 
+                                v-if="project.image" 
+                                :src="project.image" 
+                                :alt="project.title"
+                                class="w-full h-full object-cover rounded-xl"
+                            />
+                            <div 
+                                v-else 
+                                class="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100 items-center justify-center"
+                            >
+                                <Laptop class="w-8 h-8 text-neutral-500" />
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Project Content -->
-                    <CardContent class="p-4 space-y-3">
-                        <div class="space-y-2">
-                            <CardTitle class="text-lg font-semibold text-foreground leading-tight line-clamp-2">
-                                {{ project.title }}
-                            </CardTitle>
                             
-                            <CardDescription class="text-muted-foreground text-sm leading-relaxed line-clamp-2">
-                                {{ project.description }}
-                            </CardDescription>
-                        </div>
-                        
-                        <!-- Technologies -->
-                        <div class="flex flex-wrap gap-1.5" v-if="project.technologies && project.technologies.length > 0">
-                            <Badge
-                                v-for="tech in project.technologies.slice(0, 4)"
-                                :key="tech"
-                                variant="outline"
-                                class="bg-accent/30 border-accent text-accent-foreground text-xs px-2 py-1 font-medium"
-                            >
-                                {{ tech }}
-                            </Badge>
-                            <Badge
-                                v-if="project.technologies.length > 4"
-                                variant="outline"
-                                class="bg-muted/50 border-muted text-muted-foreground text-xs px-2 py-1"
-                            >
-                                +{{ project.technologies.length - 4 }}
-                            </Badge>
-                        </div>
-                        
-                        <!-- Tech Stack from database -->
-                        <div class="flex flex-wrap gap-1.5" v-else-if="project.tech_stack">
-                            <Badge
-                                v-for="tech in project.tech_stack.split(',').slice(0, 4)"
-                                :key="tech"
-                                variant="outline"
-                                class="bg-accent/30 border-accent text-accent-foreground text-xs px-2 py-1 font-medium"
-                            >
-                                {{ tech.trim() }}
-                            </Badge>
-                            <Badge
-                                v-if="project.tech_stack.split(',').length > 4"
-                                variant="outline"
-                                class="bg-muted/50 border-muted text-muted-foreground text-xs px-2 py-1"
-                            >
-                                +{{ project.tech_stack.split(',').length - 4 }}
-                            </Badge>
-                        </div>
-                    </CardContent>
-                    
-                    <!-- Project Footer -->
-                    <CardFooter class="px-4 pb-4 pt-0">
-                        <div class="flex justify-between items-center w-full">
-                            <div class="flex items-center gap-1 text-muted-foreground">
-                                <Star class="w-3.5 h-3.5" />
-                                <span class="text-xs font-medium">Featured</span>
+                            <!-- Project Type Badge -->
+                            <div class="absolute top-2 right-2">
+                                <Badge variant="secondary" class="bg-background/90 text-foreground border-border/50 text-xs backdrop-blur-sm">
+                                    {{ project.project_type?.name || 'General' }}
+                                </Badge>
                             </div>
-                            <Badge 
-                                v-if="project.status"
-                                :class="{
-                                    'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': project.status === 'completed',
-                                    'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30': project.status === 'in-progress',
-                                    'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30': project.status === 'pending'
-                                }"
-                                class="text-xs font-medium capitalize"
-                            >
-                                {{ project.status }}
-                            </Badge>
+                            
+                            <!-- Project Links -->
+                            <div class="absolute bottom-2 right-2 flex gap-1">
+                                <a 
+                                    v-if="project.github_url || (project.links && project.links.some(link => Object.keys(link)[0].toLowerCase().includes('github')))"
+                                    :href="project.github_url || (project.links && project.links.find(link => Object.keys(link)[0].toLowerCase().includes('github')) ? Object.values(project.links.find(link => Object.keys(link)[0].toLowerCase().includes('github')))[0] : '#')"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="p-1.5 rounded-md bg-background/80 hover:bg-background border border-border/40 transition-colors"
+                                    @click.stop
+                                >
+                                    <Github class="w-3 h-3 text-foreground" />
+                                </a>
+                                
+                                <a 
+                                    v-if="project.demo_url || project.live_url || (project.links && project.links.some(link => !Object.keys(link)[0].toLowerCase().includes('github')))"
+                                    :href="project.demo_url || project.live_url || (project.links && project.links.find(link => !Object.keys(link)[0].toLowerCase().includes('github')) ? Object.values(project.links.find(link => !Object.keys(link)[0].toLowerCase().includes('github')))[0] : '#')"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="p-1.5 rounded-md bg-background/80 hover:bg-background border border-border/40 transition-colors"
+                                    @click.stop
+                                >
+                                    <ExternalLink class="w-3 h-3 text-foreground" />
+                                </a>
+                            </div>
+                            
+                            <!-- Status Badge -->
+                            <div class="absolute bottom-2 left-2" v-if="project.status">
+                                <Badge 
+                                    :class="{
+                                        'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': project.status === 'completed',
+                                        'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30': project.status === 'in-progress',
+                                        'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30': project.status === 'pending'
+                                    }"
+                                    class="text-xs font-medium capitalize"
+                                >
+                                    {{ project.status }}
+                                </Badge>
+                            </div>
+                            
+                            <!-- Technologies -->
+                            <div class="absolute top-2 left-2 flex flex-wrap gap-1" v-if="project.technologies && project.technologies.length > 0">
+                                <Badge
+                                    v-for="tech in project.technologies.slice(0, 2)"
+                                    :key="tech"
+                                    variant="outline"
+                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 font-medium backdrop-blur-sm"
+                                >
+                                    {{ tech }}
+                                </Badge>
+                                <Badge
+                                    v-if="project.technologies.length > 2"
+                                    variant="outline"
+                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 backdrop-blur-sm"
+                                >
+                                    +{{ project.technologies.length - 2 }}
+                                </Badge>
+                            </div>
+                            
+                            <!-- Tech Stack from database -->
+                            <div class="absolute top-2 left-2 flex flex-wrap gap-1" v-else-if="project.tech_stack">
+                                <Badge
+                                    v-for="tech in project.tech_stack.split(',').slice(0, 2)"
+                                    :key="tech"
+                                    variant="outline"
+                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 font-medium backdrop-blur-sm"
+                                >
+                                    {{ tech.trim() }}
+                                </Badge>
+                                <Badge
+                                    v-if="project.tech_stack.split(',').length > 2"
+                                    variant="outline"
+                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 backdrop-blur-sm"
+                                >
+                                    +{{ project.tech_stack.split(',').length - 2 }}
+                                </Badge>
+                            </div>
                         </div>
-                    </CardFooter>
-                </Card>
-            </div>
+                    </template>
+                </BentoGridItem>
+            </BentoGrid>
         </section>
         
         <!-- Project Details Page -->
@@ -572,7 +546,8 @@ onMounted(() => {
                 
             </div>
         </section>
-    </div>
+        </div>
+    </FrontendLayout>
 </template>
 
 <style scoped>

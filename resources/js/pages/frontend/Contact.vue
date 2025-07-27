@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
@@ -119,7 +119,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head>
+    <FrontendLayout currentRoute="/contact">
+        <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
         <meta name="keywords" content="contact, get in touch, hire developer, collaboration, software development services, web developer contact, professional developer, freelance developer" />
@@ -149,41 +150,9 @@ onMounted(() => {
         <meta name="format-detection" content="telephone=no" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <link rel="canonical" :href="$page.url" />
-        
-        <!-- JSON-LD Structured Data -->
-        <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "ContactPage",
-          "name": "Contact SROS THAI - Software Developer",
-          "description": "Get in touch with SROS THAI, a professional software developer specializing in web development, Vue.js, Laravel, and modern web technologies.",
-          "url": "{{ $page.url }}",
-          "mainEntity": {
-            "@type": "Person",
-            "name": "SROS THAI",
-            "jobTitle": "Software Developer",
-            "email": "srosthai00@gmail.com",
-            "url": "http://sovannthai.vercel.app/",
-            "sameAs": [
-              "https://www.facebook.com/samo.thai.73",
-              "https://www.linkedin.com/in/sros-thai-b491b42ab/",
-              "https://www.instagram.com/sovannthai887",
-              "https://github.com/srosthai",
-              "https://t.me/srosthai2003"
-            ],
-            "contactPoint": {
-              "@type": "ContactPoint",
-              "email": "srosthai00@gmail.com",
-              "contactType": "professional",
-              "availableLanguage": ["English", "Khmer"]
-            }
-          }
-        }
-        </script>
-    </Head>
+        </Head>
 
-    <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        <DockNavigation currentRoute="/contact" />
+        <div class="overflow-x-hidden transition-all duration-300 pt-16">
         
         <!-- Music Player -->
         <MusicPlayer />
@@ -392,7 +361,8 @@ onMounted(() => {
                 </Card>
             </div>
         </section>
-    </div>
+        </div>
+    </FrontendLayout>
 </template>
 
 <style scoped>

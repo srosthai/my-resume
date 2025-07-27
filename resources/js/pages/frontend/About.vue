@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Calendar, MapPin, GraduationCap, Briefcase, Code, Award } from 'lucide-vue-next'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
@@ -40,8 +40,8 @@ onMounted(() => {
 </script>
 
 <template>
-
-    <Head>
+    <FrontendLayout currentRoute="/about">
+        <Head>
         <title>{{ title }}</title>
         <meta name="description" :content="description" />
         <meta name="keywords" content="about me, software developer, experience, education, skills, professional background, SROS THAI, Cambodia developer" />
@@ -71,39 +71,9 @@ onMounted(() => {
         <meta name="format-detection" content="telephone=no" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <link rel="canonical" :href="$page.url" />
-        
-        <!-- JSON-LD Structured Data -->
-        <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "AboutPage",
-          "name": "About {{ aboutMe.title || 'SROS THAI' }}",
-          "description": "{{ description }}",
-          "url": "{{ $page.url }}",
-          "mainEntity": {
-            "@type": "Person",
-            "name": "{{ aboutMe.title || 'SROS THAI' }}",
-            "jobTitle": "Software Developer",
-            "description": "{{ aboutMe.description || 'Professional software developer with expertise in modern web technologies' }}",
-            "knowsAbout": [
-              "Vue.js", "Laravel", "JavaScript", "PHP", "Web Development", "Software Development"
-            ],
-            "workLocation": {
-              "@type": "Place",
-              "address": {
-                "@type": "PostalAddress",
-                "addressCountry": "KH"
-              }
-            }
-          }
-        }
-        </script>
-    </Head>
+        </Head>
 
-    <div
-        class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        <!-- Dock Navigation -->
-        <DockNavigation currentRoute="/about" />
+        <div class="overflow-x-hidden transition-all duration-300 pt-16">
         
         <!-- Music Player -->
         <MusicPlayer />
@@ -335,7 +305,8 @@ onMounted(() => {
                 </Card>
             </div>
         </section>
-    </div>
+        </div>
+    </FrontendLayout>
 </template>
 
 <style scoped>

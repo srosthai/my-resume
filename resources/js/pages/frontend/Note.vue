@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Filter, Copy, Check, ArrowLeft, Book, Code, Terminal, Lightbulb } from 'lucide-vue-next'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
@@ -132,13 +132,11 @@ const getCategoryColor = (category) => {
         <link rel="canonical" :href="$page.url" />
     </Head>
 
-    <div
-        class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        <!-- Dock Navigation -->
-        <DockNavigation currentRoute="/note" />
-
+    <FrontendLayout currentRoute="/note">
         <!-- Music Player -->
         <MusicPlayer />
+        
+        <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
 
         <!-- Notes List View -->
         <div v-if="!selectedNote" class="max-w-7xl mx-auto px-4 py-8">
@@ -359,7 +357,8 @@ const getCategoryColor = (category) => {
                 </div>
             </div>
         </div>
-    </div>
+        </div>
+    </FrontendLayout>
 </template>
 
 <style scoped>

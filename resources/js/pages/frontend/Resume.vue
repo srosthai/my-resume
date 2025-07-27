@@ -30,7 +30,7 @@ import {
   Brain,
   Book
 } from 'lucide-vue-next'
-import DockNavigation from '@/components/DockNavigation.vue'
+import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
@@ -188,62 +188,15 @@ const popularArticles = [
     <meta name="format-detection" content="telephone=no" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="canonical" :href="$page.url" />
-    
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "{{ users.name || 'SROS THAI' }}",
-      "jobTitle": "{{ users.position || 'Software Developer' }}",
-      "description": "{{ users.description || 'Professional software developer specializing in Vue.js, Laravel, and modern web technologies. Experienced in creating scalable web applications and solving complex technical challenges.' }}",
-      "url": "{{ $page.url }}",
-      "email": "srosthai00@gmail.com",
-      "image": "{{ users.image ? (users.image.startsWith('http') ? users.image : $page.url + '/' + users.image) : $page.url + '/resume-og-image.jpg' }}",
-      "sameAs": [
-        "https://github.com/Sovannthai",
-        "https://www.linkedin.com/in/sros-thai-b491b42ab/",
-        "https://www.facebook.com/samo.thai.73",
-        "https://www.instagram.com/sovannthai887",
-        "https://t.me/srosthai2003"
-      ],
-      "knowsAbout": [
-        "Vue.js", "Laravel", "JavaScript", "PHP", "MySQL", "HTML5", "CSS3", "Web Development", "Software Development"
-      ],
-      "alumniOf": {
-        "@type": "Organization",
-        "name": "{{ education && education[0] ? education[0].institution : 'Educational Institution' }}"
-      },
-      "workLocation": {
-        "@type": "Place",
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "KH",
-          "addressRegion": "Cambodia"
-        }
-      },
-      "hasOccupation": {
-        "@type": "Occupation",
-        "name": "Software Developer",
-        "occupationLocation": {
-          "@type": "Country",
-          "name": "Cambodia"
-        },
-        "skills": "Vue.js, Laravel, JavaScript, PHP, MySQL, Web Development"
-      }
-    }
-    </script>
   </Head>
 
-  <div class="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 text-foreground relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
-    
-    <!-- Dock Navigation -->
-    <DockNavigation currentRoute="/resume" />
-
+  <FrontendLayout currentRoute="/resume">
     <!-- Music Player -->
     <MusicPlayer />
+    
+    <div class="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 text-foreground relative overflow-hidden">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
 
     <!-- Header/Hero Section -->
     <section class="py-12 lg:py-20 px-4 max-w-5xl mx-auto relative z-10" :class="{ 'fade-in-up': isVisible }">
@@ -605,7 +558,8 @@ const popularArticles = [
         </p>
       </footer>
     </div>
-  </div>
+    </div>
+  </FrontendLayout>
 </template>
 
 <style scoped>
