@@ -3,6 +3,14 @@ import { computed } from 'vue'
 import { useAppearance } from '@/composables/useAppearance'
 import { Sun, Moon } from 'lucide-vue-next'
 
+interface Props {
+  class?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  class: ''
+})
+
 const { appearance, updateAppearance } = useAppearance()
 
 // Determine current theme for display
@@ -43,7 +51,7 @@ const toggleTheme = () => {
   >
     <component 
       :is="toggleIcon" 
-      class="transition-transform duration-200 hover:rotate-12" 
+      :class="[props.class, 'transition-transform duration-200 hover:rotate-12']"
     />
   </button>
 </template>
