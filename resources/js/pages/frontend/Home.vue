@@ -171,7 +171,7 @@ const animateText = () => {
                         <div class="flex items-center justify-center lg:justify-start gap-2 sm:gap-4">
                             <Button asChild variant="ghost" size="sm"
                                 class="h-auto p-2 text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 active:scale-95 group">
-                                <a href="https://github.com/Sovannthai" target="_blank" rel="noopener noreferrer"
+                                <a href="https://github.com/srosthai" target="_blank" rel="noopener noreferrer"
                                     class="flex items-center gap-2 text-sm sm:text-base">
                                     <Github class="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:rotate-12" />
                                     <span class="font-medium tracking-wide">GitHub</span>
