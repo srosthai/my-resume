@@ -9,7 +9,7 @@ A modern portfolio/resume application built with Laravel 12, Vue 3, Inertia.js, 
 - **Routing**: Inertia.js
 - **Styling**: Tailwind CSS 4
 - **Build Tool**: Vite
-- **Database**: SQLite (configurable)
+- **Database**: MySQL
 - **UI Components**: Reka UI + Custom Components
 - **Icons**: Lucide Vue Next
 
@@ -19,6 +19,7 @@ A modern portfolio/resume application built with Laravel 12, Vue 3, Inertia.js, 
 - Composer
 - Node.js 18+ and npm
 - Git
+- MySQL 8.0 or higher
 
 ## Installation Steps
 
@@ -62,22 +63,46 @@ php artisan key:generate
 
 ### 5. Database Setup
 
-The application uses SQLite by default. Create the database file:
+#### Create MySQL Database
+
+First, create a MySQL database for the application:
 
 ```bash
-touch database/database.sqlite
+mysql -u root -p
 ```
 
-If permission is denied:
-```bash
-sudo touch database/database.sqlite
-sudo chown $USER:$USER database/database.sqlite
+Then in the MySQL prompt:
+
+```sql
+CREATE DATABASE my_resume;
+CREATE USER 'resume_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON my_resume.* TO 'resume_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
 ```
 
-Run migrations and seeders:
+#### Configure Database Connection
+
+Update your `.env` file with the MySQL database credentials:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=my_resume
+DB_USERNAME=resume_user
+DB_PASSWORD=your_password
+```
+
+#### Run Migrations and Seeders
 
 ```bash
 php artisan migrate --seed
+```
+
+If you encounter permission issues:
+```bash
+sudo php artisan migrate --seed
 ```
 
 ### 6. Storage and Cache Setup
@@ -288,12 +313,22 @@ npm install
 
 ### Database Connection Issues
 
-Ensure your `.env` file has correct database configuration:
+Ensure your `.env` file has correct MySQL database configuration:
 
 ```env
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=my_resume
+DB_USERNAME=resume_user
+DB_PASSWORD=your_password
 ```
+
+**Common MySQL errors:**
+
+- **Access denied**: Check username and password in `.env`
+- **Database doesn't exist**: Run `CREATE DATABASE my_resume;` in MySQL
+- **Connection refused**: Ensure MySQL service is running: `sudo service mysql start`
 
 ## Features
 
