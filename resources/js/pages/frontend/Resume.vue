@@ -254,7 +254,7 @@ const popularArticles = [
               </a>
             </Button>
             <Button asChild size="sm" variant="ghost" class="hover:bg-accent transition-colors">
-              <a href="https://github.com/Sovannthai" target="_blank" class="flex items-center gap-2">
+              <a href="https://github.com/srosthai" target="_blank" class="flex items-center gap-2">
                 <Github class="h-4 w-4" />
                 <span class="hidden sm:inline">GitHub</span>
               </a>
