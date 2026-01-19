@@ -1,329 +1,196 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+<script setup lang="ts">
+import { computed } from 'vue'
+import { Head } from '@inertiajs/vue3'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, GraduationCap, Briefcase, Code, Award } from 'lucide-vue-next'
+import { MapPin, GraduationCap, Briefcase, Code2, Target } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
+import StatItem from '@/components/about/StatItem.vue'
+import Timeline from '@/components/about/Timeline.vue'
+import TechCard from '@/components/about/TechCard.vue'
+import SectionHeader from '@/components/about/SectionHeader.vue'
 
-const props = defineProps({
-    title: String,
-    description: String,
-    aboutMe: {
-        type: Object,
-        required: true
-    },
-    workExperience: {
-        type: Array,
-        required: true
-    },
-    education: {
-        type: Array,
-        required: true
-    },
-    techStacks: {
-        type: Array,
-        required: true
-    }
+// Types
+interface AboutMe {
+    title?: string
+    description?: string
+    location?: string
+    year_experience?: string
+    fucus_on?: string
+}
+
+interface WorkExperience {
+    id: number
+    title: string
+    company: string
+    description: string
+    from: string
+    to: string
+}
+
+interface Education {
+    id: number
+    title: string
+    institution: string
+    description: string
+    from: string
+    to: string
+}
+
+interface TechStack {
+    id: number
+    name: string
+    logo?: string
+    type: string
+    description: string
+}
+
+interface Props {
+    title?: string
+    description?: string
+    aboutMe: AboutMe
+    workExperience: WorkExperience[]
+    education: Education[]
+    techStacks: TechStack[]
+}
+
+const props = defineProps<Props>()
+
+// Group tech stacks by type
+const groupedTechStacks = computed(() => {
+    const groups: Record<string, TechStack[]> = {}
+    props.techStacks.forEach((tech) => {
+        const type = tech.type || 'Other'
+        if (!groups[type]) {
+            groups[type] = []
+        }
+        groups[type].push(tech)
+    })
+    return groups
 })
 
-const isVisible = ref(false)
-
-onMounted(() => {
-    setTimeout(() => {
-        isVisible.value = true
-    }, 100)
-})
+// Stats for the quick info card
+const stats = computed(() => [
+    { icon: MapPin, label: 'Location', value: props.aboutMe.location },
+    { icon: Briefcase, label: 'Experience', value: props.aboutMe.year_experience },
+    { icon: Target, label: 'Focus', value: props.aboutMe.fucus_on },
+])
 </script>
 
 <template>
-    <FrontendLayout currentRoute="/about">
+    <FrontendLayout current-route="/about">
         <Head>
-        <title>{{ title }}</title>
-        <meta name="description" :content="description" />
-        <meta name="keywords" content="about me, software developer, experience, education, skills, professional background, SROS THAI, Cambodia developer" />
-        <meta name="author" :content="aboutMe.title || 'SROS THAI - Software Developer'" />
-        <meta name="language" content="en" />
-        <meta name="geo.region" content="KH" />
-        <meta name="geo.country" content="Cambodia" />
-        <meta name="theme-color" content="#2563eb" />
-        
-        <!-- Open Graph Meta Tags -->
-        <meta property="og:title" :content="title" />
-        <meta property="og:description" :content="description" />
-        <meta property="og:image" content="/about-og-image.jpg" />
-        <meta property="og:url" :content="$page.url" />
-        <meta property="og:type" content="profile" />
-        <meta property="og:site_name" content="Professional Portfolio" />
-        
-        <!-- Twitter Card Meta Tags -->
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" :content="title" />
-        <meta name="twitter:description" :content="description" />
-        <meta name="twitter:image" content="/about-og-image.jpg" />
-        
-        <!-- Additional SEO Meta Tags -->
-        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <link rel="canonical" :href="$page.url" />
+            <title>{{ title }}</title>
+            <meta name="description" :content="description" />
+            <meta
+                name="keywords"
+                content="about me, software developer, experience, education, skills, professional background"
+            />
+            <meta property="og:title" :content="title" />
+            <meta property="og:description" :content="description" />
+            <meta property="og:type" content="profile" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" :content="title" />
+            <meta name="twitter:description" :content="description" />
         </Head>
 
-        <div class="overflow-x-hidden transition-all duration-300 pt-16">
-        
-        <!-- Music Player -->
-        <MusicPlayer />
+        <div class="min-h-screen pt-20">
+            <!-- Music Player -->
+            <MusicPlayer />
 
-        <!-- About Hero Section -->
-        <section class="pt-6 sm:pt-8 pb-12 px-4 max-w-6xl mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 lg:gap-12 items-start"
-                :class="{ 'fade-in-up': isVisible }">
-                <div class="space-y-6">
-                    <div class="space-y-4">
-                        <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary">
-                            <Code class="w-3 h-3 mr-2" />
-                            Software Developer
-                        </Badge>
+            <!-- Hero Section -->
+            <section class="px-4 pb-16 pt-8">
+                <div class="mx-auto max-w-5xl">
+                    <div class="grid gap-8 lg:grid-cols-[1fr_320px] lg:gap-12">
+                        <!-- Main Content -->
+                        <div class="space-y-6">
+                            <div>
+                                <Badge variant="secondary" class="mb-4 gap-1.5 px-3 py-1">
+                                    <Code2 class="size-3.5" />
+                                    Software Developer
+                                </Badge>
 
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
-                            <span
-                                class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-                                {{ aboutMe.title }}
-                            </span>
-                        </h1>
-                    </div>
-
-                    <div
-                        class="prose prose-base lg:prose-lg max-w-none text-muted-foreground leading-relaxed space-y-4">
-                        <p class="text-base lg:text-lg">
-                            {{ aboutMe.description || 'No description available.' }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="space-y-4">
-                    <Card class="bg-card/50 backdrop-blur-sm border border-border/50">
-                        <CardContent class="p-4 lg:p-6 space-y-3">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-primary/10 rounded-lg">
-                                    <MapPin class="h-4 w-4 text-primary" />
-                                </div>
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Location</p>
-                                    <p class="font-medium">{{ aboutMe.location || 'Not yet set' }}</p>
-                                </div>
+                                <h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+                                    {{ aboutMe.title || 'About Me' }}
+                                </h1>
                             </div>
 
-                            <Separator class="bg-border/50" />
-
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-primary/10 rounded-lg">
-                                    <Briefcase class="h-4 w-4 text-primary" />
-                                </div>
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Experience</p>
-                                    <p class="font-medium">{{ aboutMe.year_experience || 'Not yet set' }}</p>
-                                </div>
-                            </div>
-
-                            <Separator class="bg-border/50" />
-
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-primary/10 rounded-lg">
-                                    <Award class="h-4 w-4 text-primary" />
-                                </div>
-                                <div>
-                                    <p class="text-sm text-muted-foreground">Focus</p>
-                                    <p class="font-medium">{{ aboutMe.fucus_on || 'Not yet set' }}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        </section>
-
-        <!-- Resume Section -->
-        <section class="py-12 lg:py-16 px-4 max-w-6xl mx-auto">
-            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-8 lg:mb-12 bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent"
-                :class="{ 'fade-in-up': isVisible }">
-                Professional Journey
-            </h2>
-
-            <!-- Experience Timeline -->
-            <div class="mb-12 lg:mb-16">
-                <div class="flex items-center gap-4 mb-6 lg:mb-8">
-                    <div class="p-3 bg-primary/10 rounded-xl">
-                        <Briefcase class="h-6 w-6 text-primary" />
-                    </div>
-                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground"
-                        :class="{ 'fade-in-up': isVisible }">
-                        Work Experience
-                    </h3>
-                </div>
-
-                <div class="space-y-4 lg:space-y-6 relative">
-                    <!-- Timeline line -->
-                    <div
-                        class="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-primary/50 to-transparent hidden md:block">
-                    </div>
-
-                    <Card v-for="(item, index) in workExperience" :key="item.id"
-                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-1 focus:-translate-y-1 hover:shadow-lg active:shadow-lg focus:shadow-lg group relative md:ml-16 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        :class="{ 'fade-in-up': isVisible }" :style="{ animationDelay: `${index * 0.2}s` }" tabindex="0">
-                        <!-- Timeline dot -->
-                        <div
-                            class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 group-active:scale-125 group-focus:scale-125 transition-transform">
+                            <p class="text-lg leading-relaxed text-muted-foreground">
+                                {{ aboutMe.description || 'No description available.' }}
+                            </p>
                         </div>
 
-                        <CardContent class="p-4 lg:p-6">
-                            <div class="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
-                                <Badge variant="outline"
-                                    class="bg-primary/10 border-primary/20 text-primary w-fit px-4 py-2">
-                                    <Calendar class="w-3 h-3 mr-2" />
-                                    {{ item.from }} - {{ item.to }}
-                                </Badge>
-                                <div class="flex-1 space-y-3">
-                                    <div>
-                                        <h4 class="text-lg lg:text-xl font-bold text-foreground mb-2">{{ item.title }}
-                                        </h4>
-                                        <h5 class="text-base lg:text-lg font-semibold text-primary mb-2">{{ item.company
-                                            }}</h5>
-                                    </div>
-                                    <p class="text-muted-foreground leading-relaxed">{{ item.description }}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-
-            <!-- Education Timeline -->
-            <div>
-                <div class="flex items-center gap-4 mb-10">
-                    <div class="p-3 bg-primary/10 rounded-xl">
-                        <GraduationCap class="h-6 w-6 text-primary" />
+                        <!-- Quick Stats Card -->
+                        <Card class="h-fit border-border/40 bg-card/50">
+                            <CardContent class="space-y-4 p-5">
+                                <template v-for="(stat, index) in stats" :key="stat.label">
+                                    <StatItem :icon="stat.icon" :label="stat.label" :value="stat.value || ''" />
+                                    <Separator v-if="index < stats.length - 1" class="bg-border/50" />
+                                </template>
+                            </CardContent>
+                        </Card>
                     </div>
-                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground"
-                        :class="{ 'fade-in-up': isVisible }">
-                        Education
-                    </h3>
                 </div>
+            </section>
 
-                <div class="space-y-4 lg:space-y-6 relative">
-                    <!-- Timeline line -->
-                    <div
-                        class="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-primary/50 to-transparent hidden md:block">
+            <!-- Experience & Education Section -->
+            <section class="bg-muted/30 px-4 py-16">
+                <div class="mx-auto max-w-5xl">
+                    <h2 class="mb-12 text-center text-3xl font-bold tracking-tight text-foreground">
+                        Professional Journey
+                    </h2>
+
+                    <div class="grid gap-12 lg:grid-cols-2">
+                        <!-- Work Experience -->
+                        <Timeline
+                            title="Experience"
+                            :icon="Briefcase"
+                            :items="workExperience"
+                            subtitle-key="company"
+                        />
+
+                        <!-- Education -->
+                        <Timeline
+                            title="Education"
+                            :icon="GraduationCap"
+                            :items="education"
+                            subtitle-key="institution"
+                        />
                     </div>
-
-                    <Card v-for="(item, index) in education" :key="item.id"
-                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-1 focus:-translate-y-1 hover:shadow-lg active:shadow-lg focus:shadow-lg group relative md:ml-16 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        :class="{ 'fade-in-up': isVisible }"
-                        :style="{ animationDelay: `${(index + workExperience.length) * 0.2}s` }" tabindex="0">
-                        <!-- Timeline dot -->
-                        <div
-                            class="absolute -left-20 top-8 w-4 h-4 bg-primary rounded-full border-4 border-background hidden md:block group-hover:scale-125 group-active:scale-125 group-focus:scale-125 transition-transform">
-                        </div>
-
-                        <CardContent class="p-4 lg:p-6">
-                            <div class="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
-                                <Badge variant="outline"
-                                    class="bg-primary/10 border-primary/20 text-primary w-fit px-4 py-2">
-                                    <Calendar class="w-3 h-3 mr-2" />
-                                    {{ item.from }} - {{ item.to }}
-                                </Badge>
-                                <div class="flex-1 space-y-3">
-                                    <div>
-                                        <h4 class="text-2xl font-bold text-foreground mb-2">{{ item.title }}</h4>
-                                        <h5 class="text-lg font-semibold text-primary mb-3">{{ item.institution }}</h5>
-                                    </div>
-                                    <p class="text-muted-foreground leading-relaxed">{{ item.description }}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Tech Stack Section -->
-        <section class="py-12 lg:py-16 px-4 max-w-6xl mx-auto">
-            <div class="text-center mb-8 lg:mb-12">
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6 bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent"
-                    :class="{ 'fade-in-up': isVisible }">
-                    Technology Stack
-                </h2>
-                <p class="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-                    The tools and technologies I work with to bring ideas to life
-                </p>
-            </div>
+            <!-- Tech Stack Section -->
+            <section class="px-4 py-16">
+                <div class="mx-auto max-w-5xl">
+                    <SectionHeader
+                        title="Technology Stack"
+                        subtitle="Tools and technologies I use to build modern applications"
+                        :centered="true"
+                    />
 
-            <!-- Tech categories grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-                <Card v-for="(tech, index) in techStacks" :key="tech.id" 
-                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-2 active:-translate-y-2 focus:-translate-y-2 hover:shadow-xl active:shadow-xl focus:shadow-xl group overflow-hidden relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    :class="{ 'fade-in-up': isVisible }" :style="{ animationDelay: `${index * 0.05}s` }" tabindex="0">
-                    <!-- Hover gradient border -->
-                    <div
-                        class="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 opacity-0 group-hover:opacity-100 group-active:opacity-100 group-focus:opacity-100 transition-opacity duration-300 rounded-lg">
-                    </div>
-
-                    <CardContent class="p-3 lg:p-4 relative z-10">
-                        <div class="flex items-start gap-2 lg:gap-3 mb-3">
-                            <div
-                                class="p-2 lg:p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 group-active:bg-primary/20 group-focus:bg-primary/20 transition-colors duration-300 flex-shrink-0">
-                                <Avatar class="h-6 w-6 lg:h-8 lg:w-8">
-                                    <AvatarImage :src="tech.logo" :alt="tech.name" class="object-contain p-1" />
-                                    <AvatarFallback class="bg-primary/20 text-primary text-xs font-bold">
-                                        {{ tech.name.slice(0, 2) }}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <h3
-                                    class="text-sm lg:text-base font-bold text-foreground mb-1 group-hover:text-primary group-active:text-primary group-focus:text-primary transition-colors duration-300 truncate">
-                                    {{ tech.name }}
-                                </h3>
-                                <Badge variant="outline"
-                                    class="bg-primary/10 border-primary/20 text-primary text-xs px-1.5 py-0.5">
-                                    {{ tech.type }}
-                                </Badge>
+                    <!-- Grouped by type -->
+                    <div class="space-y-10">
+                        <div v-for="(techs, type) in groupedTechStacks" :key="type">
+                            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                                {{ type }}
+                            </h3>
+                            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                                <TechCard
+                                    v-for="tech in techs"
+                                    :key="tech.id"
+                                    :name="tech.name"
+                                    :logo="tech.logo"
+                                    :type="tech.type"
+                                    :description="tech.description"
+                                />
                             </div>
                         </div>
-
-                        <p
-                            class="text-xs lg:text-sm text-muted-foreground leading-relaxed group-hover:text-foreground/80 group-active:text-foreground/80 group-focus:text-foreground/80 transition-colors duration-300 line-clamp-2 lg:line-clamp-3">
-                            {{ tech.description }}
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        </section>
+                    </div>
+                </div>
+            </section>
         </div>
     </FrontendLayout>
 </template>
-
-<style scoped>
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in-up {
-    animation: fadeInUp 1s ease-out forwards;
-}
-</style>

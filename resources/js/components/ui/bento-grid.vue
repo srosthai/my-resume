@@ -1,24 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { cn } from '@/lib/utils'
 
 interface Props {
-  className?: string
+    class?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  className: ''
-})
-
-const gridClasses = computed(() => {
-  return [
-    'grid md:auto-rows-[18rem] grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto',
-    props.className
-  ].filter(Boolean).join(' ')
-})
+const props = defineProps<Props>()
 </script>
 
 <template>
-  <div :class="gridClasses">
-    <slot />
-  </div>
+    <div
+        :class="
+            cn(
+                'grid w-full gap-4 sm:gap-5',
+                'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+                props.class
+            )
+        "
+    >
+        <slot />
+    </div>
 </template>

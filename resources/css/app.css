@@ -7,6 +7,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Custom xs breakpoint for extra small screens (375px+) */
+@custom-variant xs (@media (min-width: 375px));
+
 @theme inline {
     --font-sans: Instrument Sans, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 

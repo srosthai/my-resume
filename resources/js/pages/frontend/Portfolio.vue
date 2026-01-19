@@ -1,54 +1,113 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
-import { Laptop, Eye, Github, Folder, Star, ArrowLeft, ChevronLeft, ChevronRight, Calendar, User, ExternalLink } from 'lucide-vue-next'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { Head } from '@inertiajs/vue3'
+import {
+    Laptop,
+    Github,
+    Folder,
+    ArrowLeft,
+    ChevronLeft,
+    ChevronRight,
+    Calendar,
+    ExternalLink,
+    Search,
+    X
+} from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 import BentoGrid from '@/components/ui/bento-grid.vue'
 import BentoGridItem from '@/components/ui/bento-grid-item.vue'
 
-const props = defineProps({
-    title: String,
-    description: String,
-    projects: {
-        type: Array,
-        required: true
-    },
-    projectTypes: {
-        type: Array,
-        default: () => []
-    },
-    filters: {
-        type: Object,
-        default: () => ({ type: '', search: '' })
-    }
-})
-
-const isVisible       = ref(false)
-const selectedFilter = ref('all')
-const selectedProject = ref(null)
-const showDetails = ref(false)
-const showAllProjects = ref(false)
-
-const filteredProjects = ref([])
-
-const filterProjects = (category) => {
-    selectedFilter.value = category
-    if (category === 'all') {
-        filteredProjects.value = props.projects
-    } else {
-        filteredProjects.value = props.projects.filter(project => project.project_type?.id === category)
-    }
-    console.log('Filtered projects:', filteredProjects.value)
+// Types
+interface ProjectType {
+    id: number
+    name: string
 }
 
-const openProjectDetails = (project) => {
+interface ProjectLink {
+    [key: string]: string
+}
+
+interface Project {
+    id: number
+    title: string
+    description: string
+    image?: string
+    project_type?: ProjectType
+    technologies?: string[]
+    tech_stack?: string
+    status?: 'completed' | 'in-progress' | 'pending' | 'processing'
+    links?: ProjectLink[]
+    github_url?: string
+    demo_url?: string
+    live_url?: string
+    created_at?: string
+    created_date?: string
+}
+
+interface Props {
+    title?: string
+    description?: string
+    projects: Project[]
+    projectTypes?: ProjectType[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    title: 'Portfolio',
+    description: '',
+    projectTypes: () => []
+})
+
+// State
+const isVisible = ref(false)
+const selectedCategory = ref<string>('all')
+const searchQuery = ref('')
+const selectedProject = ref<Project | null>(null)
+const showDetails = ref(false)
+
+// Computed filtered projects
+const filteredProjects = computed(() => {
+    let result = props.projects
+
+    // Filter by category
+    if (selectedCategory.value !== 'all') {
+        const categoryId = parseInt(selectedCategory.value)
+        result = result.filter((project) => project.project_type?.id === categoryId)
+    }
+
+    // Filter by search query
+    if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase().trim()
+        result = result.filter(
+            (project) =>
+                project.title.toLowerCase().includes(query) ||
+                project.description.toLowerCase().includes(query) ||
+                project.technologies?.some((tech) => tech.toLowerCase().includes(query)) ||
+                project.tech_stack?.toLowerCase().includes(query)
+        )
+    }
+
+    return result
+})
+
+// Clear search
+const clearSearch = () => {
+    searchQuery.value = ''
+}
+
+const openProjectDetails = (project: Project) => {
     selectedProject.value = project
     showDetails.value = true
-    // Reset animation trigger
     isVisible.value = false
     setTimeout(() => {
         isVisible.value = true
@@ -58,50 +117,69 @@ const openProjectDetails = (project) => {
 const closeProjectDetails = () => {
     showDetails.value = false
     selectedProject.value = null
-    // Reset animation trigger
     isVisible.value = false
     setTimeout(() => {
         isVisible.value = true
     }, 50)
 }
 
-const navigateToProject = (direction) => {
-    const currentIndex = filteredProjects.value.findIndex(p => p.id === selectedProject.value.id)
-    let nextIndex
-    
+const navigateToProject = (direction: 'next' | 'prev') => {
+    if (!selectedProject.value) return
+    const projects = filteredProjects.value
+    const currentIndex = projects.findIndex((p) => p.id === selectedProject.value?.id)
+
+    let nextIndex: number
     if (direction === 'next') {
-        nextIndex = (currentIndex + 1) % filteredProjects.value.length
+        nextIndex = (currentIndex + 1) % projects.length
     } else {
-        nextIndex = currentIndex === 0 ? filteredProjects.value.length - 1 : currentIndex - 1
+        nextIndex = currentIndex === 0 ? projects.length - 1 : currentIndex - 1
     }
-    
-    // Smooth transition between projects
+
     isVisible.value = false
     setTimeout(() => {
-        selectedProject.value = filteredProjects.value[nextIndex]
+        selectedProject.value = projects[nextIndex]
         isVisible.value = true
     }, 150)
 }
 
-const getProjectIcon = (project) => {
+const getProjectIcon = (project: Project) => {
     if (!project.project_type) return Laptop
     if (project.project_type?.name?.toLowerCase().includes('web')) return Github
     return Folder
 }
 
-const getBentoItemClass = (index) => {
-    // Make every 3rd and 6th item span 2 columns for better layout
-    return (index === 3 || index === 6) ? "md:col-span-2" : ""
+const getBentoItemClass = (index: number) => {
+    return index === 3 || index === 6 ? 'md:col-span-2' : ''
 }
 
+// Helper to get GitHub URL from project
+const getGithubUrl = (project: Project): string | undefined => {
+    if (project.github_url) return project.github_url
+    if (!project.links) return undefined
+    const githubLink = project.links.find((link) =>
+        Object.keys(link)[0]?.toLowerCase().includes('github')
+    )
+    return githubLink ? Object.values(githubLink)[0] : undefined
+}
+
+// Helper to get live/demo URL from project
+const getLiveUrl = (project: Project): string | undefined => {
+    if (project.demo_url) return project.demo_url
+    if (project.live_url) return project.live_url
+    if (!project.links) return undefined
+    const liveLink = project.links.find(
+        (link) => !Object.keys(link)[0]?.toLowerCase().includes('github')
+    )
+    return liveLink ? Object.values(liveLink)[0] : undefined
+}
+
+// Current project index for navigation display
+const currentProjectIndex = computed(() => {
+    if (!selectedProject.value) return 0
+    return filteredProjects.value.findIndex((p) => p.id === selectedProject.value?.id) + 1
+})
+
 onMounted(() => {
-    console.log('Props received:', props)
-    console.log('Projects:', props.projects)
-    console.log('Project Types:', props.projectTypes)
-    
-    // Initialize filtered projects
-    filteredProjects.value = props.projects || []
-    
     setTimeout(() => {
         isVisible.value = true
     }, 100)
@@ -195,23 +273,53 @@ onMounted(() => {
 
         <!-- Filter Section -->
         <section v-if="!showDetails" class="py-6 px-4 max-w-6xl mx-auto">
-            <div class="flex justify-center flex-wrap gap-3 mb-8" :class="{ 'fade-in-up': isVisible }">
-            <button 
-                @click="filterProjects('all')"
-                :class="selectedFilter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent active:text-foreground bg-background'"
-                class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
+            <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 mb-8"
+                :class="{ 'fade-in-up': isVisible }"
             >
-                All Projects
-            </button>
-            <button 
-                v-for="projectType in projectTypes"
-                :key="projectType.id"
-                @click="filterProjects(projectType.id)"
-                :class="selectedFilter === projectType.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent active:text-foreground bg-background'"
-                class="px-3 py-1.5 text-sm font-medium border border-border rounded-md transition-colors"
-            >
-                {{ projectType.name }}
-            </button>
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-72 lg:w-80">
+                    <Search
+                        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+                    />
+                    <Input
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Search projects..."
+                        class="pl-9 pr-9 h-10 bg-background border-border/60 focus:border-primary/50"
+                    />
+                    <button
+                        v-if="searchQuery"
+                        @click="clearSearch"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <X class="size-4" />
+                    </button>
+                </div>
+
+                <!-- Category Dropdown -->
+                <Select v-model="selectedCategory">
+                    <SelectTrigger class="w-full sm:w-48 h-10 bg-background border-border/60">
+                        <Folder class="size-4 mr-2 text-muted-foreground" />
+                        <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        <SelectItem
+                            v-for="projectType in projectTypes"
+                            :key="projectType.id"
+                            :value="String(projectType.id)"
+                        >
+                            {{ projectType.name }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <!-- Results count -->
+                <div class="text-sm text-muted-foreground text-center sm:text-left">
+                    <span class="font-medium text-foreground">{{ filteredProjects.length }}</span>
+                    {{ filteredProjects.length === 1 ? 'project' : 'projects' }}
+                </div>
             </div>
         </section>
 
@@ -227,18 +335,36 @@ onMounted(() => {
             <!-- No Projects Message -->
             <div v-if="filteredProjects.length === 0" class="text-center py-12">
                 <div class="max-w-md mx-auto">
-                    <Folder class="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                    <Search class="size-16 mx-auto text-muted-foreground mb-4" />
                     <h3 class="text-lg font-semibold text-foreground mb-2">No Projects Found</h3>
-                    <p class="text-muted-foreground">
-                        {{ selectedFilter === 'all' ? 'No projects are available at the moment.' : 'No projects match the selected filter.' }}
+                    <p class="text-muted-foreground mb-4">
+                        <template v-if="searchQuery && selectedCategory !== 'all'">
+                            No projects match "{{ searchQuery }}" in the selected category.
+                        </template>
+                        <template v-else-if="searchQuery">
+                            No projects match "{{ searchQuery }}".
+                        </template>
+                        <template v-else-if="selectedCategory !== 'all'">
+                            No projects in this category.
+                        </template>
+                        <template v-else> No projects are available at the moment. </template>
                     </p>
-                    <button 
-                        v-if="selectedFilter !== 'all'"
-                        @click="filterProjects('all')"
-                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 active:bg-primary/80 transition-colors"
-                    >
-                        Show All Projects
-                    </button>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button
+                            v-if="searchQuery"
+                            @click="clearSearch"
+                            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors"
+                        >
+                            Clear Search
+                        </button>
+                        <button
+                            v-if="selectedCategory !== 'all'"
+                            @click="selectedCategory = 'all'"
+                            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                        >
+                            Show All Categories
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -254,103 +380,75 @@ onMounted(() => {
                     @click="openProjectDetails(project)"
                 >
                     <template #header>
-                        <div class="flex flex-1 w-full h-full min-h-[6rem] rounded-xl relative overflow-hidden">
+                        <div class="w-full h-full rounded-lg relative overflow-hidden bg-gradient-to-br from-muted/80 to-muted/40">
                             <!-- Project Image -->
-                            <img 
-                                v-if="project.image" 
-                                :src="project.image" 
+                            <img
+                                v-if="project.image"
+                                :src="project.image"
                                 :alt="project.title"
-                                class="w-full h-full object-cover rounded-xl"
+                                class="w-full h-full object-cover"
                             />
-                            <div 
-                                v-else 
-                                class="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100 items-center justify-center"
+                            <div
+                                v-else
+                                class="w-full h-full flex items-center justify-center"
                             >
-                                <Laptop class="w-8 h-8 text-neutral-500" />
+                                <Laptop class="size-10 sm:size-12 text-muted-foreground/50" />
                             </div>
-                            
-                            <!-- Project Type Badge -->
+
+                            <!-- Category Badge (top right) -->
                             <div class="absolute top-2 right-2">
-                                <Badge variant="secondary" class="bg-background/90 text-foreground border-border/50 text-xs backdrop-blur-sm">
+                                <Badge
+                                    variant="secondary"
+                                    class="bg-background/95 text-foreground shadow-sm text-xs px-2 py-1"
+                                >
                                     {{ project.project_type?.name || 'General' }}
                                 </Badge>
                             </div>
-                            
-                            <!-- Project Links -->
-                            <div class="absolute bottom-2 right-2 flex gap-1">
-                                <a 
-                                    v-if="project.github_url || (project.links && project.links.some(link => Object.keys(link)[0].toLowerCase().includes('github')))"
-                                    :href="project.github_url || (project.links && project.links.find(link => Object.keys(link)[0].toLowerCase().includes('github')) ? Object.values(project.links.find(link => Object.keys(link)[0].toLowerCase().includes('github')))[0] : '#')"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="p-1.5 rounded-md bg-background/80 hover:bg-background border border-border/40 transition-colors"
-                                    @click.stop
-                                >
-                                    <Github class="w-3 h-3 text-foreground" />
-                                </a>
-                                
-                                <a 
-                                    v-if="project.demo_url || project.live_url || (project.links && project.links.some(link => !Object.keys(link)[0].toLowerCase().includes('github')))"
-                                    :href="project.demo_url || project.live_url || (project.links && project.links.find(link => !Object.keys(link)[0].toLowerCase().includes('github')) ? Object.values(project.links.find(link => !Object.keys(link)[0].toLowerCase().includes('github')))[0] : '#')"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="p-1.5 rounded-md bg-background/80 hover:bg-background border border-border/40 transition-colors"
-                                    @click.stop
-                                >
-                                    <ExternalLink class="w-3 h-3 text-foreground" />
-                                </a>
-                            </div>
-                            
-                            <!-- Status Badge -->
-                            <div class="absolute bottom-2 left-2" v-if="project.status">
-                                <Badge 
-                                    :class="{
-                                        'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': project.status === 'completed',
-                                        'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30': project.status === 'in-progress',
-                                        'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30': project.status === 'pending'
-                                    }"
-                                    class="text-xs font-medium capitalize"
-                                >
-                                    {{ project.status }}
-                                </Badge>
-                            </div>
-                            
-                            <!-- Technologies -->
-                            <div class="absolute top-2 left-2 flex flex-wrap gap-1" v-if="project.technologies && project.technologies.length > 0">
-                                <Badge
-                                    v-for="tech in project.technologies.slice(0, 2)"
-                                    :key="tech"
-                                    variant="outline"
-                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 font-medium backdrop-blur-sm"
-                                >
-                                    {{ tech }}
-                                </Badge>
-                                <Badge
-                                    v-if="project.technologies.length > 2"
-                                    variant="outline"
-                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 backdrop-blur-sm"
-                                >
-                                    +{{ project.technologies.length - 2 }}
-                                </Badge>
-                            </div>
-                            
-                            <!-- Tech Stack from database -->
-                            <div class="absolute top-2 left-2 flex flex-wrap gap-1" v-else-if="project.tech_stack">
-                                <Badge
-                                    v-for="tech in project.tech_stack.split(',').slice(0, 2)"
-                                    :key="tech"
-                                    variant="outline"
-                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 font-medium backdrop-blur-sm"
-                                >
-                                    {{ tech.trim() }}
-                                </Badge>
-                                <Badge
-                                    v-if="project.tech_stack.split(',').length > 2"
-                                    variant="outline"
-                                    class="bg-background/80 border-border/40 text-foreground text-xs px-2 py-1 backdrop-blur-sm"
-                                >
-                                    +{{ project.tech_stack.split(',').length - 2 }}
-                                </Badge>
+
+                            <!-- Bottom overlay with status and links -->
+                            <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                                <div class="flex items-center justify-between">
+                                    <!-- Status Badge -->
+                                    <Badge
+                                        v-if="project.status"
+                                        :class="{
+                                            'bg-emerald-500/90 text-white border-emerald-400':
+                                                project.status === 'completed',
+                                            'bg-blue-500/90 text-white border-blue-400':
+                                                project.status === 'in-progress' || project.status === 'processing',
+                                            'bg-amber-500/90 text-white border-amber-400':
+                                                project.status === 'pending'
+                                        }"
+                                        class="text-xs px-2 py-0.5 font-medium capitalize shadow-sm"
+                                    >
+                                        {{ project.status }}
+                                    </Badge>
+                                    <span v-else></span>
+
+                                    <!-- Links -->
+                                    <div class="flex gap-1.5">
+                                        <a
+                                            v-if="getGithubUrl(project)"
+                                            :href="getGithubUrl(project)"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="size-7 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-gray-800 transition-colors shadow-sm"
+                                            @click.stop
+                                        >
+                                            <Github class="size-4" />
+                                        </a>
+                                        <a
+                                            v-if="getLiveUrl(project)"
+                                            :href="getLiveUrl(project)"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="size-7 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-gray-800 transition-colors shadow-sm"
+                                            @click.stop
+                                        >
+                                            <ExternalLink class="size-4" />
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -515,7 +613,7 @@ onMounted(() => {
                         <!-- Project counter -->
                         <div class="text-center">
                             <span class="text-xs sm:text-sm text-muted-foreground font-medium">
-                                {{ filteredProjects.findIndex(p => p.id === selectedProject.id) + 1 }} of {{ filteredProjects.length }} projects
+                                {{ currentProjectIndex }} of {{ filteredProjects.length }} projects
                             </span>
                         </div>
                         
@@ -551,7 +649,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Animations */
+/* Fade in up animation */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -567,176 +665,14 @@ onMounted(() => {
     animation: fadeInUp 0.5s ease-out forwards;
 }
 
-/* Smooth transitions for view switching */
-.min-h-screen {
-    transition: all 0.3s ease-in-out;
-}
-
-/* Mobile-first responsive design */
-
-/* Extra small screens (phones) */
-@media (max-width: 475px) {
-    .px-3 {
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-    }
-    
-    .space-y-4 > * + * {
-        margin-top: 0.75rem;
-    }
-    
-    .gap-4 {
-        gap: 0.75rem;
-    }
-    
-    .p-4 {
-        padding: 0.75rem;
-    }
-    
-    .rounded-lg {
-        border-radius: 0.5rem;
-    }
-    
-    /* Better touch targets */
-    button {
-        min-height: 44px;
-    }
-    
-    /* Improved text readability */
-    .text-xs {
-        font-size: 0.75rem;
-        line-height: 1.2;
-    }
-    
-    .text-sm {
-        font-size: 0.875rem;
-        line-height: 1.3;
-    }
-    
-    /* Better spacing for cards */
-    .space-y-3 > * + * {
-        margin-top: 0.5rem;
-    }
-}
-
-/* Small screens (landscape phones, small tablets) */
-@media (max-width: 640px) {
-    .px-4 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .space-y-6 > * + * {
-        margin-top: 1rem;
-    }
-    
-    .space-y-8 > * + * {
-        margin-top: 1.25rem;
-    }
-    
-    .gap-6 {
-        gap: 1rem;
-    }
-    
-    .gap-8 {
-        gap: 1rem;
-    }
-    
-    .p-6 {
-        padding: 1rem;
-    }
-    
-    .px-6 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .py-3 {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-    
-    /* Improve button responsiveness */
-    .flex-1 {
-        min-width: 0;
-    }
-    
-    /* Better image aspect ratio on small screens */
-    .h-48 {
-        height: 10rem;
-    }
-}
-
-/* Medium screens (tablets) */
-@media (max-width: 768px) {
-    .grid-cols-1.lg\:grid-cols-3 {
-        gap: 1rem;
-    }
-    
-    /* Stack sidebar below main content on tablets */
-    .lg\:col-span-2 {
-        grid-column: span 1;
-    }
-}
-
-/* Large screens optimizations */
-@media (min-width: 1024px) {
-    /* Better spacing on large screens */
-    .max-w-7xl {
-        max-width: 80rem;
-    }
-    
-    .space-y-8 > * + * {
-        margin-top: 2rem;
-    }
-}
-
-/* Custom breakpoint for extra small screens */
+/* Custom xs breakpoint for extra small screens */
 @media (min-width: 375px) {
     .xs\:inline {
         display: inline;
     }
-    
+
     .xs\:hidden {
         display: none;
-    }
-}
-
-/* Ensure good contrast and readability */
-.text-muted-foreground {
-    opacity: 0.8;
-}
-
-/* Improve touch targets on mobile */
-@media (hover: none) and (pointer: coarse) {
-    button, a {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .p-2 {
-        padding: 0.75rem;
-    }
-    
-    .px-3 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-}
-
-/* Smooth scrolling for better UX */
-html {
-    scroll-behavior: smooth;
-}
-
-/* Optimize for dark mode on mobile */
-@media (prefers-color-scheme: dark) {
-    .shadow-lg {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-    }
-    
-    .shadow-2xl {
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
     }
 }
 </style>
