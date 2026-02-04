@@ -107,7 +107,7 @@ const animateText = () => {
                 </div>
 
                 <div
-                    class="flex flex-col lg:grid lg:grid-cols-[3fr_2fr] gap-4 sm:gap-6 lg:gap-8 items-center w-full relative z-10">
+                    class="flex flex-col lg:grid lg:grid-cols-[1fr_1fr] gap-4 sm:gap-6 lg:gap-12 items-center w-full relative z-10">
                     <!-- Avatar Section - Shows first on mobile -->
                     <div class="flex justify-center items-center relative order-1 lg:order-2"
                         :class="{ 'fade-in-up': isVisible }">
@@ -121,12 +121,12 @@ const animateText = () => {
                             </div>
 
                             <Avatar
-                                class="w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 floating border-4 border-background shadow-2xl relative z-10">
+                                class="w-44 h-44 xs:w-52 xs:h-52 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 xl:w-[28rem] xl:h-[28rem] 2xl:w-[32rem] 2xl:h-[32rem] floating border-4 border-background shadow-2xl relative z-10">
                                 <AvatarImage v-if="users.image"
                                     :src="users.image.startsWith('http') ? users.image : `/${users.image}`"
-                                    :alt="users.name" class="object-cover" />
+                                    :alt="users.name" class="object-cover object-[center_30%]" />
                                 <AvatarFallback
-                                    class="bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-xl xs:text-2xl sm:text-3xl md:text-4xl font-semibold">
+                                    class="bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold">
                                     {{ users.name?.charAt(0) }}
                                 </AvatarFallback>
                             </Avatar>
