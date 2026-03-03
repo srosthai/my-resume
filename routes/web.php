@@ -18,6 +18,7 @@ use App\Http\Controllers\DashboardController;
 Route::get('/', [PortfolioController::class, 'home'])->name('home');
 Route::get('/about', [PortfolioController::class, 'about'])->name('about');
 Route::get('/portfolio', [PortfolioController::class, 'portfolio'])->name('portfolio');
+Route::get('/portfolio/{project}', [PortfolioController::class, 'showProject'])->name('portfolio.show');
 Route::get('/contact', [PortfolioController::class, 'contact'])->name('contact');
 Route::get('/hobby', [PortfolioController::class, 'hobby'])->name('hobby');
 Route::get('/more', [PortfolioController::class, 'more'])->name('more');

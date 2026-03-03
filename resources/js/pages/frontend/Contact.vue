@@ -55,8 +55,8 @@ const socialLinks = [
     {
         name: 'Facebook',
         icon: Facebook,
-        url: 'https://www.facebook.com/samo.thai.73',
-        username: 'HE Sovanthai',
+        url: 'https://www.facebook.com/srosthai2003',
+        username: 'Jo Zen',
         color: '#1877F2'
     },
     {

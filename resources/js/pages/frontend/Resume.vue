@@ -7,7 +7,6 @@ import {
     Phone,
     Mail,
     MapPin,
-    Download,
     Printer,
 } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
@@ -141,14 +140,6 @@ const printResume = () => {
                     <Printer class="size-4" />
                     <span class="hidden sm:inline">Print</span>
                 </button>
-                <a
-                    href="/resume.pdf"
-                    download
-                    class="flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-lg transition-all hover:bg-secondary/80"
-                >
-                    <Download class="size-4" />
-                    <span class="hidden sm:inline">PDF</span>
-                </a>
             </div>
 
             <!-- Resume Container -->

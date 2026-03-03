@@ -97,6 +97,32 @@ class PortfolioController extends Controller
     }
 
     /**
+     * Display a single project detail page.
+     */
+    public function showProject(Project $project)
+    {
+        $project->load('projectType');
+        $project->image = $project->image ? asset($project->image) : null;
+
+        // Get previous and next project IDs for navigation
+        $previousProject = Project::where('id', '<', $project->id)
+            ->orderBy('id', 'desc')
+            ->first(['id', 'title']);
+
+        $nextProject = Project::where('id', '>', $project->id)
+            ->orderBy('id', 'asc')
+            ->first(['id', 'title']);
+
+        return Inertia::render('frontend/ProjectDetail', [
+            'title'           => $project->title,
+            'description'     => $project->description,
+            'project'         => $project,
+            'previousProject' => $previousProject,
+            'nextProject'     => $nextProject,
+        ]);
+    }
+
+    /**
      * Display the contact page.
      *
      * @return \Inertia\Response
