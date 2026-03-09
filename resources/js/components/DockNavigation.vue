@@ -51,7 +51,7 @@ const links = [
 </script>
 
 <template>
-    <div class="sticky top-0 z-50 flex items-center justify-center w-full py-4 px-4 bg-background/80 backdrop-blur-md border-b border-border/20">
+    <div class="sticky top-0 z-50 flex items-center justify-center w-full py-2 sm:py-4 px-2 sm:px-4 bg-background/80 backdrop-blur-md border-b border-border/20">
         <FloatingDock 
             :items="links"
             direction="middle"

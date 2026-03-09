@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 
@@ -17,9 +18,20 @@ const props = defineProps({
 })
 
 const isVisible          = ref(false)
+const isLoading          = ref(true)
 const showSuccessMessage = ref(false)
 const showErrorMessage   = ref(false)
 const errorMessage       = ref('')
+
+const staggerDelay = {
+    badge: 0,
+    title: 100,
+    description: 200,
+    socialTitle: 0,
+    socialCards: 150,
+    formTitle: 0,
+    form: 150,
+}
 
 // Form data using Inertia's useForm
 const form = useForm({
@@ -113,8 +125,11 @@ const openLink = (url) => {
 
 onMounted(() => {
     setTimeout(() => {
-        isVisible.value = true
-    }, 100)
+        isLoading.value = false
+        setTimeout(() => {
+            isVisible.value = true
+        }, 50)
+    }, 800)
 })
 </script>
 
@@ -129,7 +144,7 @@ onMounted(() => {
         <meta name="geo.region" content="KH" />
         <meta name="geo.country" content="Cambodia" />
         <meta name="theme-color" content="#2563eb" />
-        
+
         <!-- Open Graph Meta Tags -->
         <meta property="og:title" :content="title" />
         <meta property="og:description" :content="description" />
@@ -137,13 +152,13 @@ onMounted(() => {
         <meta property="og:url" :content="$page.url" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Contact - Developer Portfolio" />
-        
+
         <!-- Twitter Card Meta Tags -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" :content="title" />
         <meta name="twitter:description" :content="description" />
         <meta name="twitter:image" content="/contact-og-image.jpg" />
-        
+
         <!-- Additional SEO Meta Tags -->
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -153,10 +168,51 @@ onMounted(() => {
         </Head>
 
         <div class="overflow-x-hidden transition-all duration-300 pt-16">
-        
+
         <!-- Music Player -->
         <MusicPlayer />
 
+        <template v-if="isLoading">
+            <!-- Hero Skeleton -->
+            <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center relative">
+                <div class="space-y-6 relative z-10 mt-5 flex flex-col items-center">
+                    <Skeleton class="h-9 w-36 rounded-full" />
+                    <Skeleton class="h-10 sm:h-12 w-56 sm:w-72 rounded-lg" />
+                    <div class="space-y-2 max-w-3xl w-full">
+                        <Skeleton class="h-4 w-full rounded-lg" />
+                        <Skeleton class="h-4 w-3/4 rounded-lg mx-auto" />
+                    </div>
+                </div>
+            </section>
+            <!-- Social Skeleton -->
+            <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
+                <div class="text-center mb-8 lg:mb-12 flex flex-col items-center">
+                    <Skeleton class="mb-3 h-8 w-40 rounded-lg" />
+                    <Skeleton class="h-4 w-64 rounded-lg" />
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                    <Skeleton v-for="i in 6" :key="i" class="h-20 rounded-lg" />
+                </div>
+            </section>
+            <!-- Form Skeleton -->
+            <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
+                <div class="text-center mb-8 lg:mb-12 flex flex-col items-center">
+                    <Skeleton class="mb-3 h-8 w-48 rounded-lg" />
+                    <Skeleton class="h-4 w-72 rounded-lg" />
+                </div>
+                <div class="max-w-2xl mx-auto rounded-lg border border-border/50 p-6 lg:p-8 space-y-4 lg:space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                        <Skeleton class="h-10 rounded-lg" />
+                        <Skeleton class="h-10 rounded-lg" />
+                    </div>
+                    <Skeleton class="h-10 rounded-lg" />
+                    <Skeleton class="h-32 rounded-lg" />
+                    <Skeleton class="h-12 rounded-lg" />
+                </div>
+            </section>
+        </template>
+
+        <template v-else>
         <!-- Contact Hero Section -->
         <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center relative">
             <!-- Background decoration -->
@@ -164,30 +220,36 @@ onMounted(() => {
                 <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
                 <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
             </div>
-            
-            <div class="space-y-6 relative z-10 mt-5" :class="{ 'fade-in-up': isVisible }">
+
+            <div class="space-y-6 relative z-10 mt-5">
                 <div class="space-y-3">
-                    <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
-                        <MessageSquare class="w-3 h-3 mr-2" />
-                        Let's Connect
-                    </Badge>
-                    
-                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
-                        <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-                            Get In Touch
-                        </span>
-                    </h1>
+                    <div class="stagger-fade-in" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.badge}ms` }">
+                        <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
+                            <MessageSquare class="w-3 h-3 mr-2" />
+                            Let's Connect
+                        </Badge>
+                    </div>
+
+                    <div class="stagger-fade-in" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.title}ms` }">
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
+                            <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                                Get In Touch
+                            </span>
+                        </h1>
+                    </div>
                 </div>
-                
-                <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-                    Let's connect and discuss opportunities, collaborations, or just have a friendly chat about technology.
-                </p>
+
+                <div class="stagger-fade-in" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.description}ms` }">
+                    <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+                        Let's connect and discuss opportunities, collaborations, or just have a friendly chat about technology.
+                    </p>
+                </div>
             </div>
         </section>
 
         <!-- Social Media Section -->
         <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
-            <div class="text-center mb-8 lg:mb-12" :class="{ 'fade-in-up': isVisible }">
+            <div class="stagger-fade-in text-center mb-8 lg:mb-12" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.socialTitle}ms` }">
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4">
                     <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
                         Follow Me
@@ -197,13 +259,11 @@ onMounted(() => {
                     Connect with me across different platforms and stay updated with my latest work.
                 </p>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <div class="stagger-fade-in grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.socialCards}ms` }">
                 <Card
                     v-for="(social, index) in socialLinks"
                     :key="index"
                     class="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card/80 active:bg-card/90 focus:bg-card/80 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-lg active:shadow-xl focus:shadow-lg hover:shadow-primary/20 active:shadow-primary/30 focus:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer group overflow-hidden"
-                    :class="{ 'fade-in-up': isVisible }"
-                    :style="{ animationDelay: `${index * 0.1}s` }"
                     @click="openLink(social.url)"
                     tabindex="0"
                     @keydown.enter="openLink(social.url)"
@@ -267,7 +327,7 @@ onMounted(() => {
 
         <!-- Contact Form Section -->
         <section class="py-8 lg:py-12 px-4 max-w-6xl mx-auto">
-            <div class="text-center mb-8 lg:mb-12" :class="{ 'fade-in-up': isVisible }">
+            <div class="stagger-fade-in text-center mb-8 lg:mb-12" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.formTitle}ms` }">
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4">
                     <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
                         Send a Message
@@ -277,7 +337,7 @@ onMounted(() => {
                     Have a question or want to work together? I'd love to hear from you.
                 </p>
             </div>
-            <div class="max-w-2xl mx-auto" :class="{ 'fade-in-up': isVisible }">
+            <div class="stagger-fade-in max-w-2xl mx-auto" :class="{ 'animate': isVisible }" :style="{ animationDelay: `${staggerDelay.form}ms` }">
                 <!-- Success Message -->
                 <div v-if="showSuccessMessage" class="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg flex items-center text-green-800">
                     <CheckCircle class="w-5 h-5 mr-3 flex-shrink-0" />
@@ -296,10 +356,10 @@ onMounted(() => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                                 <div class="space-y-2">
                                     <Label for="name" class="text-foreground font-medium">Full Name</Label>
-                                    <Input 
-                                        id="name" 
+                                    <Input
+                                        id="name"
                                         v-model="form.name"
-                                        type="text" 
+                                        type="text"
                                         required
                                         :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20', form.errors.name ? 'border-red-500' : '']"
                                         placeholder="Enter your full name"
@@ -308,10 +368,10 @@ onMounted(() => {
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="email" class="text-foreground font-medium">Email Address</Label>
-                                    <Input 
-                                        id="email" 
+                                    <Input
+                                        id="email"
                                         v-model="form.email"
-                                        type="email" 
+                                        type="email"
                                         required
                                         :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20', form.errors.email ? 'border-red-500' : '']"
                                         placeholder="Enter your email address"
@@ -319,35 +379,35 @@ onMounted(() => {
                                     <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
                                 </div>
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <Label for="subject" class="text-foreground font-medium">Subject</Label>
-                                <Input 
-                                    id="subject" 
+                                <Input
+                                    id="subject"
                                     v-model="form.subject"
-                                    type="text" 
+                                    type="text"
                                     required
                                     :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20', form.errors.subject ? 'border-red-500' : '']"
                                     placeholder="Enter the subject"
                                 />
                                 <span v-if="form.errors.subject" class="text-red-500 text-sm">{{ form.errors.subject }}</span>
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <Label for="message" class="text-foreground font-medium">Message</Label>
-                                <Textarea 
-                                    id="message" 
+                                <Textarea
+                                    id="message"
                                     v-model="form.message"
-                                    rows="6" 
+                                    rows="6"
                                     required
                                     :class="['bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-ring/20 resize-y', form.errors.message ? 'border-red-500' : '']"
                                     placeholder="Enter your message"
                                 />
                                 <span v-if="form.errors.message" class="text-red-500 text-sm">{{ form.errors.message }}</span>
                             </div>
-                            
-                            <Button 
-                                type="submit" 
+
+                            <Button
+                                type="submit"
                                 :disabled="form.processing"
                                 class="w-full bg-primary hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 text-primary-foreground font-semibold py-3 lg:py-4 transition-all duration-300 hover:-translate-y-1 active:-translate-y-2 focus:-translate-y-1 hover:shadow-lg active:shadow-xl focus:shadow-lg hover:shadow-primary/40 active:shadow-primary/50 focus:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
                                 size="lg"
@@ -361,16 +421,25 @@ onMounted(() => {
                 </Card>
             </div>
         </section>
+        </template>
         </div>
     </FrontendLayout>
 </template>
 
 <style scoped>
-/* Animations */
-@keyframes fadeInUp {
+.stagger-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.stagger-fade-in.animate {
+    animation: staggerFadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes staggerFadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -378,7 +447,13 @@ onMounted(() => {
     }
 }
 
-.fade-in-up {
-    animation: fadeInUp 1s ease-out forwards;
+@media (prefers-reduced-motion: reduce) {
+    .stagger-fade-in {
+        opacity: 1;
+        transform: none;
+    }
+    .stagger-fade-in.animate {
+        animation: none;
+    }
 }
 </style>

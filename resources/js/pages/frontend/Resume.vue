@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
     Phone,
     Mail,
@@ -69,12 +70,23 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Animation state
+const isLoading = ref(true)
 const isVisible = ref(false)
 
+const staggerDelay = {
+    header: 0,
+    leftColumn: 100,
+    rightColumn: 200,
+    footer: 300,
+}
+
 onMounted(() => {
-    requestAnimationFrame(() => {
-        isVisible.value = true
-    })
+    setTimeout(() => {
+        isLoading.value = false
+        setTimeout(() => {
+            isVisible.value = true
+        }, 50)
+    }, 800)
 })
 
 // Get user initials
@@ -143,15 +155,75 @@ const printResume = () => {
             </div>
 
             <!-- Resume Container -->
-            <div
-                class="mx-auto max-w-4xl px-4 pb-16 print:max-w-none print:px-0 print:pb-0"
-                :class="{ 'opacity-100': isVisible, 'opacity-0': !isVisible }"
-                style="transition: opacity 0.5s ease-out"
-            >
+            <div class="mx-auto max-w-4xl px-4 pb-16 print:max-w-none print:px-0 print:pb-0">
+
+                <!-- Skeleton -->
+                <div v-if="isLoading" class="rounded-xl border border-border/40 bg-card shadow-xl">
+                    <!-- Header Skeleton -->
+                    <div class="flex flex-col items-center gap-6 border-b border-border/30 p-8 sm:flex-row sm:items-start">
+                        <Skeleton class="size-28 sm:size-32 rounded-full" />
+                        <div class="flex-1 space-y-3 text-center sm:text-left">
+                            <Skeleton class="h-8 sm:h-10 w-48 sm:w-64 rounded-lg mx-auto sm:mx-0" />
+                            <Skeleton class="h-5 w-36 rounded-lg mx-auto sm:mx-0" />
+                        </div>
+                    </div>
+                    <!-- Two Column Skeleton -->
+                    <div class="grid gap-0 md:grid-cols-[1fr_1.2fr]">
+                        <div class="space-y-6 border-b border-border/30 p-6 md:border-b-0 md:border-r">
+                            <div class="space-y-3">
+                                <Skeleton class="h-5 w-16 rounded" />
+                                <Skeleton class="h-3 w-full rounded" />
+                                <Skeleton class="h-3 w-full rounded" />
+                                <Skeleton class="h-3 w-4/5 rounded" />
+                            </div>
+                            <Skeleton class="h-px w-full" />
+                            <div class="space-y-3">
+                                <Skeleton class="h-5 w-20 rounded" />
+                                <div v-for="i in 3" :key="i" class="flex items-center gap-3">
+                                    <Skeleton class="size-4 rounded" />
+                                    <Skeleton class="h-4 w-32 rounded" />
+                                </div>
+                            </div>
+                            <Skeleton class="h-px w-full" />
+                            <div class="space-y-3">
+                                <Skeleton class="h-5 w-14 rounded" />
+                                <Skeleton class="h-3 w-20 rounded" />
+                                <div v-for="i in 3" :key="i" class="flex items-center gap-2">
+                                    <Skeleton class="size-1.5 rounded-full" />
+                                    <Skeleton class="h-3 w-36 rounded" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-6 p-6">
+                            <div class="space-y-3">
+                                <Skeleton class="h-5 w-24 rounded" />
+                                <div v-for="i in 2" :key="i" class="rounded-lg bg-muted/30 p-4 space-y-2">
+                                    <Skeleton class="h-4 w-24 rounded" />
+                                    <Skeleton class="h-5 w-48 rounded" />
+                                    <Skeleton class="h-3 w-full rounded" />
+                                    <Skeleton class="h-3 w-4/5 rounded" />
+                                </div>
+                            </div>
+                            <Skeleton class="h-px w-full" />
+                            <div class="space-y-3">
+                                <Skeleton class="h-5 w-28 rounded" />
+                                <div v-for="i in 2" :key="i" class="rounded-lg bg-muted/30 p-4 space-y-2">
+                                    <Skeleton class="h-4 w-28 rounded" />
+                                    <Skeleton class="h-5 w-40 rounded" />
+                                    <Skeleton class="h-3 w-full rounded" />
+                                    <Skeleton class="h-3 w-3/4 rounded" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Resume Paper -->
+                <template v-else>
                 <div class="rounded-xl border border-border/40 bg-card shadow-xl print:rounded-none print:border-0 print:shadow-none">
 
                     <!-- Header Section -->
+                    <div class="stagger-fade-in" :style="{ animationDelay: staggerDelay.header + 'ms' }" :class="{ 'animate': isVisible }">
                     <div class="flex flex-col items-center gap-6 border-b border-border/30 p-8 sm:flex-row sm:items-start print:border-b-2 print:border-primary/20">
                         <!-- Avatar -->
                         <Avatar class="size-28 border-4 border-primary/20 shadow-md sm:size-32 print:size-24">
@@ -176,11 +248,13 @@ const printResume = () => {
                             </p>
                         </div>
                     </div>
+                    </div>
 
                     <!-- Two Column Layout -->
                     <div class="grid gap-0 md:grid-cols-[1fr_1.2fr] print:grid-cols-[1fr_1.2fr]">
 
                         <!-- Left Column -->
+                        <div class="stagger-fade-in" :style="{ animationDelay: staggerDelay.leftColumn + 'ms' }" :class="{ 'animate': isVisible }">
                         <div class="space-y-6 border-b border-border/30 p-6 md:border-b-0 md:border-r print:border-r print:border-primary/20 print:p-6">
 
                             <!-- Profile Section -->
@@ -237,8 +311,10 @@ const printResume = () => {
                                 </div>
                             </section>
                         </div>
+                        </div>
 
                         <!-- Right Column -->
+                        <div class="stagger-fade-in" :style="{ animationDelay: staggerDelay.rightColumn + 'ms' }" :class="{ 'animate': isVisible }">
                         <div class="space-y-6 p-6 print:p-6">
 
                             <!-- Education Section -->
@@ -313,21 +389,55 @@ const printResume = () => {
                                 <p class="text-muted-foreground">No education or experience data available.</p>
                             </div>
                         </div>
+                        </div>
                     </div>
 
                     <!-- Footer -->
+                    <div class="stagger-fade-in" :style="{ animationDelay: staggerDelay.footer + 'ms' }" :class="{ 'animate': isVisible }">
                     <div class="border-t border-border/30 p-4 text-center print:hidden">
                         <p class="text-xs text-muted-foreground">
                             Last updated: {{ new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
                         </p>
                     </div>
+                    </div>
                 </div>
+                </template>
             </div>
         </div>
     </FrontendLayout>
 </template>
 
 <style scoped>
+.stagger-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.stagger-fade-in.animate {
+    animation: staggerFadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes staggerFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stagger-fade-in {
+        opacity: 1;
+        transform: none;
+    }
+    .stagger-fade-in.animate {
+        animation: none;
+    }
+}
+
 /* Print styles */
 @media print {
     @page {

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Heart, Gamepad2, Palette, Music, Book, Code2, Coffee, Dumbbell, Camera, Plane, Terminal } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
@@ -85,11 +86,21 @@ const hobbies = [
     }
 ]
 
+const isLoading = ref(true)
 const isVisible = ref(false)
 const selectedCategory = ref('All')
 const filteredHobbies = ref(hobbies)
 
 const categories = ['All', 'Development', 'Learning', 'Creative', 'Lifestyle', 'Entertainment', 'Health']
+
+const staggerDelay = {
+    badge: 0,
+    title: 100,
+    description: 200,
+    filters: 300,
+    stats: 400,
+    grid: 500,
+}
 
 const filterHobbies = (category) => {
     selectedCategory.value = category
@@ -102,8 +113,11 @@ const filterHobbies = (category) => {
 
 onMounted(() => {
     setTimeout(() => {
-        isVisible.value = true
-    }, 100)
+        isLoading.value = false
+        setTimeout(() => {
+            isVisible.value = true
+        }, 50)
+    }, 800)
 })
 </script>
 
@@ -113,7 +127,7 @@ onMounted(() => {
         <meta name="description" :content="description" />
         <meta name="keywords" content="hobbies, interests, personal life, creativity, problem solving, developer lifestyle" />
         <meta name="author" content="Software Developer" />
-        
+
         <!-- Open Graph Meta Tags -->
         <meta property="og:title" :content="title" />
         <meta property="og:description" :content="description" />
@@ -121,13 +135,13 @@ onMounted(() => {
         <meta property="og:url" :content="$page.url" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Hobbies & Interests" />
-        
+
         <!-- Twitter Card Meta Tags -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" :content="title" />
         <meta name="twitter:description" :content="description" />
         <meta name="twitter:image" content="/hobbies-og-image.jpg" />
-        
+
         <!-- Additional SEO Meta Tags -->
         <meta name="robots" content="index, follow" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -137,7 +151,7 @@ onMounted(() => {
     <FrontendLayout currentRoute="/hobby">
         <!-- Music Player -->
         <MusicPlayer />
-        
+
         <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
 
         <!-- Hobbies Hero Section -->
@@ -147,115 +161,179 @@ onMounted(() => {
                 <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
                 <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
             </div>
-            
-            <div class="text-center mb-8 lg:mb-12 relative z-10">
-                <div class="space-y-4 lg:space-y-6" :class="{ 'fade-in-up': isVisible }">
-                    <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
-                        <Heart class="w-3 h-3 mr-2" />
-                        Personal Interests
-                    </Badge>
-                    
-                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
-                        <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-                            Hobbies & Interests
-                        </span>
-                    </h1>
-                    
-                    <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-                        Beyond coding, I enjoy exploring various activities that inspire creativity, problem-solving, and continuous learning. Each hobby contributes to my growth as a developer.
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Category Filter -->
-            <div class="flex justify-center flex-wrap gap-2 lg:gap-3 mb-8 relative z-10" :class="{ 'fade-in-up': isVisible }">
-                <button
-                    v-for="category in categories"
-                    :key="category"
-                    @click="filterHobbies(category)"
-                    :class="[
-                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',
-                        selectedCategory === category
-                            ? 'bg-primary text-primary-foreground border-primary shadow-lg'
-                            : 'bg-background/50 backdrop-blur-sm text-muted-foreground border-border/50 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground focus:bg-accent focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20'
-                    ]"
-                >
-                    {{ category }}
-                </button>
-            </div>
-            
-            <!-- Stats -->
-            <div class="text-center mb-6 relative z-10" :class="{ 'fade-in-up': isVisible }">
-                <p class="text-sm text-muted-foreground">
-                    Showing {{ filteredHobbies.length }} of {{ hobbies.length }} {{ filteredHobbies.length === 1 ? 'hobby' : 'hobbies' }}
-                    <span v-if="selectedCategory !== 'All'"> in {{ selectedCategory }}</span>
-                </p>
-            </div>
-            
-            <!-- Hobbies Grid -->
-            <div v-if="filteredHobbies.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 relative z-10">
-                <Card
-                    v-for="(hobby, index) in filteredHobbies"
-                    :key="hobby.title"
-                    class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-2 active:-translate-y-2 focus:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 active:shadow-xl active:shadow-primary/10 focus:shadow-xl focus:shadow-primary/10 group transform focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    :class="{ 'fade-in-up': isVisible }"
-                    :style="{ animationDelay: `${index * 0.1}s` }"
-                    tabindex="0"
-                >
-                    <CardContent class="p-4 lg:p-6">
-                        <div class="flex flex-col items-center text-center space-y-4 lg:space-y-6">
-                            <div class="p-3 lg:p-4 rounded-full transition-all duration-300 group-hover:scale-110 group-active:scale-110 group-focus:scale-110" :class="hobby.color">
-                                <component :is="hobby.icon" class="w-6 h-6 lg:w-8 lg:h-8" />
-                            </div>
-                            
-                            <div class="space-y-2 lg:space-y-3">
-                                <div class="flex flex-col items-center gap-2">
-                                    <h3 class="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary group-active:text-primary group-focus:text-primary transition-colors duration-300">
-                                        {{ hobby.title }}
-                                    </h3>
-                                    <Badge variant="outline" class="text-xs px-2 py-1 bg-accent/20 border-accent text-accent-foreground">
-                                        {{ hobby.category }}
-                                    </Badge>
-                                </div>
-                                
-                                <p class="text-sm lg:text-base text-muted-foreground leading-relaxed group-hover:text-foreground/80 group-active:text-foreground/80 group-focus:text-foreground/80 transition-colors duration-300">
-                                    {{ hobby.description }}
-                                </p>
-                            </div>
+
+            <template v-if="isLoading">
+                <div class="text-center mb-8 lg:mb-12 relative z-10 flex flex-col items-center">
+                    <div class="space-y-4 lg:space-y-6 flex flex-col items-center">
+                        <Skeleton class="h-9 w-40 rounded-full" />
+                        <Skeleton class="h-10 sm:h-12 w-64 sm:w-80 rounded-lg" />
+                        <div class="space-y-2 max-w-3xl w-full">
+                            <Skeleton class="h-4 w-full rounded-lg" />
+                            <Skeleton class="h-4 w-4/5 rounded-lg mx-auto" />
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-            
-            <!-- Empty State -->
-            <div v-else class="text-center py-12 lg:py-16 relative z-10" :class="{ 'fade-in-up': isVisible }">
-                <div class="space-y-4">
-                    <div class="w-16 h-16 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
-                        <Heart class="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h3 class="text-xl font-semibold text-foreground">No hobbies found</h3>
-                    <p class="text-muted-foreground">
-                        No hobbies match the selected category. Try selecting a different category.
-                    </p>
+                </div>
+                <!-- Filter Skeleton -->
+                <div class="flex justify-center flex-wrap gap-2 lg:gap-3 mb-8 relative z-10">
+                    <Skeleton v-for="i in 7" :key="i" class="h-8 w-20 rounded-full" />
+                </div>
+                <!-- Stats Skeleton -->
+                <div class="text-center mb-6 relative z-10">
+                    <Skeleton class="h-4 w-40 rounded-lg mx-auto" />
+                </div>
+                <!-- Grid Skeleton -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 relative z-10">
+                    <Skeleton v-for="i in 6" :key="i" class="h-56 rounded-lg" />
+                </div>
+            </template>
+
+            <template v-else>
+                <div class="text-center mb-8 lg:mb-12 relative z-10">
+                    <div class="space-y-4 lg:space-y-6">
+                        <div
+                            class="stagger-fade-in"
+                            :class="{ 'animate': isVisible }"
+                            :style="{ animationDelay: `${staggerDelay.badge}ms` }"
+                        >
+                            <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
+                                <Heart class="w-3 h-3 mr-2" />
+                                Personal Interests
+                            </Badge>
+                        </div>
+
+                        <div
+                            class="stagger-fade-in"
+                            :class="{ 'animate': isVisible }"
+                            :style="{ animationDelay: `${staggerDelay.title}ms` }"
+                        >
+                            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
+                                <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                                    Hobbies & Interests
+                                </span>
+                            </h1>
+                        </div>
+
+                        <div
+                            class="stagger-fade-in"
+                            :class="{ 'animate': isVisible }"
+                            :style="{ animationDelay: `${staggerDelay.description}ms` }"
+                        >
+                            <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+                                Beyond coding, I enjoy exploring various activities that inspire creativity, problem-solving, and continuous learning. Each hobby contributes to my growth as a developer.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div
+                    class="flex justify-center flex-wrap gap-2 lg:gap-3 mb-8 relative z-10 stagger-fade-in"
+                    :class="{ 'animate': isVisible }"
+                    :style="{ animationDelay: `${staggerDelay.filters}ms` }"
+                >
                     <button
-                        @click="filterHobbies('All')"
-                        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        v-for="category in categories"
+                        :key="category"
+                        @click="filterHobbies(category)"
+                        :class="[
+                            'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',
+                            selectedCategory === category
+                                ? 'bg-primary text-primary-foreground border-primary shadow-lg'
+                                : 'bg-background/50 backdrop-blur-sm text-muted-foreground border-border/50 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground focus:bg-accent focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20'
+                        ]"
                     >
-                        Show All Hobbies
+                        {{ category }}
                     </button>
                 </div>
-            </div>
+
+                <!-- Stats -->
+                <div
+                    class="text-center mb-6 relative z-10 stagger-fade-in"
+                    :class="{ 'animate': isVisible }"
+                    :style="{ animationDelay: `${staggerDelay.stats}ms` }"
+                >
+                    <p class="text-sm text-muted-foreground">
+                        Showing {{ filteredHobbies.length }} of {{ hobbies.length }} {{ filteredHobbies.length === 1 ? 'hobby' : 'hobbies' }}
+                        <span v-if="selectedCategory !== 'All'"> in {{ selectedCategory }}</span>
+                    </p>
+                </div>
+
+                <!-- Hobbies Grid -->
+                <div
+                    v-if="filteredHobbies.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 relative z-10 stagger-fade-in"
+                    :class="{ 'animate': isVisible }"
+                    :style="{ animationDelay: `${staggerDelay.grid}ms` }"
+                >
+                    <Card
+                        v-for="(hobby, index) in filteredHobbies"
+                        :key="hobby.title"
+                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-2 active:-translate-y-2 focus:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 active:shadow-xl active:shadow-primary/10 focus:shadow-xl focus:shadow-primary/10 group transform focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        tabindex="0"
+                    >
+                        <CardContent class="p-4 lg:p-6">
+                            <div class="flex flex-col items-center text-center space-y-4 lg:space-y-6">
+                                <div class="p-3 lg:p-4 rounded-full transition-all duration-300 group-hover:scale-110 group-active:scale-110 group-focus:scale-110" :class="hobby.color">
+                                    <component :is="hobby.icon" class="w-6 h-6 lg:w-8 lg:h-8" />
+                                </div>
+
+                                <div class="space-y-2 lg:space-y-3">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <h3 class="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary group-active:text-primary group-focus:text-primary transition-colors duration-300">
+                                            {{ hobby.title }}
+                                        </h3>
+                                        <Badge variant="outline" class="text-xs px-2 py-1 bg-accent/20 border-accent text-accent-foreground">
+                                            {{ hobby.category }}
+                                        </Badge>
+                                    </div>
+
+                                    <p class="text-sm lg:text-base text-muted-foreground leading-relaxed group-hover:text-foreground/80 group-active:text-foreground/80 group-focus:text-foreground/80 transition-colors duration-300">
+                                        {{ hobby.description }}
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <!-- Empty State -->
+                <div v-else class="text-center py-12 lg:py-16 relative z-10 stagger-fade-in" :class="{ 'animate': isVisible }">
+                    <div class="space-y-4">
+                        <div class="w-16 h-16 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
+                            <Heart class="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <h3 class="text-xl font-semibold text-foreground">No hobbies found</h3>
+                        <p class="text-muted-foreground">
+                            No hobbies match the selected category. Try selecting a different category.
+                        </p>
+                        <button
+                            @click="filterHobbies('All')"
+                            class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                            Show All Hobbies
+                        </button>
+                    </div>
+                </div>
+            </template>
         </section>
         </div>
     </FrontendLayout>
 </template>
 
 <style scoped>
-/* Animations */
-@keyframes fadeInUp {
+.stagger-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.stagger-fade-in.animate {
+    animation: staggerFadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes staggerFadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -263,26 +341,13 @@ onMounted(() => {
     }
 }
 
-.fade-in-up {
-    animation: fadeInUp 1s ease-out forwards;
-}
-
-/* Custom transitions for filtering */
-.card-enter-active {
-    transition: all 0.3s ease-out;
-}
-
-.card-leave-active {
-    transition: all 0.3s ease-in;
-}
-
-.card-enter-from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-}
-
-.card-leave-to {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+@media (prefers-reduced-motion: reduce) {
+    .stagger-fade-in {
+        opacity: 1;
+        transform: none;
+    }
+    .stagger-fade-in.animate {
+        animation: none;
+    }
 }
 </style>

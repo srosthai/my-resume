@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import { Laptop, Github, Folder, ExternalLink, Search, X } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
     Select,
     SelectContent,
@@ -57,8 +58,17 @@ const props = withDefaults(defineProps<Props>(), {
 
 // State
 const isVisible = ref(false)
+const isLoading = ref(true)
 const selectedCategory = ref<string>('all')
 const searchQuery = ref('')
+
+const staggerDelay = {
+    badge: 0,
+    title: 100,
+    description: 200,
+    filters: 300,
+    grid: 400,
+}
 
 // Computed filtered projects
 const filteredProjects = computed(() => {
@@ -127,8 +137,11 @@ const getLiveUrl = (project: Project): string | undefined => {
 
 onMounted(() => {
     setTimeout(() => {
-        isVisible.value = true
-    }, 100)
+        isLoading.value = false
+        setTimeout(() => {
+            isVisible.value = true
+        }, 50)
+    }, 800)
 })
 </script>
 
@@ -167,215 +180,271 @@ onMounted(() => {
         </Head>
 
         <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-        
-        <!-- Portfolio Hero Section -->
-        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center hero-section mt-5">
-            <div class="space-y-4" :class="{ 'fade-in-up': isVisible }">
-                <div class="flex items-center justify-center gap-3 mb-4">
-                    <Badge variant="secondary" class="text-sm px-4 py-2">
-                        <Folder class="w-4 h-4 mr-2" />
-                        Portfolio
-                    </Badge>
-                </div>
-                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent leading-tight">
-                    My Portfolio
-                </h1>
-                <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-                    Explore my collection of projects showcasing modern web development, mobile applications, and innovative solutions.
-                </p>
-            </div>
-        </section>
 
-        <!-- Filter Section -->
-        <section class="py-6 px-4 max-w-6xl mx-auto">
-            <div
-                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 mb-8"
-                :class="{ 'fade-in-up': isVisible }"
-            >
-                <!-- Search Input -->
-                <div class="relative w-full sm:w-72 lg:w-80">
-                    <Search
-                        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
-                    />
-                    <Input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Search projects..."
-                        class="pl-9 pr-9 h-10 bg-background border-border/60 focus:border-primary/50"
-                    />
-                    <button
-                        v-if="searchQuery"
-                        @click="clearSearch"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        <template v-if="isLoading">
+            <!-- Hero Skeleton -->
+            <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center mt-5">
+                <div class="space-y-4 flex flex-col items-center">
+                    <Skeleton class="h-9 w-28 rounded-full" />
+                    <Skeleton class="h-10 sm:h-12 w-56 sm:w-72 rounded-lg" />
+                    <div class="space-y-2 max-w-3xl w-full">
+                        <Skeleton class="h-4 w-full rounded-lg mx-auto" />
+                        <Skeleton class="h-4 w-3/4 rounded-lg mx-auto" />
+                    </div>
+                </div>
+            </section>
+            <!-- Filter Skeleton -->
+            <section class="py-6 px-4 max-w-6xl mx-auto">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 mb-8">
+                    <Skeleton class="h-10 w-full sm:w-72 lg:w-80 rounded-lg" />
+                    <Skeleton class="h-10 w-full sm:w-48 rounded-lg" />
+                    <Skeleton class="h-5 w-20 rounded-lg" />
+                </div>
+            </section>
+            <!-- Grid Skeleton -->
+            <section class="pb-12 px-4 max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                    <Skeleton v-for="i in 6" :key="i" class="h-56 rounded-lg" :class="i === 4 || i === 7 ? 'md:col-span-2' : ''" />
+                </div>
+            </section>
+        </template>
+
+        <template v-else>
+            <!-- Portfolio Hero Section -->
+            <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto text-center hero-section mt-5">
+                <div class="space-y-4">
+                    <div
+                        class="flex items-center justify-center gap-3 mb-4 stagger-fade-in"
+                        :class="{ 'animate': isVisible }"
+                        :style="{ animationDelay: staggerDelay.badge + 'ms' }"
                     >
-                        <X class="size-4" />
-                    </button>
-                </div>
-
-                <!-- Category Dropdown -->
-                <Select v-model="selectedCategory">
-                    <SelectTrigger class="w-full sm:w-48 h-10 bg-background border-border/60">
-                        <Folder class="size-4 mr-2 text-muted-foreground" />
-                        <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem
-                            v-for="projectType in projectTypes"
-                            :key="projectType.id"
-                            :value="String(projectType.id)"
-                        >
-                            {{ projectType.name }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <!-- Results count -->
-                <div class="text-sm text-muted-foreground text-center sm:text-left">
-                    <span class="font-medium text-foreground">{{ filteredProjects.length }}</span>
-                    {{ filteredProjects.length === 1 ? 'project' : 'projects' }}
-                </div>
-            </div>
-        </section>
-
-        <!-- Projects Grid Section -->
-        <section class="pb-12 px-4 max-w-6xl mx-auto">
-            <!-- Debug Info -->
-            <div v-if="$page.props.debug" class="mb-4 p-4 bg-gray-100 rounded">
-                <p>Projects count: {{ projects.length }}</p>
-                <p>Filtered projects count: {{ filteredProjects.length }}</p>
-                <p>Project types count: {{ projectTypes.length }}</p>
-            </div>
-            
-            <!-- No Projects Message -->
-            <div v-if="filteredProjects.length === 0" class="text-center py-12">
-                <div class="max-w-md mx-auto">
-                    <Search class="size-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 class="text-lg font-semibold text-foreground mb-2">No Projects Found</h3>
-                    <p class="text-muted-foreground mb-4">
-                        <template v-if="searchQuery && selectedCategory !== 'all'">
-                            No projects match "{{ searchQuery }}" in the selected category.
-                        </template>
-                        <template v-else-if="searchQuery">
-                            No projects match "{{ searchQuery }}".
-                        </template>
-                        <template v-else-if="selectedCategory !== 'all'">
-                            No projects in this category.
-                        </template>
-                        <template v-else> No projects are available at the moment. </template>
+                        <Badge variant="secondary" class="text-sm px-4 py-2">
+                            <Folder class="w-4 h-4 mr-2" />
+                            Portfolio
+                        </Badge>
+                    </div>
+                    <h1
+                        class="text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent leading-tight stagger-fade-in"
+                        :class="{ 'animate': isVisible }"
+                        :style="{ animationDelay: staggerDelay.title + 'ms' }"
+                    >
+                        My Portfolio
+                    </h1>
+                    <p
+                        class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto stagger-fade-in"
+                        :class="{ 'animate': isVisible }"
+                        :style="{ animationDelay: staggerDelay.description + 'ms' }"
+                    >
+                        Explore my collection of projects showcasing modern web development, mobile applications, and innovative solutions.
                     </p>
-                    <div class="flex flex-wrap justify-center gap-2">
+                </div>
+            </section>
+
+            <!-- Filter Section -->
+            <section class="py-6 px-4 max-w-6xl mx-auto">
+                <div
+                    class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 mb-8 stagger-fade-in"
+                    :class="{ 'animate': isVisible }"
+                    :style="{ animationDelay: staggerDelay.filters + 'ms' }"
+                >
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-72 lg:w-80">
+                        <Search
+                            class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+                        />
+                        <Input
+                            v-model="searchQuery"
+                            type="text"
+                            placeholder="Search projects..."
+                            class="pl-9 pr-9 h-10 bg-background border-border/60 focus:border-primary/50"
+                        />
                         <button
                             v-if="searchQuery"
                             @click="clearSearch"
-                            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            Clear Search
-                        </button>
-                        <button
-                            v-if="selectedCategory !== 'all'"
-                            @click="selectedCategory = 'all'"
-                            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-                        >
-                            Show All Categories
+                            <X class="size-4" />
                         </button>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Projects Bento Grid -->
-            <BentoGrid v-else class="max-w-4xl mx-auto">
-                <BentoGridItem
-                    v-for="(project, index) in filteredProjects"
-                    :key="project.id"
-                    :title="project.title"
-                    :description="project.description"
-                    :icon="getProjectIcon(project)"
-                    :class="getBentoItemClass(index)"
-                    @click="openProjectDetails(project)"
-                >
-                    <template #header>
-                        <div class="w-full h-full rounded-lg relative overflow-hidden bg-gradient-to-br from-muted/80 to-muted/40">
-                            <!-- Project Image -->
-                            <img
-                                v-if="project.image"
-                                :src="project.image"
-                                :alt="project.title"
-                                class="w-full h-full object-cover"
-                            />
-                            <div
-                                v-else
-                                class="w-full h-full flex items-center justify-center"
+
+                    <!-- Category Dropdown -->
+                    <Select v-model="selectedCategory">
+                        <SelectTrigger class="w-full sm:w-48 h-10 bg-background border-border/60">
+                            <Folder class="size-4 mr-2 text-muted-foreground" />
+                            <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            <SelectItem
+                                v-for="projectType in projectTypes"
+                                :key="projectType.id"
+                                :value="String(projectType.id)"
                             >
-                                <Laptop class="size-10 sm:size-12 text-muted-foreground/50" />
-                            </div>
+                                {{ projectType.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
 
-                            <!-- Category Badge (top right) -->
-                            <div class="absolute top-2 right-2">
-                                <Badge
-                                    variant="secondary"
-                                    class="bg-background/95 text-foreground shadow-sm text-xs px-2 py-1"
+                    <!-- Results count -->
+                    <div class="text-sm text-muted-foreground text-center sm:text-left">
+                        <span class="font-medium text-foreground">{{ filteredProjects.length }}</span>
+                        {{ filteredProjects.length === 1 ? 'project' : 'projects' }}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects Grid Section -->
+            <section
+                class="pb-12 px-4 max-w-6xl mx-auto stagger-fade-in"
+                :class="{ 'animate': isVisible }"
+                :style="{ animationDelay: staggerDelay.grid + 'ms' }"
+            >
+                <!-- Debug Info -->
+                <div v-if="$page.props.debug" class="mb-4 p-4 bg-gray-100 rounded">
+                    <p>Projects count: {{ projects.length }}</p>
+                    <p>Filtered projects count: {{ filteredProjects.length }}</p>
+                    <p>Project types count: {{ projectTypes.length }}</p>
+                </div>
+
+                <!-- No Projects Message -->
+                <div v-if="filteredProjects.length === 0" class="text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <Search class="size-16 mx-auto text-muted-foreground mb-4" />
+                        <h3 class="text-lg font-semibold text-foreground mb-2">No Projects Found</h3>
+                        <p class="text-muted-foreground mb-4">
+                            <template v-if="searchQuery && selectedCategory !== 'all'">
+                                No projects match "{{ searchQuery }}" in the selected category.
+                            </template>
+                            <template v-else-if="searchQuery">
+                                No projects match "{{ searchQuery }}".
+                            </template>
+                            <template v-else-if="selectedCategory !== 'all'">
+                                No projects in this category.
+                            </template>
+                            <template v-else> No projects are available at the moment. </template>
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <button
+                                v-if="searchQuery"
+                                @click="clearSearch"
+                                class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors"
+                            >
+                                Clear Search
+                            </button>
+                            <button
+                                v-if="selectedCategory !== 'all'"
+                                @click="selectedCategory = 'all'"
+                                class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                            >
+                                Show All Categories
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Bento Grid -->
+                <BentoGrid v-else class="max-w-4xl mx-auto">
+                    <BentoGridItem
+                        v-for="(project, index) in filteredProjects"
+                        :key="project.id"
+                        :title="project.title"
+                        :description="project.description"
+                        :icon="getProjectIcon(project)"
+                        :class="getBentoItemClass(index)"
+                        @click="openProjectDetails(project)"
+                    >
+                        <template #header>
+                            <div class="w-full h-full rounded-lg relative overflow-hidden bg-gradient-to-br from-muted/80 to-muted/40">
+                                <!-- Project Image -->
+                                <img
+                                    v-if="project.image"
+                                    :src="project.image"
+                                    :alt="project.title"
+                                    class="w-full h-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="w-full h-full flex items-center justify-center"
                                 >
-                                    {{ project.project_type?.name || 'General' }}
-                                </Badge>
-                            </div>
+                                    <Laptop class="size-10 sm:size-12 text-muted-foreground/50" />
+                                </div>
 
-                            <!-- Bottom overlay with status and links -->
-                            <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                <div class="flex items-center justify-between">
-                                    <!-- Status Badge -->
+                                <!-- Category Badge (top right) -->
+                                <div class="absolute top-2 right-2">
                                     <Badge
-                                        v-if="project.status"
-                                        :class="{
-                                            'bg-emerald-500/90 text-white border-emerald-400':
-                                                project.status === 'completed',
-                                            'bg-blue-500/90 text-white border-blue-400':
-                                                project.status === 'in-progress' || project.status === 'processing',
-                                            'bg-amber-500/90 text-white border-amber-400':
-                                                project.status === 'pending'
-                                        }"
-                                        class="text-xs px-2 py-0.5 font-medium capitalize shadow-sm"
+                                        variant="secondary"
+                                        class="bg-background/95 text-foreground shadow-sm text-xs px-2 py-1"
                                     >
-                                        {{ project.status }}
+                                        {{ project.project_type?.name || 'General' }}
                                     </Badge>
-                                    <span v-else></span>
+                                </div>
 
-                                    <!-- Links -->
-                                    <div class="flex gap-1.5">
-                                        <a
-                                            v-if="getGithubUrl(project)"
-                                            :href="getGithubUrl(project)"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="size-7 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-gray-800 transition-colors shadow-sm"
-                                            @click.stop
+                                <!-- Bottom overlay with status and links -->
+                                <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                                    <div class="flex items-center justify-between">
+                                        <!-- Status Badge -->
+                                        <Badge
+                                            v-if="project.status"
+                                            :class="{
+                                                'bg-emerald-500/90 text-white border-emerald-400':
+                                                    project.status === 'completed',
+                                                'bg-blue-500/90 text-white border-blue-400':
+                                                    project.status === 'in-progress' || project.status === 'processing',
+                                                'bg-amber-500/90 text-white border-amber-400':
+                                                    project.status === 'pending'
+                                            }"
+                                            class="text-xs px-2 py-0.5 font-medium capitalize shadow-sm"
                                         >
-                                            <Github class="size-4" />
-                                        </a>
-                                        <a
-                                            v-if="getLiveUrl(project)"
-                                            :href="getLiveUrl(project)"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="size-7 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-gray-800 transition-colors shadow-sm"
-                                            @click.stop
-                                        >
-                                            <ExternalLink class="size-4" />
-                                        </a>
+                                            {{ project.status }}
+                                        </Badge>
+                                        <span v-else></span>
+
+                                        <!-- Links -->
+                                        <div class="flex gap-1.5">
+                                            <a
+                                                v-if="getGithubUrl(project)"
+                                                :href="getGithubUrl(project)"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="size-7 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-gray-800 transition-colors shadow-sm"
+                                                @click.stop
+                                            >
+                                                <Github class="size-4" />
+                                            </a>
+                                            <a
+                                                v-if="getLiveUrl(project)"
+                                                :href="getLiveUrl(project)"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="size-7 flex items-center justify-center rounded-md bg-white/90 hover:bg-white text-gray-800 transition-colors shadow-sm"
+                                                @click.stop
+                                            >
+                                                <ExternalLink class="size-4" />
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </template>
-                </BentoGridItem>
-            </BentoGrid>
-        </section>
+                        </template>
+                    </BentoGridItem>
+                </BentoGrid>
+            </section>
+        </template>
         </div>
     </FrontendLayout>
 </template>
 
 <style scoped>
-@keyframes fadeInUp {
+.stagger-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.stagger-fade-in.animate {
+    animation: staggerFadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes staggerFadeInUp {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -386,7 +455,13 @@ onMounted(() => {
     }
 }
 
-.fade-in-up {
-    animation: fadeInUp 0.5s ease-out forwards;
+@media (prefers-reduced-motion: reduce) {
+    .stagger-fade-in {
+        opacity: 1;
+        transform: none;
+    }
+    .stagger-fade-in.animate {
+        animation: none;
+    }
 }
 </style>

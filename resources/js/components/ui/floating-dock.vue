@@ -145,7 +145,7 @@ const socialItems = computed(() => props.items.slice(5))
       </Dock>
 
       <!-- Mobile Dock -->
-      <Dock :className="cn('md:hidden gap-1', mobileClassName)">
+      <Dock :className="cn('md:hidden gap-0.5 px-2', mobileClassName)">
         <DockIcon v-for="item in items.slice(0, 5)" :key="item.title">
           <!-- Internal Link -->
           <Link
