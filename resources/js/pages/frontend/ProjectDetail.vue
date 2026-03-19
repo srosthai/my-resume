@@ -14,10 +14,9 @@ import {
     CircleCheckBig,
     Clock,
     Loader,
+    ArrowUpRight,
 } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 
 // Types
@@ -67,6 +66,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 const isVisible = ref(false)
 
+const stagger = {
+    breadcrumb: 0,
+    header: 80,
+    image: 160,
+    content: 240,
+    sidebar: 300,
+    nav: 380,
+}
+
 onMounted(() => {
     setTimeout(() => {
         isVisible.value = true
@@ -81,26 +89,30 @@ const statusConfig = computed(() => {
             return {
                 icon: CircleCheckBig,
                 label: 'Completed',
-                classes: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800',
+                dot: 'bg-emerald-400',
+                classes: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
             }
         case 'in-progress':
         case 'processing':
             return {
                 icon: Loader,
                 label: status === 'processing' ? 'Processing' : 'In Progress',
-                classes: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800',
+                dot: 'bg-blue-400',
+                classes: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
             }
         case 'pending':
             return {
                 icon: Clock,
                 label: 'Pending',
-                classes: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800',
+                dot: 'bg-amber-400',
+                classes: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
             }
         default:
             return {
                 icon: Clock,
                 label: status || 'Unknown',
-                classes: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/50 dark:text-gray-400 dark:border-gray-800',
+                dot: 'bg-muted-foreground',
+                classes: 'bg-muted text-muted-foreground border-border/40',
             }
     }
 })
@@ -159,248 +171,240 @@ const goToProject = (id: number) => {
             <meta name="robots" content="index, follow" />
         </Head>
 
-        <div
-            class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16"
-        >
-            <!-- Main Content -->
-            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-                <div :class="{ 'fade-in-up': isVisible }">
-                    <!-- Breadcrumb -->
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-6 sm:mb-8">
+        <div class="min-h-screen text-foreground pt-20 sm:pt-24">
+            <div class="mx-auto max-w-5xl px-4 sm:px-6 pb-16">
+
+                <!-- Breadcrumb -->
+                <nav
+                    class="reveal mb-8"
+                    :style="{ animationDelay: `${stagger.breadcrumb}ms` }"
+                    :class="{ 'is-visible': isVisible }"
+                >
+                    <div class="flex items-center gap-2 text-sm">
                         <button
                             @click="goBack"
-                            class="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                            class="flex items-center gap-1.5 text-muted-foreground/60 transition-colors hover:text-foreground"
                         >
-                            <ArrowLeft class="w-4 h-4" />
-                            Portfolio
+                            <ArrowLeft class="size-3.5" />
+                            <span>Portfolio</span>
                         </button>
-                        <span class="text-border">/</span>
-                        <span class="text-foreground font-medium truncate">{{ project.title }}</span>
-                    </nav>
+                        <span class="text-border/60">/</span>
+                        <span class="truncate font-medium text-foreground/80">{{ project.title }}</span>
+                    </div>
+                </nav>
 
-                    <!-- Project Header -->
-                    <div class="mb-8 sm:mb-10">
-                        <!-- Category & Status -->
-                        <div class="flex flex-wrap items-center gap-2 mb-4">
-                            <Badge
-                                variant="secondary"
-                                class="text-xs px-2.5 py-1"
-                            >
-                                <Folder class="w-3 h-3 mr-1.5" />
-                                {{ project.project_type?.name || 'General' }}
-                            </Badge>
-                            <Badge
-                                v-if="project.status"
-                                variant="outline"
-                                :class="statusConfig.classes"
-                                class="text-xs px-2.5 py-1 font-medium"
-                            >
-                                <component :is="statusConfig.icon" class="w-3 h-3 mr-1.5" />
-                                {{ statusConfig.label }}
-                            </Badge>
-                            <span v-if="formattedDate" class="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
-                                <Calendar class="w-3.5 h-3.5" />
-                                {{ formattedDate }}
-                            </span>
-                        </div>
-
-                        <!-- Title -->
-                        <h1
-                            class="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-2"
+                <!-- Header -->
+                <div
+                    class="reveal mb-8"
+                    :style="{ animationDelay: `${stagger.header}ms` }"
+                    :class="{ 'is-visible': isVisible }"
+                >
+                    <!-- Meta row -->
+                    <div class="mb-4 flex flex-wrap items-center gap-2">
+                        <span class="rounded-md bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground/70">
+                            {{ project.project_type?.name || 'General' }}
+                        </span>
+                        <span
+                            v-if="project.status"
+                            class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-medium capitalize"
+                            :class="statusConfig.classes"
                         >
-                            {{ project.title }}
-                        </h1>
+                            <span class="size-1.5 rounded-full" :class="statusConfig.dot" />
+                            {{ statusConfig.label }}
+                        </span>
+                        <span v-if="formattedDate" class="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground/50">
+                            <Calendar class="size-3" />
+                            {{ formattedDate }}
+                        </span>
                     </div>
 
-                    <!-- Project Image -->
+                    <!-- Title -->
+                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+                        {{ project.title }}
+                    </h1>
+                </div>
+
+                <!-- Image -->
+                <div
+                    class="reveal mb-10"
+                    :style="{ animationDelay: `${stagger.image}ms` }"
+                    :class="{ 'is-visible': isVisible }"
+                >
                     <div
                         v-if="project.image"
-                        class="relative overflow-hidden rounded-xl mb-8 sm:mb-10 border border-border/50 shadow-sm"
+                        class="overflow-hidden rounded-xl border border-border/30"
                     >
                         <img
                             :src="project.image"
                             :alt="project.title"
-                            class="w-full h-auto max-h-[500px] object-cover"
+                            class="w-full max-h-[480px] object-cover"
                         />
                     </div>
                     <div
                         v-else
-                        class="relative overflow-hidden rounded-xl mb-8 sm:mb-10 border border-border/50 bg-muted/30 h-48 sm:h-64 flex items-center justify-center"
+                        class="flex h-48 items-center justify-center overflow-hidden rounded-xl border border-border/30 bg-muted/20 sm:h-64"
                     >
-                        <Laptop class="w-16 h-16 text-muted-foreground/40" />
+                        <Laptop class="size-14 text-muted-foreground/20" />
                     </div>
+                </div>
 
-                    <!-- Content Grid -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                        <!-- Main Content -->
-                        <div class="lg:col-span-2 space-y-6">
-                            <!-- Description -->
-                            <Card class="p-5 sm:p-6">
-                                <h2 class="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                                    <Folder class="w-5 h-5 text-primary" />
-                                    About This Project
-                                </h2>
-                                <Separator class="mb-4" />
-                                <p
-                                    class="text-muted-foreground leading-relaxed text-sm sm:text-base whitespace-pre-line"
+                <!-- Content Grid -->
+                <div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_280px]">
+
+                    <!-- Main Content -->
+                    <div
+                        class="reveal space-y-8"
+                        :style="{ animationDelay: `${stagger.content}ms` }"
+                        :class="{ 'is-visible': isVisible }"
+                    >
+                        <!-- Description -->
+                        <div>
+                            <h2 class="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                                <Folder class="size-3.5" />
+                                About This Project
+                            </h2>
+                            <p class="whitespace-pre-line text-sm leading-[1.8] text-muted-foreground/80">
+                                {{ project.description }}
+                            </p>
+                        </div>
+
+                        <!-- Technologies -->
+                        <div v-if="technologies.length > 0">
+                            <h2 class="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                                <Tag class="size-3.5" />
+                                Technologies
+                            </h2>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span
+                                    v-for="tech in technologies"
+                                    :key="tech"
+                                    class="rounded-lg border border-border/30 bg-muted/30 px-2.5 py-1 text-xs font-medium text-foreground/70 transition-colors hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
                                 >
-                                    {{ project.description }}
-                                </p>
-                            </Card>
-
-                            <!-- Technologies -->
-                            <Card v-if="technologies.length > 0" class="p-5 sm:p-6">
-                                <h2 class="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                                    <Tag class="w-5 h-5 text-primary" />
-                                    Technologies Used
-                                </h2>
-                                <Separator class="mb-4" />
-                                <div class="flex flex-wrap gap-2">
-                                    <Badge
-                                        v-for="tech in technologies"
-                                        :key="tech"
-                                        variant="outline"
-                                        class="bg-primary/5 border-primary/20 text-foreground text-xs sm:text-sm px-3 py-1.5 font-medium hover:bg-primary/10 transition-colors"
-                                    >
-                                        {{ tech }}
-                                    </Badge>
-                                </div>
-                            </Card>
-                        </div>
-
-                        <!-- Sidebar -->
-                        <div class="space-y-6">
-                            <!-- Quick Info -->
-                            <Card class="p-5 sm:p-6">
-                                <h2 class="text-lg font-semibold text-foreground mb-3">
-                                    Project Details
-                                </h2>
-                                <Separator class="mb-4" />
-                                <div class="space-y-4">
-                                    <!-- Status -->
-                                    <div v-if="project.status" class="flex items-center justify-between">
-                                        <span class="text-sm text-muted-foreground">Status</span>
-                                        <Badge
-                                            variant="outline"
-                                            :class="statusConfig.classes"
-                                            class="text-xs font-medium"
-                                        >
-                                            {{ statusConfig.label }}
-                                        </Badge>
-                                    </div>
-
-                                    <!-- Date -->
-                                    <div v-if="formattedDate" class="flex items-center justify-between">
-                                        <span class="text-sm text-muted-foreground">Date</span>
-                                        <span class="text-sm text-foreground">{{ formattedDate }}</span>
-                                    </div>
-
-                                    <!-- Category -->
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-sm text-muted-foreground">Category</span>
-                                        <Badge variant="secondary" class="text-xs">
-                                            {{ project.project_type?.name || 'General' }}
-                                        </Badge>
-                                    </div>
-
-                                    <!-- Tech Count -->
-                                    <div v-if="technologies.length > 0" class="flex items-center justify-between">
-                                        <span class="text-sm text-muted-foreground">Technologies</span>
-                                        <span class="text-sm text-foreground font-medium">{{ technologies.length }}</span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <!-- Project Links -->
-                            <Card v-if="projectLinks.length > 0" class="p-5 sm:p-6">
-                                <h2 class="text-lg font-semibold text-foreground mb-3">
-                                    Links
-                                </h2>
-                                <Separator class="mb-4" />
-                                <div class="space-y-2.5">
-                                    <a
-                                        v-for="link in projectLinks"
-                                        :key="link.url"
-                                        :href="link.url"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="flex items-center gap-3 px-4 py-3 rounded-lg border border-border bg-background hover:bg-accent hover:border-primary/30 transition-all group w-full"
-                                    >
-                                        <div
-                                            class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                                            :class="
-                                                link.isGithub
-                                                    ? 'bg-gray-100 dark:bg-gray-800'
-                                                    : 'bg-primary/10'
-                                            "
-                                        >
-                                            <Github
-                                                v-if="link.isGithub"
-                                                class="w-4.5 h-4.5 text-foreground"
-                                            />
-                                            <ExternalLink
-                                                v-else
-                                                class="w-4.5 h-4.5 text-primary"
-                                            />
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                                                {{ link.name }}
-                                            </p>
-                                            <p class="text-xs text-muted-foreground truncate">
-                                                {{ link.url.replace(/^https?:\/\//, '').split('/')[0] }}
-                                            </p>
-                                        </div>
-                                        <ExternalLink class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                                    </a>
-                                </div>
-                            </Card>
+                                    {{ tech }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Previous / Next Navigation -->
-                    <div class="mt-10 sm:mt-12 pt-6 border-t border-border">
-                        <div class="flex items-center justify-between gap-4">
-                            <!-- Previous -->
-                            <button
-                                v-if="previousProject"
-                                @click="goToProject(previousProject.id)"
-                                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left group max-w-[45%]"
-                            >
-                                <ChevronLeft class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                                <div class="min-w-0">
-                                    <p class="text-xs text-muted-foreground mb-0.5">Previous</p>
-                                    <p class="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                                        {{ previousProject.title }}
-                                    </p>
+                    <!-- Sidebar -->
+                    <div
+                        class="reveal space-y-6"
+                        :style="{ animationDelay: `${stagger.sidebar}ms` }"
+                        :class="{ 'is-visible': isVisible }"
+                    >
+                        <!-- Details -->
+                        <div class="rounded-xl border border-border/30 bg-card/30 p-5">
+                            <h3 class="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                                Details
+                            </h3>
+                            <div class="space-y-3.5">
+                                <div v-if="project.status" class="flex items-center justify-between">
+                                    <span class="text-xs text-muted-foreground/60">Status</span>
+                                    <span
+                                        class="inline-flex items-center gap-1.5 text-xs font-medium"
+                                        :class="statusConfig.classes.replace(/bg-\S+/, '').replace(/border-\S+/, '')"
+                                    >
+                                        <span class="size-1.5 rounded-full" :class="statusConfig.dot" />
+                                        {{ statusConfig.label }}
+                                    </span>
                                 </div>
-                            </button>
-                            <div v-else></div>
-
-                            <!-- Back to Portfolio -->
-                            <button
-                                @click="goBack"
-                                class="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border hover:border-primary/30 rounded-lg transition-colors hidden sm:block"
-                            >
-                                All Projects
-                            </button>
-
-                            <!-- Next -->
-                            <button
-                                v-if="nextProject"
-                                @click="goToProject(nextProject.id)"
-                                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-right group max-w-[45%]"
-                            >
-                                <div class="min-w-0">
-                                    <p class="text-xs text-muted-foreground mb-0.5">Next</p>
-                                    <p class="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                                        {{ nextProject.title }}
-                                    </p>
+                                <div v-if="formattedDate" class="flex items-center justify-between">
+                                    <span class="text-xs text-muted-foreground/60">Date</span>
+                                    <span class="text-xs font-medium text-foreground/70">{{ formattedDate }}</span>
                                 </div>
-                                <ChevronRight class="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                            </button>
-                            <div v-else></div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-muted-foreground/60">Category</span>
+                                    <span class="text-xs font-medium text-foreground/70">{{ project.project_type?.name || 'General' }}</span>
+                                </div>
+                                <div v-if="technologies.length > 0" class="flex items-center justify-between">
+                                    <span class="text-xs text-muted-foreground/60">Tech stack</span>
+                                    <span class="text-xs font-medium text-foreground/70">{{ technologies.length }} tools</span>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Links -->
+                        <div v-if="projectLinks.length > 0" class="rounded-xl border border-border/30 bg-card/30 p-5">
+                            <h3 class="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+                                Links
+                            </h3>
+                            <div class="space-y-2">
+                                <a
+                                    v-for="link in projectLinks"
+                                    :key="link.url"
+                                    :href="link.url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="group flex items-center gap-3 rounded-lg border border-border/20 bg-background/50 px-3.5 py-2.5 transition-all duration-200 hover:border-primary/20 hover:bg-primary/5"
+                                >
+                                    <div
+                                        class="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-200"
+                                        :class="link.isGithub ? 'bg-muted/60 group-hover:bg-muted' : 'bg-primary/8 group-hover:bg-primary/15'"
+                                    >
+                                        <Github v-if="link.isGithub" class="size-3.5 text-foreground/70" />
+                                        <ExternalLink v-else class="size-3.5 text-primary/70" />
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-xs font-medium text-foreground/80 transition-colors group-hover:text-primary">
+                                            {{ link.name }}
+                                        </p>
+                                        <p class="truncate text-[10px] text-muted-foreground/40">
+                                            {{ link.url.replace(/^https?:\/\//, '').split('/')[0] }}
+                                        </p>
+                                    </div>
+                                    <ArrowUpRight class="size-3 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div
+                    class="reveal mt-12 border-t border-border/20 pt-8"
+                    :style="{ animationDelay: `${stagger.nav}ms` }"
+                    :class="{ 'is-visible': isVisible }"
+                >
+                    <div class="flex items-stretch justify-between gap-4">
+                        <!-- Previous -->
+                        <button
+                            v-if="previousProject"
+                            @click="goToProject(previousProject.id)"
+                            class="group flex max-w-[40%] items-center gap-3 rounded-xl border border-border/20 bg-card/20 px-4 py-3.5 text-left transition-all duration-200 hover:border-border/40 hover:bg-card/50"
+                        >
+                            <ChevronLeft class="size-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/40">Previous</p>
+                                <p class="mt-0.5 truncate text-sm font-medium text-foreground/70 transition-colors group-hover:text-primary">
+                                    {{ previousProject.title }}
+                                </p>
+                            </div>
+                        </button>
+                        <div v-else />
+
+                        <!-- Back -->
+                        <button
+                            @click="goBack"
+                            class="hidden items-center gap-1.5 self-center rounded-lg border border-border/20 px-4 py-2 text-xs font-medium text-muted-foreground/50 transition-colors hover:border-border/40 hover:text-foreground sm:flex"
+                        >
+                            All Projects
+                        </button>
+
+                        <!-- Next -->
+                        <button
+                            v-if="nextProject"
+                            @click="goToProject(nextProject.id)"
+                            class="group flex max-w-[40%] items-center gap-3 rounded-xl border border-border/20 bg-card/20 px-4 py-3.5 text-right transition-all duration-200 hover:border-border/40 hover:bg-card/50"
+                        >
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/40">Next</p>
+                                <p class="mt-0.5 truncate text-sm font-medium text-foreground/70 transition-colors group-hover:text-primary">
+                                    {{ nextProject.title }}
+                                </p>
+                            </div>
+                            <ChevronRight class="size-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+                        </button>
+                        <div v-else />
                     </div>
                 </div>
             </div>
@@ -409,18 +413,24 @@ const goToProject = (id: number) => {
 </template>
 
 <style scoped>
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.fade-in-up {
-    animation: fadeInUp 0.5s ease-out forwards;
+.reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
 }
 </style>

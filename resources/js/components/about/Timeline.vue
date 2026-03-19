@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import TimelineCard from './TimelineCard.vue'
-import SectionHeader from './SectionHeader.vue'
 
 interface TimelineItem {
     id: number
@@ -27,12 +26,19 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <div class="mb-12">
-        <SectionHeader :title="title" :icon="icon" />
+        <div class="mb-5 flex items-center gap-2.5">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-muted/60">
+                <component :is="icon" class="size-4 text-muted-foreground" />
+            </div>
+            <h3 class="text-base font-semibold tracking-tight text-foreground">
+                {{ title }}
+            </h3>
+        </div>
 
-        <div class="relative space-y-4">
+        <div class="relative space-y-3">
             <!-- Timeline line -->
             <div
-                class="absolute bottom-0 left-[5px] top-0 hidden w-px bg-gradient-to-b from-primary/50 via-border to-transparent md:block"
+                class="absolute bottom-0 left-[5px] top-0 hidden w-px bg-gradient-to-b from-border/60 via-border/30 to-transparent md:block"
             />
 
             <TimelineCard

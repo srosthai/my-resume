@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from 'lucide-vue-next'
 
@@ -21,32 +20,33 @@ withDefaults(defineProps<Props>(), {
     <div class="timeline-item group relative md:ml-12">
         <!-- Timeline dot -->
         <div
-            class="timeline-dot absolute -left-16 top-6 hidden size-3 rounded-full border-2 border-primary bg-background transition-all duration-300 group-hover:scale-150 group-hover:bg-primary md:block"
+            class="timeline-dot absolute -left-16 top-6 hidden size-2.5 rounded-full border-2 border-border bg-background transition-all duration-300 group-hover:border-primary group-hover:bg-primary md:block"
         />
 
-        <Card
-            class="timeline-card border-border/40 bg-card/30 transition-all duration-300 hover:border-primary/30 hover:bg-card/50 hover:shadow-md"
+        <div
+            class="rounded-xl border border-border/30 bg-card/20 p-5 transition-all duration-300 hover:border-border/50 hover:bg-card/40"
         >
-            <CardContent class="p-5">
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div class="flex-1 space-y-2">
-                        <h4 class="text-lg font-semibold text-foreground">
-                            {{ title }}
-                        </h4>
-                        <p class="text-sm font-medium text-primary">
-                            {{ subtitle }}
-                        </p>
-                        <p class="text-sm leading-relaxed text-muted-foreground">
-                            {{ description }}
-                        </p>
-                    </div>
-
-                    <Badge variant="secondary" class="w-fit shrink-0 gap-1.5 px-3 py-1.5 text-xs font-medium">
-                        <Calendar class="size-3" />
-                        {{ dateFrom }} - {{ dateTo }}
-                    </Badge>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex-1 space-y-1.5">
+                    <h4 class="text-base font-semibold text-foreground">
+                        {{ title }}
+                    </h4>
+                    <p class="text-sm font-medium text-primary/80">
+                        {{ subtitle }}
+                    </p>
+                    <p class="pt-1 text-sm leading-relaxed text-muted-foreground">
+                        {{ description }}
+                    </p>
                 </div>
-            </CardContent>
-        </Card>
+
+                <Badge
+                    variant="outline"
+                    class="w-fit shrink-0 gap-1.5 border-border/40 bg-muted/30 px-2.5 py-1 text-[11px] font-normal text-muted-foreground"
+                >
+                    <Calendar class="size-3 opacity-50" />
+                    {{ dateFrom }} - {{ dateTo }}
+                </Badge>
+            </div>
+        </div>
     </div>
 </template>

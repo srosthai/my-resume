@@ -14,17 +14,24 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <div :class="['mb-8', centered && 'text-center']">
+    <div class="mb-8">
         <div :class="['flex items-center gap-3', centered && 'justify-center']">
-            <div v-if="icon" class="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                <component :is="icon" class="size-5 text-primary" />
+            <div v-if="icon" class="flex size-8 items-center justify-center rounded-lg bg-muted/60">
+                <component :is="icon" class="size-4 text-muted-foreground" />
             </div>
-            <h2 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h2 class="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
                 {{ title }}
             </h2>
         </div>
-        <p v-if="subtitle" :class="['mt-2 text-muted-foreground', centered && 'mx-auto max-w-2xl']">
+        <p
+            v-if="subtitle"
+            :class="[
+                'mt-2 text-sm text-muted-foreground',
+                centered && 'mx-auto max-w-2xl text-center',
+            ]"
+        >
             {{ subtitle }}
         </p>
+        <div :class="['mt-4 h-px w-12 bg-border/60', centered && 'mx-auto']"></div>
     </div>
 </template>
