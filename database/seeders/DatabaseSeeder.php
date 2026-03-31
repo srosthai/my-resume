@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
             PopularSongSeeder::class,
             NoteSeeder::class,
+            FeedSeeder::class,
         ]);
     }
 }

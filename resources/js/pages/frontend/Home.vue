@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowRight, Github, Linkedin, Mail, Book, MapPin, Briefcase } from 'lucide-vue-next'
+import { ArrowRight, Github, Linkedin, Mail, Book, MapPin, Briefcase, Rss } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 
 const props = defineProps({
@@ -317,6 +317,9 @@ const animateText = () => {
                                 <Link href="/note" class="social-icon" aria-label="Notes">
                                     <Book class="h-4 w-4" />
                                 </Link>
+                                <Link href="/feeds" class="social-icon" aria-label="Feeds">
+                                    <Rss class="h-4 w-4" />
+                                </Link>
                             </div>
                         </div>
 
@@ -350,6 +353,16 @@ const animateText = () => {
                                         <ArrowRight
                                             class="h-3.5 w-3.5 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100"
                                         />
+                                    </Link>
+                                </Button>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    class="group rounded-full border-border/50 bg-background/60 px-7 py-2.5 text-sm font-medium backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:bg-accent active:translate-y-0"
+                                >
+                                    <Link href="/feeds" class="flex items-center gap-2.5">
+                                        <Rss class="h-3.5 w-3.5 opacity-60" />
+                                        <span>My Feeds</span>
                                     </Link>
                                 </Button>
                             </div>

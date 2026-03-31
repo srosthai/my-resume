@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FloatingDock from './ui/floating-dock.vue';
-import { Briefcase, Command, FileText, Home, Phone, User, Github } from 'lucide-vue-next';
+import { Briefcase, Command, FileText, Home, Phone, Rss, User } from 'lucide-vue-next';
 
 interface Props {
     currentRoute?: string;
@@ -45,6 +45,12 @@ const links = [
         title: "Hobbies",
         icon: Command,
         href: "/hobby",
+        isExternal: false,
+    },
+    {
+        title: "Feeds",
+        icon: Rss,
+        href: "/feeds",
         isExternal: false,
     }
 ];

@@ -12,6 +12,7 @@ use App\Http\Controllers\Frontend\PortfolioController;
 use App\Http\Controllers\Backend\WorkExperienceController;
 use App\Http\Controllers\Backend\PopularSongController;
 use App\Http\Controllers\Backend\NoteController;
+use App\Http\Controllers\Backend\FeedController;
 use App\Http\Controllers\DashboardController;
 
 // Public Frontend Routes
@@ -24,7 +25,12 @@ Route::get('/hobby', [PortfolioController::class, 'hobby'])->name('hobby');
 Route::get('/more', [PortfolioController::class, 'more'])->name('more');
 Route::get('/resume', [PortfolioController::class, 'resume'])->name('resume');
 Route::get('/note', [PortfolioController::class, 'note'])->name('note');
+Route::get('/feeds', [PortfolioController::class, 'feeds'])->name('feeds');
 Route::post('/contact/send', [PortfolioController::class, 'sendContactMessage'])->name('contact.send');
+
+// Feed public API (no auth needed)
+Route::post('/api/feeds/{feed}/view', [PortfolioController::class, 'incrementFeedView'])->name('api.feeds.view');
+Route::post('/api/feeds/{feed}/like', [PortfolioController::class, 'toggleFeedLike'])->name('api.feeds.like');
 
 // API Routes for Frontend
 Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])->name('api.popular-songs');
@@ -113,6 +119,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
     Route::patch('notes/{note}/toggle-featured', [NoteController::class, 'toggleFeatured'])->name('notes.toggle-featured');
     Route::post('notes/{note}/duplicate', [NoteController::class, 'duplicate'])->name('notes.duplicate');
+
+    //Feeds Routes
+    Route::get('feeds-management', [FeedController::class, 'index'])->name('feeds.index');
+    Route::get('backend/feeds/create', [FeedController::class, 'create'])->name('backend.feeds.create');
+    Route::post('backend/feeds', [FeedController::class, 'store'])->name('backend.feeds.store');
+    Route::get('backend/feeds/{feed}/edit', [FeedController::class, 'edit'])->name('backend.feeds.edit');
+    Route::match(['PUT', 'POST'], 'backend/feeds/{feed}', [FeedController::class, 'update'])->name('backend.feeds.update');
+    Route::delete('backend/feeds/{feed}', [FeedController::class, 'destroy'])->name('backend.feeds.destroy');
+    Route::patch('backend/feeds/{feed}/toggle-pinned', [FeedController::class, 'togglePinned'])->name('feeds.toggle-pinned');
 });
 
 require __DIR__ . '/settings.php';

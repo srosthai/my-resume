@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\Feed;
 use App\Models\Note;
 use App\Models\User;
 use Inertia\Inertia;
@@ -195,6 +196,36 @@ class PortfolioController extends Controller
     }
 
     /**
+     * Display the feeds page.
+     *
+     * @return \Inertia\Response
+     */
+    public function feeds()
+    {
+        $feeds = Feed::published()
+            ->where('visibility', 'public')
+            ->with('user')
+            ->orderBy('is_pinned', 'desc')
+            ->orderBy('published_at', 'desc')
+            ->get()
+            ->map(function ($feed) {
+                if ($feed->images) {
+                    $feed->images = array_map(fn($img) => asset($img), $feed->images);
+                }
+                return $feed;
+            });
+
+        $activityTypes = Feed::getActivityTypes();
+
+        return Inertia::render('frontend/Feeds', [
+            'title'         => 'My Feeds',
+            'description'   => 'Follow my lifestyle, hangouts, and adventures',
+            'feeds'         => $feeds,
+            'activityTypes' => $activityTypes,
+        ]);
+    }
+
+    /**
      * Display the note page.
      *
      * @return \Inertia\Response
@@ -210,6 +241,50 @@ class PortfolioController extends Controller
             'description'    => 'My collection of programming notes and tutorials',
             'notes'          => $notes,
         ]); 
+    }
+
+    /**
+     * Increment feed view count (rate-limited per IP).
+     *
+     * @param \App\Models\Feed $feed
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function incrementFeedView(Feed $feed, Request $request)
+    {
+        $key = 'feed_view_' . $feed->id . '_' . $request->ip();
+        if (!cache()->has($key)) {
+            $feed->increment('views');
+            cache()->put($key, true, 300); // 5 min cooldown per IP per feed
+        }
+
+        return response()->json(['views' => $feed->fresh()->views]);
+    }
+
+    /**
+     * Toggle feed like (tracked via IP, no auth needed).
+     *
+     * @param \App\Models\Feed $feed
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function toggleFeedLike(Feed $feed, Request $request)
+    {
+        $key    = 'feed_like_' . $feed->id . '_' . $request->ip();
+        $liked  = cache()->has($key);
+
+        if ($liked) {
+            $feed->decrement('likes_count');
+            cache()->forget($key);
+        } else {
+            $feed->increment('likes_count');
+            cache()->put($key, true, 60 * 60 * 24 * 365); // 1 year
+        }
+
+        return response()->json([
+            'likes_count' => $feed->fresh()->likes_count,
+            'liked'       => !$liked,
+        ]);
     }
 
     /**
