@@ -1,167 +1,150 @@
-<script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import {
     ArrowLeft,
     ChevronLeft,
     ChevronRight,
-    Calendar,
     ExternalLink,
     Github,
     Laptop,
-    Folder,
-    Tag,
-    CircleCheckBig,
-    Clock,
-    Loader,
     ArrowUpRight,
 } from 'lucide-vue-next'
-import { Badge } from '@/components/ui/badge'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 
-// Types
-interface ProjectType {
-    id: number
-    name: string
-}
-
-interface ProjectLink {
-    [key: string]: string
-}
-
-interface Project {
-    id: number
-    title: string
-    description: string
-    image?: string
-    project_type?: ProjectType
-    technologies?: string[]
-    tech_stack?: string
-    status?: 'completed' | 'in-progress' | 'pending' | 'processing'
-    links?: ProjectLink[]
-    github_url?: string
-    demo_url?: string
-    live_url?: string
-    created_at?: string
-    created_date?: string
-}
-
-interface NavProject {
-    id: number
-    title: string
-}
-
-interface Props {
-    title?: string
-    description?: string
-    project: Project
-    previousProject?: NavProject | null
-    nextProject?: NavProject | null
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    title: 'Project',
-    description: '',
+const props = defineProps({
+    title: { type: String, default: 'Project' },
+    description: { type: String, default: '' },
+    project: { type: Object, required: true },
+    previousProject: { type: Object, default: null },
+    nextProject: { type: Object, default: null },
 })
 
+const isLoading = ref(true)
 const isVisible = ref(false)
 
-const stagger = {
-    breadcrumb: 0,
-    header: 80,
-    image: 160,
-    content: 240,
-    sidebar: 300,
-    nav: 380,
+const now = ref(new Date())
+let clockTimer = null
+
+const dateString = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Phnom_Penh',
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(now.value)
+    } catch (e) {
+        return ''
+    }
+})
+
+const pointer = ref({ x: 50, y: 50 })
+const handlePointer = (e) => {
+    pointer.value = {
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+    }
 }
 
-onMounted(() => {
-    setTimeout(() => {
-        isVisible.value = true
-    }, 100)
-})
-
-// Status config
-const statusConfig = computed(() => {
-    const status = props.project.status
-    switch (status) {
+const statusMeta = computed(() => {
+    const s = props.project?.status
+    switch (s) {
         case 'completed':
-            return {
-                icon: CircleCheckBig,
-                label: 'Completed',
-                dot: 'bg-emerald-400',
-                classes: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-            }
+            return { label: 'Completed', color: '#10b981' }
         case 'in-progress':
         case 'processing':
-            return {
-                icon: Loader,
-                label: status === 'processing' ? 'Processing' : 'In Progress',
-                dot: 'bg-blue-400',
-                classes: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-            }
+            return { label: s === 'processing' ? 'Processing' : 'In Progress', color: '#3b82f6' }
         case 'pending':
-            return {
-                icon: Clock,
-                label: 'Pending',
-                dot: 'bg-amber-400',
-                classes: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-            }
+            return { label: 'Pending', color: '#f59e0b' }
         default:
-            return {
-                icon: Clock,
-                label: status || 'Unknown',
-                dot: 'bg-muted-foreground',
-                classes: 'bg-muted text-muted-foreground border-border/40',
-            }
+            return { label: s || 'Unknown', color: '#a3a3a3' }
     }
 })
 
-// Formatted date
 const formattedDate = computed(() => {
-    const dateStr = props.project.created_date || props.project.created_at
-    if (!dateStr) return null
-    return new Date(dateStr).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    })
+    const raw = props.project?.created_date || props.project?.created_at
+    if (!raw) return null
+    try {
+        return new Date(raw).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        })
+    } catch (e) {
+        return null
+    }
 })
 
-// Technologies list
+const year = computed(() => {
+    const raw = props.project?.created_date || props.project?.created_at
+    if (!raw) return null
+    try {
+        return new Date(raw).getFullYear()
+    } catch (e) {
+        return null
+    }
+})
+
 const technologies = computed(() => {
-    if (props.project.technologies && props.project.technologies.length > 0) {
+    if (Array.isArray(props.project?.technologies) && props.project.technologies.length) {
         return props.project.technologies
     }
-    if (props.project.tech_stack) {
-        return props.project.tech_stack.split(',').map((t) => t.trim())
+    if (props.project?.tech_stack) {
+        return props.project.tech_stack.split(',').map((t) => t.trim()).filter(Boolean)
     }
     return []
 })
 
-// Extract links
 const projectLinks = computed(() => {
-    if (!props.project.links || !Array.isArray(props.project.links)) return []
-    return props.project.links.map((linkObj) => {
-        const name = Object.keys(linkObj)[0]
-        const url = Object.values(linkObj)[0]
-        const isGithub = name.toLowerCase().includes('github')
-        return { name, url, isGithub }
-    })
+    const out = []
+    if (Array.isArray(props.project?.links)) {
+        for (const l of props.project.links) {
+            const name = Object.keys(l)[0]
+            const url = Object.values(l)[0]
+            if (!name || !url) continue
+            out.push({ name, url, isGithub: name.toLowerCase().includes('github') })
+        }
+    }
+    return out
 })
 
-// Navigation
+const entryNumber = computed(() => {
+    if (!props.project?.id) return '00'
+    return String(props.project.id).padStart(2, '0')
+})
+
 const goBack = () => {
     router.visit(route('portfolio'))
 }
-
-const goToProject = (id: number) => {
+const goToProject = (id) => {
     router.visit(route('portfolio.show', id))
 }
+
+onMounted(() => {
+    setTimeout(() => {
+        isLoading.value = false
+        requestAnimationFrame(() => {
+            isVisible.value = true
+        })
+    }, 300)
+
+    clockTimer = setInterval(() => {
+        now.value = new Date()
+    }, 60000)
+
+    window.addEventListener('pointermove', handlePointer, { passive: true })
+})
+
+onBeforeUnmount(() => {
+    if (clockTimer) clearInterval(clockTimer)
+    window.removeEventListener('pointermove', handlePointer)
+})
 </script>
 
 <template>
-    <FrontendLayout currentRoute="/portfolio">
+    <FrontendLayout current-route="/portfolio">
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description" />
@@ -169,267 +152,519 @@ const goToProject = (id: number) => {
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="article" />
             <meta name="robots" content="index, follow" />
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
+                rel="stylesheet"
+            />
         </Head>
 
-        <div class="min-h-screen text-foreground pt-20 sm:pt-24">
-            <div class="mx-auto max-w-5xl px-4 sm:px-6 pb-16">
-
-                <!-- Breadcrumb -->
-                <nav
-                    class="reveal mb-8"
-                    :style="{ animationDelay: `${stagger.breadcrumb}ms` }"
-                    :class="{ 'is-visible': isVisible }"
-                >
-                    <div class="flex items-center gap-2 text-sm">
-                        <button
-                            @click="goBack"
-                            class="flex items-center gap-1.5 text-muted-foreground/60 transition-colors hover:text-foreground"
-                        >
-                            <ArrowLeft class="size-3.5" />
-                            <span>Portfolio</span>
-                        </button>
-                        <span class="text-border/60">/</span>
-                        <span class="truncate font-medium text-foreground/80">{{ project.title }}</span>
-                    </div>
-                </nav>
-
-                <!-- Header -->
+        <section
+            class="relative mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+            :class="{ 'is-visible': isVisible }"
+        >
+            <!-- Ambient + grain -->
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
                 <div
-                    class="reveal mb-8"
-                    :style="{ animationDelay: `${stagger.header}ms` }"
-                    :class="{ 'is-visible': isVisible }"
-                >
-                    <!-- Meta row -->
-                    <div class="mb-4 flex flex-wrap items-center gap-2">
-                        <span class="rounded-md bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground/70">
-                            {{ project.project_type?.name || 'General' }}
-                        </span>
-                        <span
-                            v-if="project.status"
-                            class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-medium capitalize"
-                            :class="statusConfig.classes"
-                        >
-                            <span class="size-1.5 rounded-full" :class="statusConfig.dot" />
-                            {{ statusConfig.label }}
-                        </span>
-                        <span v-if="formattedDate" class="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground/50">
-                            <Calendar class="size-3" />
-                            {{ formattedDate }}
-                        </span>
-                    </div>
+                    class="ambient-blob"
+                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
+                ></div>
+                <div class="grain-overlay"></div>
+            </div>
 
-                    <!-- Title -->
-                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-                        {{ project.title }}
-                    </h1>
+            <!-- Top meta strip -->
+            <div
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                style="--d: 0ms"
+            >
+                <span class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-foreground/40"></span>
+                    Entry #{{ entryNumber }}
+                </span>
+                <span class="hidden md:inline">Archive / 2026</span>
+                <span class="tabular-nums">{{ dateString }}</span>
+            </div>
+
+            <!-- Breadcrumb -->
+            <nav
+                class="reveal mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:mb-6 sm:text-[11px]"
+                style="--d: 60ms"
+            >
+                <button
+                    @click="goBack"
+                    class="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                >
+                    <ArrowLeft class="h-3 w-3" />
+                    <span>Archive</span>
+                </button>
+                <span class="text-border">/</span>
+                <span class="truncate text-foreground/80">{{ project.title }}</span>
+            </nav>
+
+            <!-- HERO -->
+            <article
+                class="reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                style="--d: 140ms"
+            >
+                <div
+                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                    aria-hidden="true"
+                ></div>
+
+                <div
+                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                >
+                    <span class="inline-flex items-center gap-2">
+                        <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
+                        {{ project.project_type?.name || 'General' }}
+                    </span>
+                    <span
+                        v-if="year"
+                        class="tabular-nums"
+                    >
+                        {{ year }}
+                    </span>
                 </div>
 
-                <!-- Image -->
-                <div
-                    class="reveal mb-10"
-                    :style="{ animationDelay: `${stagger.image}ms` }"
-                    :class="{ 'is-visible': isVisible }"
+                <h1
+                    class="mt-5 font-serif text-[clamp(2rem,6vw,4.25rem)] font-normal leading-[0.95] tracking-tight text-foreground sm:mt-6"
                 >
-                    <div
+                    {{ project.title }}
+                </h1>
+
+                <div
+                    v-if="project.status"
+                    class="mt-5 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-foreground backdrop-blur-sm"
+                >
+                    <span
+                        class="inline-flex h-1.5 w-1.5 rounded-full"
+                        :style="{ backgroundColor: statusMeta.color, boxShadow: `0 0 8px ${statusMeta.color}` }"
+                    ></span>
+                    {{ statusMeta.label }}
+                </div>
+            </article>
+
+            <!-- IMAGE -->
+            <article
+                class="reveal mt-4 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 backdrop-blur-xl sm:mt-5 sm:rounded-3xl"
+                style="--d: 220ms"
+            >
+                <div class="relative aspect-[16/9] overflow-hidden bg-muted/30">
+                    <img
                         v-if="project.image"
-                        class="overflow-hidden rounded-xl border border-border/30"
-                    >
-                        <img
-                            :src="project.image"
-                            :alt="project.title"
-                            class="w-full max-h-[480px] object-cover"
-                        />
-                    </div>
+                        :src="project.image"
+                        :alt="project.title"
+                        class="h-full w-full object-cover"
+                    />
                     <div
                         v-else
-                        class="flex h-48 items-center justify-center overflow-hidden rounded-xl border border-border/30 bg-muted/20 sm:h-64"
+                        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/60 to-muted/20"
                     >
-                        <Laptop class="size-14 text-muted-foreground/20" />
+                        <Laptop class="h-14 w-14 text-muted-foreground/40" />
                     </div>
+                    <div class="corner corner-tl" aria-hidden="true"></div>
+                    <div class="corner corner-tr" aria-hidden="true"></div>
+                    <div class="corner corner-bl" aria-hidden="true"></div>
+                    <div class="corner corner-br" aria-hidden="true"></div>
                 </div>
+            </article>
 
-                <!-- Content Grid -->
-                <div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_280px]">
-
-                    <!-- Main Content -->
-                    <div
-                        class="reveal space-y-8"
-                        :style="{ animationDelay: `${stagger.content}ms` }"
-                        :class="{ 'is-visible': isVisible }"
+            <!-- CONTENT GRID -->
+            <div class="mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:gap-5 lg:grid-cols-[1fr_300px]">
+                <!-- Main column -->
+                <article
+                    class="reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+                    style="--d: 300ms"
+                >
+                    <span
+                        class="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
                     >
-                        <!-- Description -->
-                        <div>
-                            <h2 class="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                                <Folder class="size-3.5" />
-                                About This Project
-                            </h2>
-                            <p class="whitespace-pre-line text-sm leading-[1.8] text-muted-foreground/80">
-                                {{ project.description }}
-                            </p>
-                        </div>
+                        — About this entry
+                    </span>
+                    <p
+                        class="mt-4 whitespace-pre-line text-sm leading-[1.8] text-muted-foreground sm:mt-5 sm:text-[15px] md:text-base"
+                    >
+                        {{ project.description }}
+                    </p>
 
-                        <!-- Technologies -->
-                        <div v-if="technologies.length > 0">
-                            <h2 class="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                                <Tag class="size-3.5" />
-                                Technologies
-                            </h2>
-                            <div class="flex flex-wrap gap-1.5">
-                                <span
-                                    v-for="tech in technologies"
-                                    :key="tech"
-                                    class="rounded-lg border border-border/30 bg-muted/30 px-2.5 py-1 text-xs font-medium text-foreground/70 transition-colors hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
-                                >
-                                    {{ tech }}
-                                </span>
-                            </div>
-                        </div>
+                    <div v-if="technologies.length" class="mt-8 border-t border-border/50 pt-6">
+                        <span
+                            class="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+                        >
+                            — Technologies
+                        </span>
+                        <ul class="mt-4 flex flex-wrap gap-2">
+                            <li
+                                v-for="tech in technologies"
+                                :key="tech"
+                                class="tech-chip"
+                            >
+                                {{ tech }}
+                            </li>
+                        </ul>
                     </div>
+                </article>
 
-                    <!-- Sidebar -->
-                    <div
-                        class="reveal space-y-6"
-                        :style="{ animationDelay: `${stagger.sidebar}ms` }"
-                        :class="{ 'is-visible': isVisible }"
+                <!-- Sidebar -->
+                <aside class="space-y-4 sm:space-y-5">
+                    <!-- Details card -->
+                    <article
+                        class="reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl"
+                        style="--d: 380ms"
                     >
-                        <!-- Details -->
-                        <div class="rounded-xl border border-border/30 bg-card/30 p-5">
-                            <h3 class="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                                Details
-                            </h3>
-                            <div class="space-y-3.5">
-                                <div v-if="project.status" class="flex items-center justify-between">
-                                    <span class="text-xs text-muted-foreground/60">Status</span>
-                                    <span
-                                        class="inline-flex items-center gap-1.5 text-xs font-medium"
-                                        :class="statusConfig.classes.replace(/bg-\S+/, '').replace(/border-\S+/, '')"
-                                    >
-                                        <span class="size-1.5 rounded-full" :class="statusConfig.dot" />
-                                        {{ statusConfig.label }}
-                                    </span>
-                                </div>
-                                <div v-if="formattedDate" class="flex items-center justify-between">
-                                    <span class="text-xs text-muted-foreground/60">Date</span>
-                                    <span class="text-xs font-medium text-foreground/70">{{ formattedDate }}</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs text-muted-foreground/60">Category</span>
-                                    <span class="text-xs font-medium text-foreground/70">{{ project.project_type?.name || 'General' }}</span>
-                                </div>
-                                <div v-if="technologies.length > 0" class="flex items-center justify-between">
-                                    <span class="text-xs text-muted-foreground/60">Tech stack</span>
-                                    <span class="text-xs font-medium text-foreground/70">{{ technologies.length }} tools</span>
-                                </div>
-                            </div>
-                        </div>
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                        >
+                            / details
+                        </span>
 
-                        <!-- Links -->
-                        <div v-if="projectLinks.length > 0" class="rounded-xl border border-border/30 bg-card/30 p-5">
-                            <h3 class="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
-                                Links
-                            </h3>
-                            <div class="space-y-2">
+                        <dl class="mt-4 space-y-3">
+                            <div v-if="project.status" class="detail-row">
+                                <dt>Status</dt>
+                                <dd class="inline-flex items-center gap-1.5">
+                                    <span
+                                        class="h-1.5 w-1.5 rounded-full"
+                                        :style="{ backgroundColor: statusMeta.color }"
+                                    ></span>
+                                    {{ statusMeta.label }}
+                                </dd>
+                            </div>
+                            <div v-if="formattedDate" class="detail-row">
+                                <dt>Date</dt>
+                                <dd>{{ formattedDate }}</dd>
+                            </div>
+                            <div class="detail-row">
+                                <dt>Category</dt>
+                                <dd>{{ project.project_type?.name || 'General' }}</dd>
+                            </div>
+                            <div v-if="technologies.length" class="detail-row">
+                                <dt>Stack</dt>
+                                <dd>{{ technologies.length }} tools</dd>
+                            </div>
+                        </dl>
+                    </article>
+
+                    <!-- Links card -->
+                    <article
+                        v-if="projectLinks.length"
+                        class="reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl"
+                        style="--d: 440ms"
+                    >
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                        >
+                            / links
+                        </span>
+                        <ul class="mt-3 divide-y divide-border/50">
+                            <li v-for="link in projectLinks" :key="link.url">
                                 <a
-                                    v-for="link in projectLinks"
-                                    :key="link.url"
                                     :href="link.url"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="group flex items-center gap-3 rounded-lg border border-border/20 bg-background/50 px-3.5 py-2.5 transition-all duration-200 hover:border-primary/20 hover:bg-primary/5"
+                                    class="link-row group"
                                 >
-                                    <div
-                                        class="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-200"
-                                        :class="link.isGithub ? 'bg-muted/60 group-hover:bg-muted' : 'bg-primary/8 group-hover:bg-primary/15'"
-                                    >
-                                        <Github v-if="link.isGithub" class="size-3.5 text-foreground/70" />
-                                        <ExternalLink v-else class="size-3.5 text-primary/70" />
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="truncate text-xs font-medium text-foreground/80 transition-colors group-hover:text-primary">
-                                            {{ link.name }}
-                                        </p>
-                                        <p class="truncate text-[10px] text-muted-foreground/40">
-                                            {{ link.url.replace(/^https?:\/\//, '').split('/')[0] }}
-                                        </p>
-                                    </div>
-                                    <ArrowUpRight class="size-3 shrink-0 text-muted-foreground/30 transition-all duration-200 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                    <span class="flex items-center gap-2.5 min-w-0">
+                                        <Github
+                                            v-if="link.isGithub"
+                                            class="h-4 w-4 shrink-0 opacity-70"
+                                        />
+                                        <ExternalLink
+                                            v-else
+                                            class="h-4 w-4 shrink-0 opacity-70"
+                                        />
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block truncate font-medium text-foreground">
+                                                {{ link.name }}
+                                            </span>
+                                            <span
+                                                class="block truncate font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70"
+                                            >
+                                                {{ link.url.replace(/^https?:\/\//, '').split('/')[0] }}
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <ArrowUpRight
+                                        class="h-4 w-4 shrink-0 opacity-40 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                    />
                                 </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation -->
-                <div
-                    class="reveal mt-12 border-t border-border/20 pt-8"
-                    :style="{ animationDelay: `${stagger.nav}ms` }"
-                    :class="{ 'is-visible': isVisible }"
-                >
-                    <div class="flex items-stretch justify-between gap-4">
-                        <!-- Previous -->
-                        <button
-                            v-if="previousProject"
-                            @click="goToProject(previousProject.id)"
-                            class="group flex max-w-[40%] items-center gap-3 rounded-xl border border-border/20 bg-card/20 px-4 py-3.5 text-left transition-all duration-200 hover:border-border/40 hover:bg-card/50"
-                        >
-                            <ChevronLeft class="size-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
-                            <div class="min-w-0">
-                                <p class="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/40">Previous</p>
-                                <p class="mt-0.5 truncate text-sm font-medium text-foreground/70 transition-colors group-hover:text-primary">
-                                    {{ previousProject.title }}
-                                </p>
-                            </div>
-                        </button>
-                        <div v-else />
-
-                        <!-- Back -->
-                        <button
-                            @click="goBack"
-                            class="hidden items-center gap-1.5 self-center rounded-lg border border-border/20 px-4 py-2 text-xs font-medium text-muted-foreground/50 transition-colors hover:border-border/40 hover:text-foreground sm:flex"
-                        >
-                            All Projects
-                        </button>
-
-                        <!-- Next -->
-                        <button
-                            v-if="nextProject"
-                            @click="goToProject(nextProject.id)"
-                            class="group flex max-w-[40%] items-center gap-3 rounded-xl border border-border/20 bg-card/20 px-4 py-3.5 text-right transition-all duration-200 hover:border-border/40 hover:bg-card/50"
-                        >
-                            <div class="min-w-0">
-                                <p class="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground/40">Next</p>
-                                <p class="mt-0.5 truncate text-sm font-medium text-foreground/70 transition-colors group-hover:text-primary">
-                                    {{ nextProject.title }}
-                                </p>
-                            </div>
-                            <ChevronRight class="size-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
-                        </button>
-                        <div v-else />
-                    </div>
-                </div>
+                            </li>
+                        </ul>
+                    </article>
+                </aside>
             </div>
-        </div>
+
+            <!-- PAGINATION -->
+            <nav
+                class="reveal mt-8 border-t border-border/50 pt-6 sm:mt-10 sm:pt-8"
+                style="--d: 500ms"
+            >
+                <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-4">
+                    <button
+                        v-if="previousProject"
+                        @click="goToProject(previousProject.id)"
+                        class="pager-btn group pager-prev"
+                    >
+                        <ChevronLeft
+                            class="h-4 w-4 shrink-0 opacity-60 transition-transform duration-300 group-hover:-translate-x-0.5"
+                        />
+                        <div class="min-w-0 text-left">
+                            <p
+                                class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px]"
+                            >
+                                ← Previous
+                            </p>
+                            <p
+                                class="mt-1 truncate font-serif text-base text-foreground sm:text-lg"
+                            >
+                                {{ previousProject.title }}
+                            </p>
+                        </div>
+                    </button>
+                    <div v-else class="hidden sm:block"></div>
+
+                    <button
+                        @click="goBack"
+                        class="inline-flex items-center justify-center gap-2 rounded-full border border-border/60 bg-background/40 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:self-center"
+                    >
+                        All entries
+                    </button>
+
+                    <button
+                        v-if="nextProject"
+                        @click="goToProject(nextProject.id)"
+                        class="pager-btn group pager-next"
+                    >
+                        <div class="min-w-0 text-right">
+                            <p
+                                class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px]"
+                            >
+                                Next →
+                            </p>
+                            <p
+                                class="mt-1 truncate font-serif text-base text-foreground sm:text-lg"
+                            >
+                                {{ nextProject.title }}
+                            </p>
+                        </div>
+                        <ChevronRight
+                            class="h-4 w-4 shrink-0 opacity-60 transition-transform duration-300 group-hover:translate-x-0.5"
+                        />
+                    </button>
+                    <div v-else class="hidden sm:block"></div>
+                </div>
+            </nav>
+
+            <!-- Footer -->
+            <div
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                style="--d: 600ms"
+            >
+                <span>© {{ new Date().getFullYear() }} · Entry #{{ entryNumber }}</span>
+                <span>End of entry →</span>
+            </div>
+        </section>
     </FrontendLayout>
 </template>
 
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(16px);
-    transition:
-        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(18px);
+}
+.is-visible .reveal {
+    animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--d, 0ms);
+}
+@keyframes revealUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.reveal.is-visible {
-    opacity: 1;
-    transform: translateY(0);
+/* Typography */
+h1,
+.font-serif {
+    font-family: 'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+    font-feature-settings: 'ss01', 'liga';
+}
+.font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* Ambient */
+.ambient-blob {
+    position: absolute;
+    width: 40rem;
+    height: 40rem;
+    border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--color-foreground) 7%, transparent),
+        transparent 70%
+    );
+    filter: blur(60px);
+    transition:
+        left 600ms cubic-bezier(0.22, 1, 0.36, 1),
+        top 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: left, top;
+}
+
+.grain-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* Image corner ticks */
+.corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+}
+@media (min-width: 640px) {
+    .corner {
+        width: 24px;
+        height: 24px;
+    }
+}
+.corner-tl {
+    top: 14px;
+    left: 14px;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+}
+.corner-tr {
+    top: 14px;
+    right: 14px;
+    border-top: 1.5px solid;
+    border-right: 1.5px solid;
+}
+.corner-bl {
+    bottom: 14px;
+    left: 14px;
+    border-bottom: 1.5px solid;
+    border-left: 1.5px solid;
+}
+.corner-br {
+    bottom: 14px;
+    right: 14px;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
+}
+
+/* Detail rows in sidebar */
+.detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8rem;
+}
+.detail-row:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+.detail-row dt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+}
+.detail-row dd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--color-foreground);
+    text-align: right;
+    min-width: 0;
+}
+
+/* Tech chips */
+.tech-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-muted) 40%, transparent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--color-foreground);
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+.tech-chip:hover {
+    transform: translateY(-1.5px);
+    border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
+}
+
+/* Sidebar link rows */
+.link-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.25rem;
+    color: var(--color-foreground);
+    transition: color 0.2s ease;
+}
+
+/* Pager buttons */
+.pager-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    min-width: 0;
+    max-width: 100%;
+    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 60%, transparent);
+    backdrop-filter: blur(8px);
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        background-color 0.3s ease;
+}
+@media (min-width: 640px) {
+    .pager-btn {
+        flex: 1 1 0;
+        max-width: 44%;
+    }
+}
+.pager-btn:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--color-foreground) 30%, var(--color-border));
+}
+.pager-next {
+    justify-content: flex-end;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .reveal {
-        opacity: 1;
-        transform: none;
+    .reveal,
+    .is-visible .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .ambient-blob {
         transition: none;
     }
 }
