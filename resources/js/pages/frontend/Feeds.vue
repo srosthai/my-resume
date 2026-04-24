@@ -1,8 +1,7 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import { ref, reactive, computed, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
+import { Head } from '@inertiajs/vue3'
 import axios from 'axios'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
     Search,
@@ -21,45 +20,65 @@ import {
     Sparkles,
     Coffee,
     ScanSearch,
+    ArrowUpRight,
 } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
-import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
-    title: {
-        type: String,
-        default: 'My Feeds',
-    },
-    description: {
-        type: String,
-        default: 'Follow my lifestyle, hangouts, and adventures',
-    },
-    feeds: {
-        type: Array,
-        default: () => [],
-    },
-    activityTypes: {
-        type: Array,
-        default: () => [],
-    },
+    title: { type: String, default: 'My Feeds' },
+    description: { type: String, default: 'Follow my lifestyle, hangouts, and adventures' },
+    feeds: { type: Array, default: () => [] },
+    activityTypes: { type: Array, default: () => [] },
 })
 
 const isLoading = ref(true)
 const isVisible = ref(false)
 const searchQuery = ref('')
 const selectedFilter = ref('All')
+const searchFocused = ref(false)
 const expandedImages = ref(null)
 const currentImageIndex = ref(0)
-const searchFocused = ref(false)
 
-// Track likes and views locally
-const likedFeeds = ref(new Set(JSON.parse(localStorage.getItem('liked_feeds') || '[]')))
+// Like / view tracking
+const likedFeeds = ref(
+    new Set(
+        typeof window !== 'undefined'
+            ? JSON.parse(localStorage.getItem('liked_feeds') || '[]')
+            : [],
+    ),
+)
 const feedStats = reactive({})
 const likingInProgress = ref(new Set())
 
-// Initialize feed stats from props
+// Clock for meta strip
+const now = ref(new Date())
+let clockTimer = null
+
+const dateString = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Phnom_Penh',
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(now.value)
+    } catch (e) {
+        return ''
+    }
+})
+
+// Mouse-reactive glow
+const pointer = ref({ x: 50, y: 50 })
+const handlePointer = (e) => {
+    pointer.value = {
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+    }
+}
+
 const initFeedStats = () => {
-    props.feeds.forEach(feed => {
+    props.feeds.forEach((feed) => {
         feedStats[feed.id] = {
             likes_count: feed.likes_count,
             views: feed.views,
@@ -75,7 +94,6 @@ const toggleLike = async (feed) => {
     if (likingInProgress.value.has(feed.id)) return
     likingInProgress.value.add(feed.id)
 
-    // Optimistic update
     const wasLiked = likedFeeds.value.has(feed.id)
     if (wasLiked) {
         likedFeeds.value.delete(feed.id)
@@ -91,7 +109,6 @@ const toggleLike = async (feed) => {
         if (feedStats[feed.id]) {
             feedStats[feed.id].likes_count = data.likes_count
         }
-        // Sync liked state with server response
         if (data.liked) {
             likedFeeds.value.add(feed.id)
         } else {
@@ -99,7 +116,6 @@ const toggleLike = async (feed) => {
         }
         localStorage.setItem('liked_feeds', JSON.stringify([...likedFeeds.value]))
     } catch {
-        // Revert on error
         if (wasLiked) {
             likedFeeds.value.add(feed.id)
             if (feedStats[feed.id]) feedStats[feed.id].likes_count++
@@ -116,7 +132,6 @@ const toggleLike = async (feed) => {
 const trackView = async (feed) => {
     const viewedKey = `feed_viewed_${feed.id}`
     if (sessionStorage.getItem(viewedKey)) return
-
     sessionStorage.setItem(viewedKey, '1')
     try {
         const { data } = await axios.post(`/api/feeds/${feed.id}/view`)
@@ -124,7 +139,7 @@ const trackView = async (feed) => {
             feedStats[feed.id].views = data.views
         }
     } catch {
-        // Silent fail for view tracking
+        // silent
     }
 }
 
@@ -135,49 +150,34 @@ const handleKeydown = (e) => {
     if (e.key === 'ArrowLeft') prevImage()
 }
 
-onMounted(() => {
-    initFeedStats()
-
-    setTimeout(() => {
-        isLoading.value = false
-        setTimeout(() => {
-            isVisible.value = true
-            // Track views for all visible feeds after render
-            props.feeds.forEach(feed => trackView(feed))
-        }, 50)
-    }, 800)
-
-    window.addEventListener('keydown', handleKeydown)
-})
-
-onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown)
-    document.body.style.overflow = ''
-})
-
 const activities = computed(() => {
     const types = ['All', ...new Set(props.activityTypes)]
     return types
 })
 
-const filteredFeeds = computed(() => {
-    let filtered = props.feeds
-
-    if (selectedFilter.value !== 'All') {
-        filtered = filtered.filter((feed) => feed.activity_type === selectedFilter.value)
+const countByActivity = computed(() => {
+    const m = { All: props.feeds.length }
+    for (const t of props.activityTypes || []) {
+        m[t] = props.feeds.filter((f) => f.activity_type === t).length
     }
+    return m
+})
 
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
+const filteredFeeds = computed(() => {
+    let filtered = props.feeds || []
+    if (selectedFilter.value !== 'All') {
+        filtered = filtered.filter((f) => f.activity_type === selectedFilter.value)
+    }
+    const q = searchQuery.value.trim().toLowerCase()
+    if (q) {
         filtered = filtered.filter(
-            (feed) =>
-                (feed.title && feed.title.toLowerCase().includes(query)) ||
-                feed.body.toLowerCase().includes(query) ||
-                (feed.location && feed.location.toLowerCase().includes(query)) ||
-                (feed.tags && feed.tags.some((tag) => tag.toLowerCase().includes(query))),
+            (f) =>
+                (f.title && f.title.toLowerCase().includes(q)) ||
+                (f.body && f.body.toLowerCase().includes(q)) ||
+                (f.location && f.location.toLowerCase().includes(q)) ||
+                (f.tags && f.tags.some((t) => t.toLowerCase().includes(q))),
         )
     }
-
     return filtered
 })
 
@@ -191,18 +191,6 @@ const getActivityIcon = (type) => {
         event: CalendarHeart,
     }
     return icons[type] || Sparkles
-}
-
-const getActivityAccent = (type) => {
-    const accents = {
-        hangout: { bg: 'bg-sky-500/8', text: 'text-sky-600 dark:text-sky-400', border: 'border-sky-500/15', dot: 'bg-sky-500' },
-        travel: { bg: 'bg-emerald-500/8', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/15', dot: 'bg-emerald-500' },
-        food: { bg: 'bg-amber-500/8', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/15', dot: 'bg-amber-500' },
-        lifestyle: { bg: 'bg-rose-500/8', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-500/15', dot: 'bg-rose-500' },
-        work: { bg: 'bg-violet-500/8', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-500/15', dot: 'bg-violet-500' },
-        event: { bg: 'bg-teal-500/8', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-500/15', dot: 'bg-teal-500' },
-    }
-    return accents[type] || { bg: 'bg-muted/50', text: 'text-muted-foreground', border: 'border-border/30', dot: 'bg-muted-foreground' }
 }
 
 const getMoodEmoji = (mood) => {
@@ -220,9 +208,8 @@ const getMoodEmoji = (mood) => {
 }
 
 const timeAgo = (date) => {
-    const now = new Date()
     const past = new Date(date)
-    const diffMs = now - past
+    const diffMs = now.value - past
     const diffSecs = Math.floor(diffMs / 1000)
     const diffMins = Math.floor(diffSecs / 60)
     const diffHours = Math.floor(diffMins / 60)
@@ -236,7 +223,11 @@ const timeAgo = (date) => {
     if (diffDays < 7) return `${diffDays}d ago`
     if (diffWeeks < 4) return `${diffWeeks}w ago`
     if (diffMonths < 12) return `${diffMonths}mo ago`
-    return past.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    return past.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    })
 }
 
 const formatDate = (date) => {
@@ -260,7 +251,10 @@ const closeImageViewer = () => {
 }
 
 const nextImage = () => {
-    if (expandedImages.value && currentImageIndex.value < expandedImages.value.images.length - 1) {
+    if (
+        expandedImages.value &&
+        currentImageIndex.value < expandedImages.value.images.length - 1
+    ) {
         currentImageIndex.value++
     }
 }
@@ -270,333 +264,537 @@ const prevImage = () => {
         currentImageIndex.value--
     }
 }
+
+onMounted(() => {
+    initFeedStats()
+
+    setTimeout(() => {
+        isLoading.value = false
+        requestAnimationFrame(() => {
+            isVisible.value = true
+            props.feeds.forEach((feed) => trackView(feed))
+        })
+    }, 400)
+
+    clockTimer = setInterval(() => {
+        now.value = new Date()
+    }, 60000)
+
+    window.addEventListener('keydown', handleKeydown)
+    window.addEventListener('pointermove', handlePointer, { passive: true })
+})
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown)
+    document.body.style.overflow = ''
+})
+
+onBeforeUnmount(() => {
+    if (clockTimer) clearInterval(clockTimer)
+    window.removeEventListener('pointermove', handlePointer)
+})
 </script>
 
 <template>
-    <Head>
-        <title>{{ title }}</title>
-        <meta name="description" :content="description" />
-        <meta name="keywords" content="lifestyle, hangout, travel, food, activities, daily life, social feed" />
-        <meta property="og:title" :content="title" />
-        <meta property="og:description" :content="description" />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" :content="title" />
-        <meta name="twitter:description" :content="description" />
-        <meta name="robots" content="index, follow" />
-    </Head>
+    <FrontendLayout current-route="/feeds">
+        <Head>
+            <title>{{ title }}</title>
+            <meta name="description" :content="description" />
+            <meta
+                name="keywords"
+                content="lifestyle, hangout, travel, food, activities, journal, dispatches"
+            />
+            <meta property="og:title" :content="title" />
+            <meta property="og:description" :content="description" />
+            <meta property="og:type" content="website" />
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
+                rel="stylesheet"
+            />
+        </Head>
 
-    <FrontendLayout currentRoute="/feeds">
-        <MusicPlayer />
+        <!-- Skeleton -->
+        <section
+            v-if="isLoading"
+            class="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-8"
+        >
+            <Skeleton class="h-56 w-full rounded-3xl mb-5" />
+            <Skeleton class="h-16 w-full rounded-2xl mb-6" />
+            <div class="space-y-6">
+                <Skeleton v-for="i in 3" :key="i" class="h-72 w-full rounded-2xl" />
+            </div>
+        </section>
 
-        <div class="min-h-screen text-foreground overflow-x-hidden transition-all duration-300 pt-16">
-            <div class="max-w-[680px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <section
+            v-else
+            class="relative mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-8"
+            :class="{ 'is-visible': isVisible }"
+        >
+            <!-- Ambient + grain -->
+            <div
+                class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+                aria-hidden="true"
+            >
+                <div
+                    class="ambient-blob"
+                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
+                ></div>
+                <div class="grain-overlay"></div>
+            </div>
 
-                <!-- ==================== SKELETON ==================== -->
-                <template v-if="isLoading">
-                    <div class="mb-10 sm:mb-14">
-                        <Skeleton class="h-3 w-20 rounded-full mb-4" />
-                        <Skeleton class="h-9 w-3/4 max-w-[224px] rounded-lg mb-3" />
-                        <Skeleton class="h-4 w-full max-w-[288px] rounded-lg" />
+            <!-- Top meta strip -->
+            <div
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                style="--d: 0ms"
+            >
+                <span class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-foreground/40"></span>
+                    Chapter 08
+                </span>
+                <span class="hidden md:inline">Dispatches / 2026</span>
+                <span class="tabular-nums">{{ dateString }}</span>
+            </div>
+
+            <!-- MASTHEAD -->
+            <article
+                class="reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                style="--d: 80ms"
+            >
+                <div
+                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                    aria-hidden="true"
+                ></div>
+
+                <div
+                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                >
+                    <span class="inline-flex items-center gap-2">
+                        <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
+                        Field journal
+                    </span>
+                    <span>{{ String(feeds.length).padStart(2, '0') }} entries</span>
+                </div>
+
+                <h1 class="mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
+                    <span
+                        class="block text-[clamp(2.5rem,9vw,5.5rem)] font-normal text-foreground"
+                    >
+                        Dispatches.
+                    </span>
+                </h1>
+
+                <p
+                    class="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-[15px] md:text-base"
+                >
+                    Notes from the road — hangouts, travel, meals, work. A running personal
+                    journal kept in real time.
+                </p>
+            </article>
+
+            <!-- SEARCH + FILTERS -->
+            <div class="reveal mt-4 sm:mt-5" style="--d: 160ms">
+                <div
+                    class="rounded-[1.25rem] border border-border/60 bg-card/60 p-3 backdrop-blur-xl sm:rounded-2xl sm:p-4"
+                >
+                    <div class="relative">
+                        <Search
+                            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50"
+                        />
+                        <input
+                            v-model="searchQuery"
+                            @focus="searchFocused = true"
+                            @blur="searchFocused = false"
+                            type="text"
+                            placeholder="Search dispatches, places, tags…"
+                            class="search-input"
+                        />
+                        <button
+                            v-if="searchQuery"
+                            @click="searchQuery = ''"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors hover:text-foreground"
+                            aria-label="Clear search"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
                     </div>
-                    <div class="mb-8">
-                        <Skeleton class="h-10 w-full rounded-xl" />
-                    </div>
-                    <div class="flex gap-2 mb-10 overflow-hidden">
-                        <Skeleton v-for="i in 4" :key="i" class="h-8 w-20 shrink-0 rounded-full" />
-                    </div>
-                    <div class="space-y-8">
-                        <div v-for="i in 3" :key="i" class="space-y-3">
-                            <div class="flex items-center gap-3">
-                                <Skeleton class="h-9 w-9 rounded-full shrink-0" />
-                                <div class="space-y-1.5 flex-1 min-w-0">
-                                    <Skeleton class="h-3.5 w-20 rounded" />
-                                    <Skeleton class="h-3 w-28 rounded" />
-                                </div>
-                            </div>
-                            <Skeleton class="h-44 sm:h-52 w-full rounded-2xl" />
-                            <Skeleton class="h-3.5 w-3/4 rounded" />
-                            <Skeleton class="h-3.5 w-1/2 rounded" />
-                        </div>
-                    </div>
-                </template>
 
-                <!-- ==================== CONTENT ==================== -->
-                <template v-else>
-
-                    <!-- Header -->
-                    <div class="mb-10 sm:mb-14 reveal" :class="{ 'is-visible': isVisible }"
-                        :style="{ animationDelay: '0ms' }">
-                        <span
-                            class="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-muted-foreground/60 mb-3">
-                            Journal
-                        </span>
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-3">
-                            {{ title }}
-                        </h1>
-                        <p class="text-sm sm:text-base lg:text-lg text-muted-foreground/80 max-w-md leading-relaxed">
-                            {{ description }}
-                        </p>
-                    </div>
-
-                    <!-- Search -->
-                    <div class="mb-5 reveal" :class="{ 'is-visible': isVisible }"
-                        :style="{ animationDelay: '80ms' }">
-                        <div class="relative">
-                            <Search
-                                class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 transition-colors duration-200"
-                                :class="{ 'text-foreground/70': searchFocused }" />
-                            <input v-model="searchQuery" @focus="searchFocused = true"
-                                @blur="searchFocused = false" type="text"
-                                placeholder="Search posts, places, tags..."
-                                class="w-full pl-10 pr-4 py-2.5 bg-muted/30 border border-border/40 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:bg-background focus:border-border/80 focus:ring-1 focus:ring-ring/20 transition-all duration-300" />
-                        </div>
-                    </div>
-
-                    <!-- Filter Pills -->
-                    <div class="mb-8 sm:mb-10 reveal" :class="{ 'is-visible': isVisible }"
-                        :style="{ animationDelay: '140ms' }">
+                    <div class="relative mt-3">
                         <div
-                            class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible scrollbar-hide">
-                            <button v-for="activity in activities" :key="activity"
-                                @click="selectedFilter = activity"
+                            class="scroll-row flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"
+                        >
+                            <button
+                                v-for="activity in activities"
+                                :key="activity"
                                 class="filter-pill shrink-0 capitalize"
-                                :class="selectedFilter === activity ? 'filter-pill--active' : 'filter-pill--idle'">
-                                {{ activity }}
+                                :class="{
+                                    'filter-pill-active': selectedFilter === activity,
+                                }"
+                                @click="selectedFilter = activity"
+                            >
+                                <span>{{ activity }}</span>
+                                <span class="filter-count">{{ countByActivity[activity] || 0 }}</span>
                             </button>
                         </div>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card/80 to-transparent sm:hidden"
+                            aria-hidden="true"
+                        ></div>
                     </div>
 
-                    <!-- ==================== FEED TIMELINE ==================== -->
-                    <div class="relative">
-                        <!-- Timeline line (hidden on mobile) -->
-                        <div v-if="filteredFeeds.length > 0"
-                            class="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-border/60 via-border/30 to-transparent hidden sm:block" />
+                    <div
+                        class="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
+                    >
+                        <span>
+                            {{ String(filteredFeeds.length).padStart(2, '0') }} /
+                            {{ String(feeds.length).padStart(2, '0') }} dispatches
+                        </span>
+                        <span v-if="selectedFilter !== 'All'" class="hidden sm:inline">
+                            filed under {{ selectedFilter }}
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="space-y-6 sm:space-y-10">
-                            <article v-for="(feed, index) in filteredFeeds" :key="feed.id"
-                                class="feed-card relative reveal" :class="{ 'is-visible': isVisible }"
-                                :style="{ animationDelay: `${200 + index * 80}ms` }">
+            <!-- FEED TIMELINE -->
+            <div class="mt-6 sm:mt-8">
+                <!-- Empty state -->
+                <div
+                    v-if="filteredFeeds.length === 0"
+                    class="reveal rounded-[1.25rem] border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center backdrop-blur-xl sm:rounded-3xl sm:py-24"
+                    style="--d: 240ms"
+                >
+                    <div
+                        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-muted/40"
+                    >
+                        <ScanSearch class="h-5 w-5 text-muted-foreground/60" />
+                    </div>
+                    <h3 class="mt-5 font-serif text-2xl text-foreground sm:text-3xl">
+                        {{ searchQuery || selectedFilter !== 'All'
+                            ? 'Nothing filed yet.'
+                            : 'No dispatches yet.' }}
+                    </h3>
+                    <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                        <template v-if="searchQuery || selectedFilter !== 'All'">
+                            Try a different search term or filter.
+                        </template>
+                        <template v-else>Stay tuned — new dispatches on the way.</template>
+                    </p>
+                </div>
 
-                                <!-- Timeline dot (hidden on mobile) -->
-                                <div class="hidden sm:flex absolute left-0 top-7 w-10 items-center justify-center z-10">
-                                    <div class="timeline-dot"
-                                        :class="feed.activity_type ? getActivityAccent(feed.activity_type).dot : 'bg-muted-foreground/40'" />
-                                </div>
+                <!-- Timeline -->
+                <div v-else class="relative">
+                    <!-- Timeline rail (desktop only) -->
+                    <div
+                        class="absolute left-[11px] top-3 bottom-3 w-px bg-gradient-to-b from-border/80 via-border/40 to-transparent hidden sm:block"
+                        aria-hidden="true"
+                    ></div>
 
-                                <!-- Card -->
-                                <div class="sm:ml-14 group">
-                                    <div
-                                        class="rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03] dark:hover:shadow-black/20">
+                    <div class="space-y-5 sm:space-y-7">
+                        <article
+                            v-for="(feed, index) in filteredFeeds"
+                            :key="feed.id"
+                            class="feed-card reveal relative"
+                            :style="{ '--d': 240 + index * 70 + 'ms' }"
+                        >
+                            <!-- Timeline dot -->
+                            <div
+                                class="timeline-dot hidden sm:flex"
+                                aria-hidden="true"
+                            >
+                                <span></span>
+                            </div>
 
-                                        <!-- Card header row -->
-                                        <div class="p-4 sm:px-5 sm:pt-5 sm:pb-3">
-                                            <div class="flex items-start justify-between gap-2">
-                                                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                                                    <!-- Activity icon -->
-                                                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
-                                                        :class="feed.activity_type ? getActivityAccent(feed.activity_type).bg : 'bg-muted/50'">
-                                                        <component :is="getActivityIcon(feed.activity_type)"
-                                                            class="h-3.5 w-3.5 sm:h-4 sm:w-4"
-                                                            :class="feed.activity_type ? getActivityAccent(feed.activity_type).text : 'text-muted-foreground'" />
-                                                    </div>
-                                                    <div class="min-w-0">
-                                                        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                                            <span v-if="feed.activity_type"
-                                                                class="text-[11px] sm:text-xs font-semibold capitalize"
-                                                                :class="feed.activity_type ? getActivityAccent(feed.activity_type).text : 'text-muted-foreground'">
-                                                                {{ feed.activity_type }}
-                                                            </span>
-                                                            <span v-if="feed.mood" class="text-xs sm:text-sm leading-none"
-                                                                :title="feed.mood">
-                                                                {{ getMoodEmoji(feed.mood) }}
-                                                            </span>
-                                                        </div>
-                                                        <p class="text-[10px] sm:text-[11px] text-muted-foreground/50 mt-0.5 font-medium tracking-wide truncate">
-                                                            {{ formatDate(feed.published_at || feed.created_at) }}
-                                                            <span class="mx-0.5 sm:mx-1 opacity-30">&middot;</span>
-                                                            {{ timeAgo(feed.published_at || feed.created_at) }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <Badge v-if="feed.is_pinned" variant="outline"
-                                                    class="text-[10px] font-medium bg-amber-500/8 text-amber-600 dark:text-amber-400 border-amber-500/15 gap-0.5 sm:gap-1 shrink-0 px-1.5 sm:px-2 py-0.5">
-                                                    <Pin class="h-2.5 w-2.5" />
-                                                    <span class="hidden xs:inline">Pinned</span>
-                                                </Badge>
-                                            </div>
-                                        </div>
-
-                                        <!-- Content -->
-                                        <div class="px-4 sm:px-5 pb-2">
-                                            <h3 v-if="feed.title"
-                                                class="text-base sm:text-lg md:text-xl font-bold text-foreground mb-1.5 sm:mb-2 leading-snug tracking-tight">
-                                                {{ feed.title }}
-                                            </h3>
-                                            <p class="text-sm sm:text-[15px] text-foreground/75 leading-relaxed whitespace-pre-line">
-                                                {{ feed.body }}
-                                            </p>
-                                        </div>
-
-                                        <!-- Images -->
-                                        <div v-if="feed.images && feed.images.length > 0" class="px-4 sm:px-5 pt-3 pb-1">
-                                            <!-- Single image -->
-                                            <div v-if="feed.images.length === 1"
-                                                class="rounded-xl overflow-hidden cursor-pointer img-hover"
-                                                @click="openImageViewer(feed, 0)">
-                                                <img :src="feed.images[0]"
-                                                    :alt="feed.title || 'Feed photo'"
-                                                    class="w-full max-h-[320px] sm:max-h-[420px] object-cover" loading="lazy" />
-                                            </div>
-
-                                            <!-- Two images -->
-                                            <div v-else-if="feed.images.length === 2"
-                                                class="grid grid-cols-2 gap-1 sm:gap-1.5 rounded-xl overflow-hidden h-48 sm:h-64 md:h-72">
-                                                <div v-for="(img, idx) in feed.images" :key="idx"
-                                                    class="cursor-pointer img-hover overflow-hidden"
-                                                    @click="openImageViewer(feed, idx)">
-                                                    <img :src="img" :alt="`Photo ${idx + 1}`"
-                                                        class="w-full h-full object-cover" loading="lazy" />
-                                                </div>
-                                            </div>
-
-                                            <!-- Three or more images -->
-                                            <div v-else
-                                                class="flex gap-1 sm:gap-1.5 rounded-xl overflow-hidden h-52 sm:h-72 md:h-80">
-                                                <!-- Large image (left ~65%) -->
-                                                <div class="flex-[2] cursor-pointer img-hover overflow-hidden"
-                                                    @click="openImageViewer(feed, 0)">
-                                                    <img :src="feed.images[0]" alt="Photo 1"
-                                                        class="w-full h-full object-cover"
-                                                        loading="lazy" />
-                                                </div>
-                                                <!-- Right column (~35%) -->
-                                                <div class="flex-[1] flex flex-col gap-1 sm:gap-1.5">
-                                                    <div class="flex-1 cursor-pointer img-hover overflow-hidden"
-                                                        @click="openImageViewer(feed, 1)">
-                                                        <img :src="feed.images[1]" alt="Photo 2"
-                                                            class="w-full h-full object-cover"
-                                                            loading="lazy" />
-                                                    </div>
-                                                    <div class="relative flex-1 cursor-pointer img-hover overflow-hidden"
-                                                        @click="openImageViewer(feed, 2)">
-                                                        <img :src="feed.images[2]" alt="Photo 3"
-                                                            class="w-full h-full object-cover"
-                                                            loading="lazy" />
-                                                        <div v-if="feed.images.length > 3"
-                                                            class="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-                                                            <span class="text-white text-base sm:text-lg font-semibold">+{{
-                                                                feed.images.length - 3 }}</span>
-                                                        </div>
-                                                    </div>
+                            <!-- Card -->
+                            <div class="sm:ml-10">
+                                <div
+                                    class="overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl transition-all duration-300 hover:border-foreground/20"
+                                >
+                                    <!-- Header row -->
+                                    <div class="px-4 pt-4 pb-2 sm:px-6 sm:pt-5 sm:pb-3">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex min-w-0 items-center gap-2.5">
+                                                <span
+                                                    class="activity-chip"
+                                                >
+                                                    <component
+                                                        :is="getActivityIcon(feed.activity_type)"
+                                                        class="h-3 w-3"
+                                                    />
+                                                </span>
+                                                <div class="min-w-0 flex items-center gap-2">
+                                                    <span
+                                                        v-if="feed.activity_type"
+                                                        class="font-mono text-[10px] uppercase tracking-[0.22em] text-foreground"
+                                                    >
+                                                        {{ feed.activity_type }}
+                                                    </span>
+                                                    <span
+                                                        v-if="feed.mood"
+                                                        class="text-xs leading-none"
+                                                        :title="feed.mood"
+                                                    >
+                                                        {{ getMoodEmoji(feed.mood) }}
+                                                    </span>
+                                                    <span
+                                                        class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
+                                                    >
+                                                        · {{ timeAgo(feed.published_at || feed.created_at) }}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <!-- Location -->
-                                        <div v-if="feed.location"
-                                            class="px-4 sm:px-5 pt-3 flex items-center gap-1.5">
-                                            <MapPin class="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                                            <span class="text-xs sm:text-[13px] text-muted-foreground/60 font-medium truncate">
-                                                {{ feed.location }}
+                                            <span
+                                                v-if="feed.is_pinned"
+                                                class="pinned-chip"
+                                            >
+                                                <Pin class="h-2.5 w-2.5" />
+                                                <span class="hidden xs:inline">Pinned</span>
                                             </span>
                                         </div>
+                                        <div
+                                            class="mt-1 ml-[34px] font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/60"
+                                        >
+                                            {{ formatDate(feed.published_at || feed.created_at) }}
+                                        </div>
+                                    </div>
 
-                                        <!-- Tags -->
-                                        <div v-if="feed.tags && feed.tags.length"
-                                            class="px-4 sm:px-5 pt-2 sm:pt-2.5 flex flex-wrap gap-x-2 gap-y-1">
-                                            <span v-for="tag in feed.tags" :key="tag"
-                                                class="text-[11px] sm:text-[12px] font-medium text-primary/60 hover:text-primary transition-colors cursor-default">
+                                    <!-- Content -->
+                                    <div class="px-4 sm:px-6">
+                                        <h3
+                                            v-if="feed.title"
+                                            class="mt-1 font-serif text-2xl leading-tight tracking-tight text-foreground sm:text-[28px]"
+                                        >
+                                            {{ feed.title }}
+                                        </h3>
+                                        <p
+                                            class="mt-2.5 whitespace-pre-line text-sm leading-relaxed text-muted-foreground sm:text-[15px]"
+                                        >
+                                            {{ feed.body }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Images -->
+                                    <div
+                                        v-if="feed.images && feed.images.length > 0"
+                                        class="mt-4 px-4 sm:px-6"
+                                    >
+                                        <!-- Single -->
+                                        <div
+                                            v-if="feed.images.length === 1"
+                                            class="group/img overflow-hidden rounded-2xl cursor-pointer"
+                                            @click="openImageViewer(feed, 0)"
+                                        >
+                                            <img
+                                                :src="feed.images[0]"
+                                                :alt="feed.title || 'Feed photo'"
+                                                class="w-full max-h-[420px] object-cover transition-transform duration-700 group-hover/img:scale-[1.03]"
+                                                loading="lazy"
+                                            />
+                                        </div>
+
+                                        <!-- Two -->
+                                        <div
+                                            v-else-if="feed.images.length === 2"
+                                            class="grid grid-cols-2 gap-1 overflow-hidden rounded-2xl h-52 sm:h-64"
+                                        >
+                                            <div
+                                                v-for="(img, idx) in feed.images"
+                                                :key="idx"
+                                                class="group/img cursor-pointer overflow-hidden"
+                                                @click="openImageViewer(feed, idx)"
+                                            >
+                                                <img
+                                                    :src="img"
+                                                    :alt="`Photo ${idx + 1}`"
+                                                    class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- Three or more -->
+                                        <div
+                                            v-else
+                                            class="flex gap-1 overflow-hidden rounded-2xl h-56 sm:h-72"
+                                        >
+                                            <div
+                                                class="group/img flex-[2] cursor-pointer overflow-hidden"
+                                                @click="openImageViewer(feed, 0)"
+                                            >
+                                                <img
+                                                    :src="feed.images[0]"
+                                                    alt="Photo 1"
+                                                    class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.04]"
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                            <div class="flex flex-[1] flex-col gap-1">
+                                                <div
+                                                    class="group/img flex-1 cursor-pointer overflow-hidden"
+                                                    @click="openImageViewer(feed, 1)"
+                                                >
+                                                    <img
+                                                        :src="feed.images[1]"
+                                                        alt="Photo 2"
+                                                        class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                                <div
+                                                    class="group/img relative flex-1 cursor-pointer overflow-hidden"
+                                                    @click="openImageViewer(feed, 2)"
+                                                >
+                                                    <img
+                                                        :src="feed.images[2]"
+                                                        alt="Photo 3"
+                                                        class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
+                                                        loading="lazy"
+                                                    />
+                                                    <div
+                                                        v-if="feed.images.length > 3"
+                                                        class="absolute inset-0 flex items-center justify-center bg-black/45 backdrop-blur-[2px]"
+                                                    >
+                                                        <span class="font-serif text-2xl text-white">
+                                                            +{{ feed.images.length - 3 }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location + tags -->
+                                    <div
+                                        v-if="feed.location || (feed.tags && feed.tags.length)"
+                                        class="px-4 pt-3 sm:px-6 sm:pt-4"
+                                    >
+                                        <div
+                                            v-if="feed.location"
+                                            class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+                                        >
+                                            <MapPin class="h-3 w-3 shrink-0 opacity-70" />
+                                            <span class="truncate">{{ feed.location }}</span>
+                                        </div>
+
+                                        <div
+                                            v-if="feed.tags && feed.tags.length"
+                                            class="mt-2 flex flex-wrap gap-1.5"
+                                        >
+                                            <span
+                                                v-for="tag in feed.tags"
+                                                :key="tag"
+                                                class="tag-chip"
+                                            >
                                                 #{{ tag }}
                                             </span>
                                         </div>
+                                    </div>
 
-                                        <!-- Footer -->
-                                        <div class="px-4 sm:px-5 py-3 sm:py-4 mt-2 flex items-center gap-4 sm:gap-5 border-t border-border/20">
-                                            <button
-                                                @click="toggleLike(feed)"
-                                                class="flex items-center gap-1.5 text-xs sm:text-[13px] font-medium transition-all duration-200 group/like"
-                                                :class="isLiked(feed.id) ? 'text-rose-500' : 'text-muted-foreground/50 hover:text-rose-400'"
-                                                :disabled="likingInProgress.has(feed.id)">
-                                                <Heart class="h-3.5 w-3.5 transition-transform duration-200 group-hover/like:scale-110 group-active/like:scale-95"
-                                                    :class="{ 'fill-current': isLiked(feed.id) }" />
-                                                {{ getLikes(feed) }}
-                                            </button>
-                                            <span
-                                                class="flex items-center gap-1.5 text-xs sm:text-[13px] text-muted-foreground/50 font-medium">
-                                                <Eye class="h-3.5 w-3.5" />
-                                                {{ getViews(feed) }}
-                                            </span>
-                                        </div>
+                                    <!-- Footer -->
+                                    <div
+                                        class="mt-4 flex items-center gap-4 border-t border-border/50 px-4 py-3 sm:gap-5 sm:px-6 sm:py-4"
+                                    >
+                                        <button
+                                            @click="toggleLike(feed)"
+                                            :disabled="likingInProgress.has(feed.id)"
+                                            class="group/like flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors duration-200"
+                                            :class="
+                                                isLiked(feed.id)
+                                                    ? 'text-rose-500'
+                                                    : 'text-muted-foreground hover:text-rose-400'
+                                            "
+                                            :aria-label="isLiked(feed.id) ? 'Unlike dispatch' : 'Like dispatch'"
+                                        >
+                                            <Heart
+                                                class="h-3.5 w-3.5 transition-transform duration-200 group-hover/like:scale-110 group-active/like:scale-95"
+                                                :class="{ 'fill-current': isLiked(feed.id) }"
+                                            />
+                                            <span class="tabular-nums">{{ getLikes(feed) }}</span>
+                                        </button>
+                                        <span
+                                            class="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
+                                        >
+                                            <Eye class="h-3.5 w-3.5 opacity-70" />
+                                            <span class="tabular-nums">{{ getViews(feed) }}</span>
+                                        </span>
+                                        <span
+                                            class="ml-auto font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50"
+                                        >
+                                            #{{ String(index + 1).padStart(2, '0') }}
+                                        </span>
                                     </div>
                                 </div>
-                            </article>
-                        </div>
+                            </div>
+                        </article>
                     </div>
-
-                    <!-- Empty State -->
-                    <div v-if="filteredFeeds.length === 0"
-                        class="text-center py-16 sm:py-20 reveal" :class="{ 'is-visible': isVisible }"
-                        :style="{ animationDelay: '200ms' }">
-                        <div
-                            class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-muted/40 flex items-center justify-center mx-auto mb-4 sm:mb-5">
-                            <ScanSearch class="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground/40" />
-                        </div>
-                        <h3 class="text-sm sm:text-base font-semibold text-foreground/70 mb-1.5">
-                            {{ searchQuery || selectedFilter !== 'All' ? 'No matching posts' : 'No feeds yet' }}
-                        </h3>
-                        <p class="text-xs sm:text-sm text-muted-foreground/50 max-w-xs mx-auto">
-                            {{ searchQuery || selectedFilter !== 'All'
-                                ? 'Try adjusting your search or filter to find what you\'re looking for'
-                                : 'Stay tuned — new posts are on the way!' }}
-                        </p>
-                    </div>
-                </template>
+                </div>
             </div>
-        </div>
 
-        <!-- ==================== IMAGE LIGHTBOX ==================== -->
+            <!-- Footer -->
+            <div
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                style="--d: 900ms"
+            >
+                <span>© {{ new Date().getFullYear() }} · Field journal</span>
+                <span>End of transmission →</span>
+            </div>
+        </section>
+
+        <!-- IMAGE LIGHTBOX -->
         <Teleport to="body">
             <Transition name="lightbox">
-                <div v-if="expandedImages"
+                <div
+                    v-if="expandedImages"
                     class="fixed inset-0 z-[100] flex items-center justify-center"
-                    @click.self="closeImageViewer">
+                    @click.self="closeImageViewer"
+                >
+                    <div class="absolute inset-0 bg-black/90 backdrop-blur-xl sm:bg-black/85"></div>
 
-                    <!-- Backdrop -->
-                    <div class="absolute inset-0 bg-black/90 sm:bg-black/85 backdrop-blur-xl" />
-
-                    <!-- Close (larger touch target on mobile) -->
-                    <button @click="closeImageViewer"
-                        class="absolute top-3 right-3 sm:top-5 sm:right-5 z-20 w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center transition-all duration-200">
-                        <X class="h-5 w-5 text-white/80" />
+                    <button
+                        @click="closeImageViewer"
+                        class="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-all duration-200 hover:bg-white/20 active:bg-white/30 sm:right-5 sm:top-5 sm:h-10 sm:w-10"
+                        aria-label="Close"
+                    >
+                        <X class="h-5 w-5 text-white/90" />
                     </button>
 
-                    <!-- Prev button -->
-                    <button v-if="currentImageIndex > 0" @click="prevImage"
-                        class="absolute left-2 sm:left-6 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center transition-all duration-200">
-                        <ChevronLeft class="h-5 w-5 text-white/80" />
+                    <button
+                        v-if="currentImageIndex > 0"
+                        @click="prevImage"
+                        class="absolute left-2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-all duration-200 hover:bg-white/20 active:bg-white/30 sm:left-6 sm:h-11 sm:w-11"
+                        aria-label="Previous image"
+                    >
+                        <ChevronLeft class="h-5 w-5 text-white/90" />
                     </button>
 
-                    <!-- Image -->
-                    <div class="relative z-10 w-full max-w-[94vw] sm:max-w-[90vw] max-h-[80vh] sm:max-h-[88vh] flex items-center justify-center px-12 sm:px-16">
-                        <img :src="expandedImages.images[currentImageIndex]"
+                    <div
+                        class="relative z-10 flex h-full max-h-[80vh] w-full max-w-[94vw] items-center justify-center px-12 sm:max-h-[88vh] sm:max-w-[90vw] sm:px-16"
+                    >
+                        <img
+                            :src="expandedImages.images[currentImageIndex]"
                             :alt="`Photo ${currentImageIndex + 1}`"
-                            class="max-w-full max-h-[80vh] sm:max-h-[88vh] object-contain rounded-lg shadow-2xl"
-                            :key="currentImageIndex" />
+                            class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl sm:max-h-[88vh]"
+                            :key="currentImageIndex"
+                        />
                     </div>
 
-                    <!-- Next button -->
-                    <button v-if="expandedImages && currentImageIndex < expandedImages.images.length - 1"
+                    <button
+                        v-if="expandedImages && currentImageIndex < expandedImages.images.length - 1"
                         @click="nextImage"
-                        class="absolute right-2 sm:right-6 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center transition-all duration-200">
-                        <ChevronRight class="h-5 w-5 text-white/80" />
+                        class="absolute right-2 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-all duration-200 hover:bg-white/20 active:bg-white/30 sm:right-6 sm:h-11 sm:w-11"
+                        aria-label="Next image"
+                    >
+                        <ChevronRight class="h-5 w-5 text-white/90" />
                     </button>
 
-                    <!-- Dot indicators -->
-                    <div class="absolute bottom-4 sm:bottom-6 z-20 flex items-center gap-1.5 sm:gap-2">
-                        <div v-for="(_, idx) in expandedImages.images" :key="idx"
+                    <div
+                        class="absolute bottom-4 z-20 flex items-center gap-1.5 sm:bottom-6 sm:gap-2"
+                    >
+                        <div
+                            v-for="(_, idx) in expandedImages.images"
+                            :key="idx"
                             class="h-1.5 rounded-full transition-all duration-300"
-                            :class="idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/30 w-1.5'" />
+                            :class="idx === currentImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/30'"
+                        ></div>
                     </div>
                 </div>
             </Transition>
@@ -605,20 +803,18 @@ const prevImage = () => {
 </template>
 
 <style scoped>
-/* ===== Reveal Animation ===== */
 .reveal {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(18px);
 }
-
-.reveal.is-visible {
-    animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.is-visible .reveal {
+    animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--d, 0ms);
 }
-
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(18px);
     }
     to {
         opacity: 1;
@@ -626,103 +822,233 @@ const prevImage = () => {
     }
 }
 
-/* ===== Timeline Dot ===== */
-.timeline-dot {
-    width: 10px;
-    height: 10px;
+/* Typography */
+h1,
+h3,
+.font-serif {
+    font-family: 'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+    font-feature-settings: 'ss01', 'liga';
+}
+.font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* Ambient */
+.ambient-blob {
+    position: absolute;
+    width: 40rem;
+    height: 40rem;
     border-radius: 9999px;
-    box-shadow: 0 0 0 3px var(--color-background);
-    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--color-foreground) 7%, transparent),
+        transparent 70%
+    );
+    filter: blur(60px);
+    transition:
+        left 600ms cubic-bezier(0.22, 1, 0.36, 1),
+        top 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: left, top;
+}
+.grain-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+    pointer-events: none;
 }
 
-.feed-card:hover .timeline-dot {
-    transform: scale(1.3);
+/* Search input */
+.search-input {
+    width: 100%;
+    height: 2.75rem;
+    padding: 0 2.5rem;
+    background: color-mix(in oklab, var(--color-muted) 40%, transparent);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    color: var(--color-foreground);
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+.search-input::placeholder {
+    color: color-mix(in oklab, var(--color-muted-foreground) 80%, transparent);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+.search-input:focus {
+    outline: none;
+    border-color: color-mix(in oklab, var(--color-foreground) 40%, var(--color-border));
+    background: var(--color-background);
 }
 
-/* ===== Filter Pills ===== */
+/* Filter pills */
 .filter-pill {
-    padding: 5px 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
     border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 60%, transparent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-foreground);
     white-space: nowrap;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+.filter-pill:hover {
+    transform: translateY(-1.5px);
+    border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
+}
+.filter-pill-active {
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border-color: var(--color-foreground);
+}
+.filter-count {
+    display: inline-block;
+    min-width: 1.25rem;
+    padding: 0 0.35rem;
+    border-radius: 9999px;
+    background: color-mix(in oklab, currentColor 15%, transparent);
+    font-size: 0.65rem;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+.scroll-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+}
+.scroll-row::-webkit-scrollbar {
+    display: none;
+}
+.scroll-row > * {
+    scroll-snap-align: start;
 }
 
-@media (min-width: 640px) {
-    .filter-pill {
-        padding: 6px 16px;
-        font-size: 13px;
+/* Timeline dot */
+.timeline-dot {
+    position: absolute;
+    left: 5px;
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+.timeline-dot span {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--color-foreground);
+    box-shadow: 0 0 0 3px var(--color-background);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.feed-card:hover .timeline-dot span {
+    transform: scale(1.4);
+}
+
+/* Activity chip (monochrome) */
+.activity-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-muted) 40%, transparent);
+    color: var(--color-foreground);
+    flex-shrink: 0;
+}
+
+/* Pinned chip */
+.pinned-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, #f59e0b 40%, var(--color-border));
+    background: color-mix(in oklab, #f59e0b 10%, transparent);
+    color: #b45309;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+:global(.dark) .pinned-chip {
+    color: #fbbf24;
+}
+
+/* Tag chips */
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-muted) 30%, transparent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--color-foreground);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.tag-chip:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
+}
+
+/* Feed card subtle hover */
+.feed-card > div > div {
+    transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .feed-card:hover > div > div {
+        box-shadow: 0 22px 45px -28px rgba(0, 0, 0, 0.35);
     }
 }
 
-.filter-pill--idle {
-    color: var(--color-muted-foreground);
-    background: transparent;
-    border: 1px solid transparent;
-}
-
-.filter-pill--idle:hover {
-    color: var(--color-foreground);
-    background: var(--color-muted);
-}
-
-.filter-pill--active {
-    background: var(--color-foreground);
-    color: var(--color-background);
-    border: 1px solid transparent;
-}
-
-/* ===== Image Hover ===== */
-.img-hover img {
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.img-hover:hover img {
-    transform: scale(1.03);
-}
-
-/* ===== Lightbox Transition ===== */
+/* Lightbox transition */
 .lightbox-enter-active {
     transition: opacity 0.3s ease;
 }
-
 .lightbox-leave-active {
     transition: opacity 0.2s ease;
 }
-
 .lightbox-enter-from,
 .lightbox-leave-to {
     opacity: 0;
 }
 
-/* ===== Scrollbar Hide ===== */
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-
-/* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
-    .reveal {
-        opacity: 1;
-        transform: none;
+    .reveal,
+    .is-visible .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
     }
-
-    .reveal.is-visible {
-        animation: none;
-    }
-
-    .img-hover img {
-        transition: none;
-    }
-
-    .filter-pill {
+    .ambient-blob {
         transition: none;
     }
 }

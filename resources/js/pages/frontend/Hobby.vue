@@ -1,339 +1,435 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Head } from '@inertiajs/vue3'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Heart, Gamepad2, Palette, Music, Book, Code2, Coffee, Dumbbell, Camera, Plane, Terminal } from 'lucide-vue-next'
+import {
+    Heart,
+    Gamepad2,
+    Palette,
+    Music,
+    Book,
+    Code2,
+    Coffee,
+    Dumbbell,
+    Camera,
+    Plane,
+    Terminal,
+    ArrowUpRight,
+} from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
-import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const props = defineProps({
-    title: String,
-    description: String
+    title: { type: String, default: 'Hobbies' },
+    description: { type: String, default: '' },
 })
 
 const hobbies = [
     {
         icon: Code2,
-        title: 'Open Source Contributing',
-        description: 'Contributing to open source projects on GitHub and building personal projects to explore new technologies like Vue.js, Laravel, and modern web frameworks.',
-        color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-        category: 'Development'
+        title: 'Open Source',
+        description:
+            'Contributing to public repositories, opening pull requests, and building small tools that scratch my own itch — and occasionally someone else\'s too.',
+        category: 'Development',
     },
     {
         icon: Terminal,
-        title: 'Learning New Technologies',
-        description: 'Constantly exploring emerging technologies, experimenting with new programming languages, and staying updated with industry trends.',
-        color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-        category: 'Learning'
+        title: 'New Technologies',
+        description:
+            'Constantly experimenting with emerging frameworks, languages, and patterns. If it\'s new and interesting, it gets a weekend.',
+        category: 'Learning',
     },
     {
         icon: Book,
         title: 'Technical Reading',
-        description: 'Reading programming books, technical documentation, tech blogs, and following industry leaders to improve coding skills and knowledge.',
-        color: 'bg-green-500/10 text-green-600 dark:text-green-400',
-        category: 'Learning'
+        description:
+            'Working through programming books, long-form blog posts, and RFCs. Nothing beats reading the manual carefully.',
+        category: 'Learning',
     },
     {
         icon: Palette,
-        title: 'UI/UX Design',
-        description: 'Creating beautiful and functional user interfaces using design tools like Figma, exploring modern design trends and user experience principles.',
-        color: 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
-        category: 'Creative'
+        title: 'Interface Design',
+        description:
+            'Sketching layouts in Figma, studying typography, and obsessing over spacing. Building better eyes for better builds.',
+        category: 'Creative',
     },
     {
         icon: Coffee,
         title: 'Coffee Brewing',
-        description: 'Perfecting the art of coffee brewing with different methods - from pour-over to espresso. A perfect companion for long coding sessions.',
-        color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-        category: 'Lifestyle'
+        description:
+            'Pour-over, AeroPress, espresso. The ritual matters as much as the result — and the result pairs well with long sessions.',
+        category: 'Lifestyle',
     },
     {
         icon: Gamepad2,
-        title: 'Strategy Gaming',
-        description: 'Playing strategy and puzzle games that enhance problem-solving skills and logical thinking - skills that translate well to programming.',
-        color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-        category: 'Entertainment'
+        title: 'Strategy Games',
+        description:
+            'Turn-based strategy and puzzles. The skills translate more directly to programming than I care to admit.',
+        category: 'Entertainment',
     },
     {
         icon: Dumbbell,
-        title: 'Fitness & Health',
-        description: 'Maintaining physical health through regular exercise and gym sessions. A healthy body supports a healthy mind for better coding performance.',
-        color: 'bg-red-500/10 text-red-600 dark:text-red-400',
-        category: 'Health'
+        title: 'Fitness',
+        description:
+            'Regular lifting and conditioning. A reliable body makes everything else — including shipping — feel lighter.',
+        category: 'Health',
     },
     {
         icon: Camera,
         title: 'Photography',
-        description: 'Capturing moments and exploring creative composition. Photography helps develop an eye for visual design and attention to detail.',
-        color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
-        category: 'Creative'
+        description:
+            'Composition, light, and patience. A quiet practice that sharpens attention to detail in every other discipline.',
+        category: 'Creative',
     },
     {
         icon: Music,
         title: 'Music Production',
-        description: 'Creating and mixing music using digital audio workstations. Music theory and audio engineering complement the technical mindset.',
-        color: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-        category: 'Creative'
+        description:
+            'DAWs, sound design, and the occasional half-finished track. Signal processing and software have more in common than not.',
+        category: 'Creative',
     },
     {
         icon: Plane,
         title: 'Travel & Culture',
-        description: 'Exploring different cultures and places, gaining new perspectives that inspire creativity and problem-solving approaches in development.',
-        color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
-        category: 'Lifestyle'
-    }
+        description:
+            'Exploring new places, languages, and food. Distance from the screen reliably returns better ideas to it.',
+        category: 'Lifestyle',
+    },
+]
+
+const categories = [
+    'All',
+    'Development',
+    'Learning',
+    'Creative',
+    'Lifestyle',
+    'Entertainment',
+    'Health',
 ]
 
 const isLoading = ref(true)
 const isVisible = ref(false)
 const selectedCategory = ref('All')
-const filteredHobbies = ref(hobbies)
 
-const categories = ['All', 'Development', 'Learning', 'Creative', 'Lifestyle', 'Entertainment', 'Health']
+const now = ref(new Date())
+let clockTimer = null
 
-const staggerDelay = {
-    badge: 0,
-    title: 100,
-    description: 200,
-    filters: 300,
-    stats: 400,
-    grid: 500,
-}
+const dateString = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Phnom_Penh',
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(now.value)
+    } catch (e) {
+        return ''
+    }
+})
 
-const filterHobbies = (category) => {
-    selectedCategory.value = category
-    if (category === 'All') {
-        filteredHobbies.value = hobbies
-    } else {
-        filteredHobbies.value = hobbies.filter(hobby => hobby.category === category)
+const pointer = ref({ x: 50, y: 50 })
+const handlePointer = (e) => {
+    pointer.value = {
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
     }
 }
+
+const countByCategory = computed(() => {
+    const map = { All: hobbies.length }
+    for (const cat of categories) {
+        if (cat === 'All') continue
+        map[cat] = hobbies.filter((h) => h.category === cat).length
+    }
+    return map
+})
+
+const filteredHobbies = computed(() => {
+    if (selectedCategory.value === 'All') return hobbies
+    return hobbies.filter((h) => h.category === selectedCategory.value)
+})
 
 onMounted(() => {
     setTimeout(() => {
         isLoading.value = false
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             isVisible.value = true
-        }, 50)
-    }, 800)
+        })
+    }, 400)
+
+    clockTimer = setInterval(() => {
+        now.value = new Date()
+    }, 60000)
+
+    window.addEventListener('pointermove', handlePointer, { passive: true })
+})
+
+onBeforeUnmount(() => {
+    if (clockTimer) clearInterval(clockTimer)
+    window.removeEventListener('pointermove', handlePointer)
 })
 </script>
 
 <template>
-    <Head>
-        <title>{{ title }}</title>
-        <meta name="description" :content="description" />
-        <meta name="keywords" content="hobbies, interests, personal life, creativity, problem solving, developer lifestyle" />
-        <meta name="author" content="Software Developer" />
+    <FrontendLayout current-route="/hobby">
+        <Head>
+            <title>{{ title }}</title>
+            <meta name="description" :content="description" />
+            <meta
+                name="keywords"
+                content="hobbies, interests, personal, developer lifestyle, creative pursuits"
+            />
+            <meta property="og:title" :content="title" />
+            <meta property="og:description" :content="description" />
+            <meta property="og:type" content="website" />
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
+                rel="stylesheet"
+            />
+        </Head>
 
-        <!-- Open Graph Meta Tags -->
-        <meta property="og:title" :content="title" />
-        <meta property="og:description" :content="description" />
-        <meta property="og:image" content="/hobbies-og-image.jpg" />
-        <meta property="og:url" :content="$page.url" />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Hobbies & Interests" />
+        <!-- Skeleton -->
+        <section
+            v-if="isLoading"
+            class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+        >
+            <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
+                <Skeleton class="col-span-2 h-56 rounded-3xl md:col-span-12" />
+                <Skeleton class="col-span-2 h-16 rounded-2xl md:col-span-12" />
+                <Skeleton
+                    v-for="i in 6"
+                    :key="i"
+                    class="col-span-2 h-56 rounded-2xl sm:col-span-1 md:col-span-4"
+                />
+            </div>
+        </section>
 
-        <!-- Twitter Card Meta Tags -->
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" :content="title" />
-        <meta name="twitter:description" :content="description" />
-        <meta name="twitter:image" content="/hobbies-og-image.jpg" />
-
-        <!-- Additional SEO Meta Tags -->
-        <meta name="robots" content="index, follow" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="canonical" :href="$page.url" />
-    </Head>
-
-    <FrontendLayout currentRoute="/hobby">
-        <!-- Music Player -->
-        <MusicPlayer />
-
-        <div class="min-h-screen bg-gradient-to-br from-background via-background/95 to-background text-foreground font-sans overflow-x-hidden transition-all duration-300 pt-16">
-
-        <!-- Hobbies Hero Section -->
-        <section class="pt-6 sm:pt-8 pb-8 px-4 max-w-6xl mx-auto relative">
-            <!-- Background decoration -->
-            <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+        <section
+            v-else
+            class="relative mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+            :class="{ 'is-visible': isVisible }"
+        >
+            <!-- Ambient + grain -->
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+                <div
+                    class="ambient-blob"
+                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
+                ></div>
+                <div class="grain-overlay"></div>
             </div>
 
-            <template v-if="isLoading">
-                <div class="text-center mb-8 lg:mb-12 relative z-10 flex flex-col items-center">
-                    <div class="space-y-4 lg:space-y-6 flex flex-col items-center">
-                        <Skeleton class="h-9 w-40 rounded-full" />
-                        <Skeleton class="h-10 sm:h-12 w-64 sm:w-80 rounded-lg" />
-                        <div class="space-y-2 max-w-3xl w-full">
-                            <Skeleton class="h-4 w-full rounded-lg" />
-                            <Skeleton class="h-4 w-4/5 rounded-lg mx-auto" />
-                        </div>
-                    </div>
-                </div>
-                <!-- Filter Skeleton -->
-                <div class="flex justify-center flex-wrap gap-2 lg:gap-3 mb-8 relative z-10">
-                    <Skeleton v-for="i in 7" :key="i" class="h-8 w-20 rounded-full" />
-                </div>
-                <!-- Stats Skeleton -->
-                <div class="text-center mb-6 relative z-10">
-                    <Skeleton class="h-4 w-40 rounded-lg mx-auto" />
-                </div>
-                <!-- Grid Skeleton -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 relative z-10">
-                    <Skeleton v-for="i in 6" :key="i" class="h-56 rounded-lg" />
-                </div>
-            </template>
+            <!-- Top meta strip -->
+            <div
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                style="--d: 0ms"
+            >
+                <span class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-foreground/40"></span>
+                    Chapter 07
+                </span>
+                <span class="hidden md:inline">Off-screen / 2026</span>
+                <span class="tabular-nums">{{ dateString }}</span>
+            </div>
 
-            <template v-else>
-                <div class="text-center mb-8 lg:mb-12 relative z-10">
-                    <div class="space-y-4 lg:space-y-6">
-                        <div
-                            class="stagger-fade-in"
-                            :class="{ 'animate': isVisible }"
-                            :style="{ animationDelay: `${staggerDelay.badge}ms` }"
-                        >
-                            <Badge variant="outline" class="w-fit px-4 py-2 bg-primary/10 border-primary/20 text-primary mx-auto">
-                                <Heart class="w-3 h-3 mr-2" />
-                                Personal Interests
-                            </Badge>
-                        </div>
-
-                        <div
-                            class="stagger-fade-in"
-                            :class="{ 'animate': isVisible }"
-                            :style="{ animationDelay: `${staggerDelay.title}ms` }"
-                        >
-                            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
-                                <span class="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
-                                    Hobbies & Interests
-                                </span>
-                            </h1>
-                        </div>
-
-                        <div
-                            class="stagger-fade-in"
-                            :class="{ 'animate': isVisible }"
-                            :style="{ animationDelay: `${staggerDelay.description}ms` }"
-                        >
-                            <p class="text-base lg:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-                                Beyond coding, I enjoy exploring various activities that inspire creativity, problem-solving, and continuous learning. Each hobby contributes to my growth as a developer.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Category Filter -->
+            <!-- HERO -->
+            <article
+                class="reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                style="--d: 80ms"
+            >
                 <div
-                    class="flex justify-center flex-wrap gap-2 lg:gap-3 mb-8 relative z-10 stagger-fade-in"
-                    :class="{ 'animate': isVisible }"
-                    :style="{ animationDelay: `${staggerDelay.filters}ms` }"
+                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                    aria-hidden="true"
+                ></div>
+
+                <div
+                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
                 >
-                    <button
-                        v-for="category in categories"
-                        :key="category"
-                        @click="filterHobbies(category)"
-                        :class="[
-                            'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',
-                            selectedCategory === category
-                                ? 'bg-primary text-primary-foreground border-primary shadow-lg'
-                                : 'bg-background/50 backdrop-blur-sm text-muted-foreground border-border/50 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground focus:bg-accent focus:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20'
-                        ]"
+                    <span class="inline-flex items-center gap-2">
+                        <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
+                        Interludes
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <Heart class="h-3 w-3" />
+                        {{ hobbies.length }} chapters
+                    </span>
+                </div>
+
+                <h1 class="mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
+                    <span
+                        class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground"
                     >
-                        {{ category }}
+                        Off
+                    </span>
+                    <span
+                        class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal italic text-foreground/80"
+                    >
+                        -screen.
+                    </span>
+                </h1>
+
+                <p
+                    class="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-[15px] md:text-base"
+                >
+                    Beyond the editor — the rituals, obsessions, and practices that refill the
+                    well. Each one quietly shapes the way I think, design, and ship code.
+                </p>
+            </article>
+
+            <!-- FILTER BAR -->
+            <div class="reveal mt-4 sm:mt-5" style="--d: 160ms">
+                <div
+                    class="rounded-[1.25rem] border border-border/60 bg-card/60 p-3 backdrop-blur-xl sm:rounded-2xl sm:p-4"
+                >
+                    <div class="relative">
+                        <div
+                            class="scroll-row flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"
+                        >
+                            <button
+                                v-for="category in categories"
+                                :key="category"
+                                class="filter-pill shrink-0"
+                                :class="{
+                                    'filter-pill-active': selectedCategory === category,
+                                }"
+                                @click="selectedCategory = category"
+                            >
+                                <span>{{ category }}</span>
+                                <span class="filter-count">{{ countByCategory[category] }}</span>
+                            </button>
+                        </div>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card/80 to-transparent sm:hidden"
+                            aria-hidden="true"
+                        ></div>
+                    </div>
+                    <div
+                        class="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:mt-3"
+                    >
+                        <span>{{ filteredHobbies.length }} / {{ hobbies.length }} showing</span>
+                        <span
+                            v-if="selectedCategory !== 'All'"
+                            class="hidden sm:inline"
+                        >
+                            filed under {{ selectedCategory }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOBBY GRID -->
+            <div class="mt-4 sm:mt-5">
+                <!-- Empty state -->
+                <div
+                    v-if="filteredHobbies.length === 0"
+                    class="reveal rounded-[1.25rem] border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center backdrop-blur-xl sm:rounded-3xl sm:py-24"
+                    style="--d: 240ms"
+                >
+                    <div
+                        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-muted/40"
+                    >
+                        <Heart class="h-5 w-5 text-muted-foreground/60" />
+                    </div>
+                    <h3 class="mt-5 font-serif text-2xl text-foreground sm:text-3xl">
+                        Nothing here yet.
+                    </h3>
+                    <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                        No entries filed under {{ selectedCategory }}.
+                    </p>
+                    <button
+                        class="mt-6 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/60 px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.25em] text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60"
+                        @click="selectedCategory = 'All'"
+                    >
+                        Show all
+                        <ArrowUpRight class="h-3 w-3 opacity-60" />
                     </button>
                 </div>
 
-                <!-- Stats -->
+                <!-- Grid -->
                 <div
-                    class="text-center mb-6 relative z-10 stagger-fade-in"
-                    :class="{ 'animate': isVisible }"
-                    :style="{ animationDelay: `${staggerDelay.stats}ms` }"
+                    v-else
+                    class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3"
                 >
-                    <p class="text-sm text-muted-foreground">
-                        Showing {{ filteredHobbies.length }} of {{ hobbies.length }} {{ filteredHobbies.length === 1 ? 'hobby' : 'hobbies' }}
-                        <span v-if="selectedCategory !== 'All'"> in {{ selectedCategory }}</span>
-                    </p>
-                </div>
-
-                <!-- Hobbies Grid -->
-                <div
-                    v-if="filteredHobbies.length > 0"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 relative z-10 stagger-fade-in"
-                    :class="{ 'animate': isVisible }"
-                    :style="{ animationDelay: `${staggerDelay.grid}ms` }"
-                >
-                    <Card
-                        v-for="(hobby, index) in filteredHobbies"
+                    <article
+                        v-for="(hobby, i) in filteredHobbies"
                         :key="hobby.title"
-                        class="bg-card/50 backdrop-blur-sm border border-border/50 hover:bg-card/80 active:bg-card/80 focus:bg-card/80 transition-all duration-300 hover:-translate-y-2 active:-translate-y-2 focus:-translate-y-2 hover:shadow-xl hover:shadow-primary/10 active:shadow-xl active:shadow-primary/10 focus:shadow-xl focus:shadow-primary/10 group transform focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        tabindex="0"
+                        class="hobby-card reveal group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:p-6"
+                        :style="{ '--d': 240 + i * 60 + 'ms' }"
                     >
-                        <CardContent class="p-4 lg:p-6">
-                            <div class="flex flex-col items-center text-center space-y-4 lg:space-y-6">
-                                <div class="p-3 lg:p-4 rounded-full transition-all duration-300 group-hover:scale-110 group-active:scale-110 group-focus:scale-110" :class="hobby.color">
-                                    <component :is="hobby.icon" class="w-6 h-6 lg:w-8 lg:h-8" />
-                                </div>
+                        <!-- Serif index watermark -->
+                        <span class="index-watermark" aria-hidden="true">
+                            {{ String(i + 1).padStart(2, '0') }}
+                        </span>
 
-                                <div class="space-y-2 lg:space-y-3">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <h3 class="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary group-active:text-primary group-focus:text-primary transition-colors duration-300">
-                                            {{ hobby.title }}
-                                        </h3>
-                                        <Badge variant="outline" class="text-xs px-2 py-1 bg-accent/20 border-accent text-accent-foreground">
-                                            {{ hobby.category }}
-                                        </Badge>
-                                    </div>
-
-                                    <p class="text-sm lg:text-base text-muted-foreground leading-relaxed group-hover:text-foreground/80 group-active:text-foreground/80 group-focus:text-foreground/80 transition-colors duration-300">
-                                        {{ hobby.description }}
-                                    </p>
-                                </div>
+                        <div class="relative z-[1] flex h-full flex-col">
+                            <!-- Top row: icon + category -->
+                            <div class="flex items-start justify-between gap-3">
+                                <span
+                                    class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-foreground transition-all duration-300 group-hover:border-foreground/40 group-hover:bg-foreground group-hover:text-background sm:h-12 sm:w-12"
+                                >
+                                    <component
+                                        :is="hobby.icon"
+                                        class="h-5 w-5 sm:h-5 sm:w-5"
+                                    />
+                                </span>
+                                <span class="category-chip">{{ hobby.category }}</span>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
 
-                <!-- Empty State -->
-                <div v-else class="text-center py-12 lg:py-16 relative z-10 stagger-fade-in" :class="{ 'animate': isVisible }">
-                    <div class="space-y-4">
-                        <div class="w-16 h-16 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
-                            <Heart class="w-8 h-8 text-muted-foreground" />
+                            <!-- Title -->
+                            <h3
+                                class="mt-5 font-serif text-2xl leading-tight tracking-tight text-foreground sm:text-[26px]"
+                            >
+                                {{ hobby.title }}
+                            </h3>
+
+                            <!-- Description -->
+                            <p
+                                class="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground"
+                            >
+                                {{ hobby.description }}
+                            </p>
+
+                            <!-- Footer -->
+                            <div
+                                class="mt-5 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70"
+                            >
+                                <span>/ {{ String(i + 1).padStart(2, '0') }}</span>
+                                <span class="inline-flex items-center gap-1.5">
+                                    Interlude
+                                    <ArrowUpRight
+                                        class="h-3 w-3 opacity-60 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                    />
+                                </span>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-semibold text-foreground">No hobbies found</h3>
-                        <p class="text-muted-foreground">
-                            No hobbies match the selected category. Try selecting a different category.
-                        </p>
-                        <button
-                            @click="filterHobbies('All')"
-                            class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 active:bg-primary/80 focus:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        >
-                            Show All Hobbies
-                        </button>
-                    </div>
+                    </article>
                 </div>
-            </template>
+            </div>
+
+            <!-- Footer -->
+            <div
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                style="--d: 700ms"
+            >
+                <span>© {{ new Date().getFullYear() }} · Interludes</span>
+                <span>Back to the screen →</span>
+            </div>
         </section>
-        </div>
     </FrontendLayout>
 </template>
 
 <style scoped>
-.stagger-fade-in {
+.reveal {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(18px);
 }
-
-.stagger-fade-in.animate {
-    animation: staggerFadeInUp 0.6s ease-out forwards;
+.is-visible .reveal {
+    animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--d, 0ms);
 }
-
-@keyframes staggerFadeInUp {
+@keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(18px);
     }
     to {
         opacity: 1;
@@ -341,13 +437,160 @@ onMounted(() => {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .stagger-fade-in {
-        opacity: 1;
-        transform: none;
+/* Typography */
+h1,
+h3,
+.font-serif {
+    font-family: 'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+    font-feature-settings: 'ss01', 'liga';
+}
+.font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* Ambient */
+.ambient-blob {
+    position: absolute;
+    width: 40rem;
+    height: 40rem;
+    border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--color-foreground) 7%, transparent),
+        transparent 70%
+    );
+    filter: blur(60px);
+    transition:
+        left 600ms cubic-bezier(0.22, 1, 0.36, 1),
+        top 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: left, top;
+}
+.grain-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* Filter pills (shared vocabulary with Portfolio) */
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 60%, transparent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-foreground);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+.filter-pill:hover {
+    transform: translateY(-1.5px);
+    border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
+}
+.filter-pill-active {
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border-color: var(--color-foreground);
+}
+.filter-count {
+    display: inline-block;
+    min-width: 1.25rem;
+    padding: 0 0.35rem;
+    border-radius: 9999px;
+    background: color-mix(in oklab, currentColor 15%, transparent);
+    font-size: 0.65rem;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+.scroll-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+}
+.scroll-row::-webkit-scrollbar {
+    display: none;
+}
+.scroll-row > * {
+    scroll-snap-align: start;
+}
+
+/* Category chip in card */
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-muted) 40%, transparent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+}
+
+/* Hobby cards */
+.hobby-card {
+    transition:
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.4s ease,
+        box-shadow 0.4s ease;
+    min-height: 16rem;
+}
+@media (hover: hover) and (pointer: fine) {
+    .hobby-card:hover {
+        transform: translateY(-4px);
+        border-color: color-mix(in oklab, var(--color-foreground) 25%, var(--color-border));
+        box-shadow: 0 22px 45px -28px rgba(0, 0, 0, 0.4);
     }
-    .stagger-fade-in.animate {
-        animation: none;
+}
+
+/* Italic serif index watermark */
+.index-watermark {
+    position: absolute;
+    right: -0.3rem;
+    bottom: -1.4rem;
+    font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(6rem, 13vw, 10rem);
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+    color: color-mix(in oklab, var(--color-foreground) 6%, transparent);
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+    transition: color 0.5s ease, transform 0.5s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .hobby-card:hover .index-watermark {
+        color: color-mix(in oklab, var(--color-foreground) 10%, transparent);
+        transform: translateX(-0.25rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .is-visible .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .ambient-blob {
+        transition: none;
     }
 }
 </style>
