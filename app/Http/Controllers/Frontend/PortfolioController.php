@@ -52,13 +52,16 @@ class PortfolioController extends Controller
      */
     public function about()
     {
+        $user           = User::latest()->first();
         $aboutMe        = AboutMe::latest()->first() ?? [];
-        $workExperience = WorkExperience::orderBy('id')->get() ?? [];
-        $education      = Education::orderBy('id')->get() ?? [];
-        $techStacks     = TechStack::orderBy('id')->get() ?? [];
+        $workExperience = WorkExperience::orderByDesc('from')->orderByDesc('id')->get() ?? [];
+        $education      = Education::orderByDesc('from')->orderByDesc('id')->get() ?? [];
+        $techStacks     = TechStack::orderBy('type')->orderBy('id')->get() ?? [];
+
         return Inertia::render('frontend/About', [
             'title'          => 'About',
             'description'    => 'Learn more about SROS THAI, our mission, and the team behind the platform.',
+            'user'           => $user,
             'aboutMe'        => $aboutMe,
             'workExperience' => $workExperience,
             'education'      => $education,

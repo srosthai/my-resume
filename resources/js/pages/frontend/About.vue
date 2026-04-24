@@ -1,105 +1,129 @@
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { Head } from '@inertiajs/vue3'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Head, Link } from '@inertiajs/vue3'
 import { Skeleton } from '@/components/ui/skeleton'
-import { MapPin, GraduationCap, Briefcase, Code2, Target } from 'lucide-vue-next'
+import {
+    MapPin,
+    Briefcase,
+    Target,
+    GraduationCap,
+    ArrowUpRight,
+    Code2,
+} from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
-import StatItem from '@/components/about/StatItem.vue'
-import Timeline from '@/components/about/Timeline.vue'
-import TechCard from '@/components/about/TechCard.vue'
 
-
-// Types
-interface AboutMe {
-    title?: string
-    description?: string
-    location?: string
-    year_experience?: string
-    fucus_on?: string
-}
-
-interface WorkExperience {
-    id: number
-    title: string
-    company: string
-    description: string
-    from: string
-    to: string
-}
-
-interface Education {
-    id: number
-    title: string
-    institution: string
-    description: string
-    from: string
-    to: string
-}
-
-interface TechStack {
-    id: number
-    name: string
-    logo?: string
-    type: string
-    description: string
-}
-
-interface Props {
-    title?: string
-    description?: string
-    aboutMe: AboutMe
-    workExperience: WorkExperience[]
-    education: Education[]
-    techStacks: TechStack[]
-}
-
-const props = defineProps<Props>()
+const props = defineProps({
+    user: { type: Object, default: () => ({}) },
+    aboutMe: { type: Object, default: () => ({}) },
+    workExperience: { type: Array, default: () => [] },
+    education: { type: Array, default: () => [] },
+    techStacks: { type: Array, default: () => [] },
+    title: { type: String, default: 'About' },
+    description: { type: String, default: '' },
+})
 
 const isLoading = ref(true)
 const isVisible = ref(false)
 
-const stagger = {
-    badge: 0,
-    title: 100,
-    description: 200,
-    stats: 320,
-    journeyHeader: 0,
-    experience: 120,
-    education: 240,
-    techHeader: 0,
-    techGroups: 120,
+const now = ref(new Date())
+let clockTimer = null
+
+const dateString = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Phnom_Penh',
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(now.value)
+    } catch (e) {
+        return ''
+    }
+})
+
+const pointer = ref({ x: 50, y: 50 })
+const handlePointer = (e) => {
+    pointer.value = {
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+    }
+}
+
+const firstName = computed(() => {
+    const parts = (props.user?.name || props.aboutMe?.title || 'About').trim().split(/\s+/)
+    return parts[0] || 'About'
+})
+const lastName = computed(() => {
+    const parts = (props.user?.name || props.aboutMe?.title || '').trim().split(/\s+/)
+    return parts.slice(1).join(' ')
+})
+
+const imageSrc = computed(() => {
+    const img = props.user?.image
+    if (!img) return ''
+    return img.startsWith('http') ? img : `/${img}`
+})
+
+// Group tech stacks by type
+const groupedTechStacks = computed(() => {
+    const groups = {}
+    const order = []
+    ;(props.techStacks || []).forEach((tech) => {
+        const type = tech.type || 'Other'
+        if (!groups[type]) {
+            groups[type] = []
+            order.push(type)
+        }
+        groups[type].push(tech)
+    })
+    return order.map((type) => ({ type, items: groups[type] }))
+})
+
+const stats = computed(() => [
+    {
+        icon: MapPin,
+        label: 'Location',
+        value: props.aboutMe?.location || 'Phnom Penh, Cambodia',
+    },
+    {
+        icon: Briefcase,
+        label: 'Experience',
+        value: props.aboutMe?.year_experience || '5+ Years',
+    },
+    {
+        icon: Target,
+        label: 'Focus',
+        value: props.aboutMe?.fucus_on || 'Web Development',
+    },
+])
+
+const formatRange = (from, to) => {
+    const f = from || ''
+    const t = to || 'Present'
+    if (!f && !t) return ''
+    return `${f}${t ? ' — ' + t : ''}`
 }
 
 onMounted(() => {
     setTimeout(() => {
         isLoading.value = false
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             isVisible.value = true
-        }, 50)
-    }, 600)
+        })
+    }, 400)
+
+    clockTimer = setInterval(() => {
+        now.value = new Date()
+    }, 60000)
+
+    window.addEventListener('pointermove', handlePointer, { passive: true })
 })
 
-// Group tech stacks by type
-const groupedTechStacks = computed(() => {
-    const groups: Record<string, TechStack[]> = {}
-    props.techStacks.forEach((tech) => {
-        const type = tech.type || 'Other'
-        if (!groups[type]) {
-            groups[type] = []
-        }
-        groups[type].push(tech)
-    })
-    return groups
+onBeforeUnmount(() => {
+    if (clockTimer) clearInterval(clockTimer)
+    window.removeEventListener('pointermove', handlePointer)
 })
-
-// Stats for the quick info
-const stats = computed(() => [
-    { icon: MapPin, label: 'Location', value: props.aboutMe.location },
-    { icon: Briefcase, label: 'Experience', value: props.aboutMe.year_experience },
-    { icon: Target, label: 'Focus', value: props.aboutMe.fucus_on },
-])
 </script>
 
 <template>
@@ -109,308 +133,465 @@ const stats = computed(() => [
             <meta name="description" :content="description" />
             <meta
                 name="keywords"
-                content="about me, software developer, experience, education, skills, professional background"
+                content="about, software developer, SROS THAI, full stack developer, Cambodia, experience, education, tech stack"
             />
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="profile" />
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" :content="title" />
-            <meta name="twitter:description" :content="description" />
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
+                rel="stylesheet"
+            />
         </Head>
 
-        <div class="min-h-screen pt-20">
-            <!-- Skeleton Loading State -->
-            <template v-if="isLoading">
-                <!-- Hero Skeleton -->
-                <section class="px-6 pb-16 pt-10">
-                    <div class="mx-auto max-w-4xl">
-                        <div class="space-y-6">
-                            <Skeleton class="h-5 w-36 rounded-full" />
-                            <Skeleton class="h-11 w-72 rounded-lg sm:w-96" />
-                            <div class="h-px w-12"></div>
-                            <div class="space-y-2.5 max-w-2xl">
-                                <Skeleton class="h-4 w-full rounded" />
-                                <Skeleton class="h-4 w-full rounded" />
-                                <Skeleton class="h-4 w-4/5 rounded" />
-                            </div>
-                            <div class="flex flex-wrap gap-6 pt-2">
-                                <div v-for="i in 3" :key="i" class="flex items-center gap-2.5">
-                                    <Skeleton class="size-9 rounded-lg" />
-                                    <div class="space-y-1">
-                                        <Skeleton class="h-2.5 w-12 rounded" />
-                                        <Skeleton class="h-3.5 w-24 rounded" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <!-- Skeleton -->
+        <section
+            v-if="isLoading"
+            class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+        >
+            <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
+                <Skeleton class="col-span-2 h-80 rounded-3xl md:col-span-8" />
+                <Skeleton class="col-span-2 h-80 rounded-3xl md:col-span-4" />
+                <Skeleton class="col-span-1 h-28 rounded-3xl md:col-span-4" />
+                <Skeleton class="col-span-1 h-28 rounded-3xl md:col-span-4" />
+                <Skeleton class="col-span-2 h-28 rounded-3xl md:col-span-4" />
+                <Skeleton class="col-span-2 h-[24rem] rounded-3xl md:col-span-12" />
+                <Skeleton class="col-span-2 h-72 rounded-3xl md:col-span-12" />
+            </div>
+        </section>
 
-                <!-- Journey Skeleton -->
-                <section class="px-6 py-16">
-                    <div class="mx-auto max-w-4xl">
-                        <Skeleton class="mb-2 h-8 w-52 rounded-lg" />
-                        <Skeleton class="mb-10 h-4 w-72 rounded" />
-                        <div class="grid gap-10 lg:grid-cols-2">
-                            <div v-for="col in 2" :key="col" class="space-y-4">
-                                <Skeleton class="h-5 w-28 rounded" />
-                                <div
-                                    v-for="i in 2"
-                                    :key="i"
-                                    class="space-y-3 rounded-xl border border-border/30 p-5"
-                                >
-                                    <div class="flex items-center justify-between">
-                                        <Skeleton class="h-5 w-44 rounded" />
-                                        <Skeleton class="h-6 w-28 rounded-full" />
-                                    </div>
-                                    <Skeleton class="h-3.5 w-32 rounded" />
-                                    <div class="space-y-1.5">
-                                        <Skeleton class="h-3 w-full rounded" />
-                                        <Skeleton class="h-3 w-3/4 rounded" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <section
+            v-else
+            class="relative mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+            :class="{ 'is-visible': isVisible }"
+        >
+            <!-- Ambient glow + grain -->
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+                <div
+                    class="ambient-blob"
+                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
+                ></div>
+                <div class="grain-overlay"></div>
+            </div>
 
-                <!-- Tech Stack Skeleton -->
-                <section class="px-6 py-16">
-                    <div class="mx-auto max-w-4xl">
-                        <Skeleton class="mb-2 h-8 w-44 rounded-lg" />
-                        <Skeleton class="mb-10 h-4 w-80 rounded" />
-                        <div class="space-y-8">
-                            <div v-for="g in 2" :key="g">
-                                <Skeleton class="mb-4 h-3.5 w-20 rounded" />
-                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                                    <Skeleton v-for="i in 4" :key="i" class="h-20 rounded-xl" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </template>
+            <!-- Top meta strip -->
+            <div
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                style="--d: 0ms"
+            >
+                <span class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-foreground/40"></span>
+                    Chapter 01
+                </span>
+                <span class="hidden md:inline">About / 2026</span>
+                <span class="tabular-nums">{{ dateString }}</span>
+            </div>
 
-            <!-- Actual Content -->
-            <template v-else>
-                <!-- Hero Section -->
-                <section class="relative px-6 pb-16 pt-10">
-                    <!-- Ambient background -->
-                    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <!-- HERO BENTO -->
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
+                <!-- Big intro card -->
+                <article
+                    class="bento-card reveal relative col-span-2 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8 md:p-10"
+                    style="--d: 80ms"
+                >
+                    <div
+                        class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                        aria-hidden="true"
+                    ></div>
+
+                    <div
+                        class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                    >
+                        <span class="inline-flex items-center gap-2">
+                            <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
+                            Profile
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <Code2 class="h-3 w-3" />
+                            Software Dev
+                        </span>
+                    </div>
+
+                    <h1 class="mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
+                        <span
+                            class="block text-[clamp(2.5rem,10vw,6.5rem)] font-normal text-foreground"
+                        >
+                            About.
+                        </span>
+                    </h1>
+
+                    <div class="mt-6 grid gap-4 sm:mt-8 md:grid-cols-[auto_1fr] md:gap-8">
                         <div
-                            class="absolute -top-40 right-1/3 h-[30rem] w-[30rem] rounded-full bg-primary/[0.03] blur-[120px]"
-                        ></div>
+                            class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:text-xs"
+                        >
+                            — Currently<br />
+                            <span class="mt-1 block font-sans text-sm normal-case tracking-normal text-foreground sm:text-base">
+                                {{ user?.position || 'Full Stack Developer' }}
+                            </span>
+                        </div>
+                        <p
+                            class="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[15px] md:text-base"
+                        >
+                            {{ aboutMe?.description || 'Passionate about building crafted, maintainable, and meaningful software.' }}
+                        </p>
                     </div>
 
-                    <div class="relative mx-auto max-w-4xl">
-                        <div class="space-y-5">
-                            <!-- Badge -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.badge}ms` }"
-                                :class="{ 'is-visible': isVisible }"
+                    <div class="mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3">
+                        <Link
+                            href="/resume"
+                            class="cta-primary group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-medium text-background transition-all duration-300 hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-3 sm:text-sm"
+                        >
+                            <span>View résumé</span>
+                            <span
+                                class="flex h-6 w-6 items-center justify-center rounded-full bg-background/20 transition-transform duration-300 group-hover:rotate-45 sm:h-7 sm:w-7"
                             >
-                                <Badge
-                                    variant="outline"
-                                    class="gap-1.5 border-border/40 bg-muted/40 px-3 py-1.5 text-xs font-normal text-muted-foreground backdrop-blur-sm transition-colors duration-200 hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-                                >
-                                    <Code2 class="size-3 opacity-60" />
-                                    Software Developer
-                                </Badge>
-                            </div>
+                                <ArrowUpRight class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                            </span>
+                        </Link>
+                        <Link
+                            href="/contact"
+                            class="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"
+                        >
+                            <span>Get in touch</span>
+                            <ArrowUpRight
+                                class="h-3 w-3 opacity-60 transition-all duration-300 group-hover:rotate-45 group-hover:opacity-100 sm:h-3.5 sm:w-3.5"
+                            />
+                        </Link>
+                    </div>
+                </article>
 
-                            <!-- Title -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.title}ms` }"
-                                :class="{ 'is-visible': isVisible }"
-                            >
-                                <h1
-                                    class="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
-                                >
-                                    {{ aboutMe.title || 'About Me' }}
-                                </h1>
-                            </div>
+                <!-- Portrait card -->
+                <article
+                    class="bento-card reveal relative col-span-2 hidden overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
+                    style="--d: 160ms"
+                >
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+                        >
+                            / id card
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70"
+                        >
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            verified
+                        </span>
+                    </div>
 
-                            <!-- Divider -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.description - 40}ms` }"
-                                :class="{ 'is-visible': isVisible }"
-                            >
-                                <div class="h-px w-12 bg-border/60"></div>
-                            </div>
+                    <div class="relative mx-auto mt-5 overflow-hidden rounded-2xl border border-border/50 aspect-[3/4]">
+                        <img
+                            v-if="imageSrc"
+                            :src="imageSrc"
+                            :alt="user?.name"
+                            class="h-full w-full object-cover object-[center_25%]"
+                        />
+                        <div
+                            v-else
+                            class="flex h-full w-full items-center justify-center bg-muted font-serif text-6xl italic text-muted-foreground"
+                        >
+                            {{ firstName.charAt(0) }}
+                        </div>
 
-                            <!-- Description -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.description}ms` }"
-                                :class="{ 'is-visible': isVisible }"
-                            >
-                                <p
-                                    class="max-w-2xl text-base leading-relaxed text-muted-foreground lg:text-lg"
-                                >
-                                    {{ aboutMe.description || 'No description available.' }}
-                                </p>
-                            </div>
+                        <!-- corners -->
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
 
-                            <!-- Stats - inline row -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.stats}ms` }"
-                                :class="{ 'is-visible': isVisible }"
-                            >
-                                <div class="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
-                                    <template v-for="(stat, index) in stats" :key="stat.label">
-                                        <StatItem
-                                            :icon="stat.icon"
-                                            :label="stat.label"
-                                            :value="stat.value || ''"
-                                        />
-                                        <Separator
-                                            v-if="index < stats.length - 1"
-                                            orientation="vertical"
-                                            class="hidden h-8 bg-border/40 sm:block"
-                                        />
-                                    </template>
-                                </div>
-                            </div>
+                        <div
+                            class="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/90 backdrop-blur-md"
+                        >
+                            <span>{{ firstName }} {{ lastName }}</span>
+                            <span>'26</span>
                         </div>
                     </div>
-                </section>
+                </article>
 
-                <!-- Experience & Education Section -->
-                <section class="px-6 py-16">
-                    <div class="mx-auto max-w-4xl">
-                        <div class="grid gap-8 lg:grid-cols-[220px_1fr] lg:gap-12">
-                            <!-- Left: Section Header -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.journeyHeader}ms` }"
-                                :class="{ 'is-visible': isVisible }"
-                            >
-                                <h2
-                                    class="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:sticky lg:top-24"
-                                >
-                                    Professional Journey
-                                    <p class="mt-2 text-sm font-normal text-muted-foreground">
-                                        My career path and educational background.
-                                    </p>
-                                    <div class="mt-4 h-px w-12 bg-border/60"></div>
-                                </h2>
-                            </div>
-
-                            <!-- Right: Timelines -->
-                            <div class="space-y-6">
-                                <!-- Work Experience -->
-                                <div
-                                    class="reveal"
-                                    :style="{ animationDelay: `${stagger.experience}ms` }"
-                                    :class="{ 'is-visible': isVisible }"
-                                >
-                                    <Timeline
-                                        title="Experience"
-                                        :icon="Briefcase"
-                                        :items="workExperience"
-                                        subtitle-key="company"
-                                    />
-                                </div>
-
-                                <!-- Education -->
-                                <div
-                                    class="reveal"
-                                    :style="{ animationDelay: `${stagger.education}ms` }"
-                                    :class="{ 'is-visible': isVisible }"
-                                >
-                                    <Timeline
-                                        title="Education"
-                                        :icon="GraduationCap"
-                                        :items="education"
-                                        subtitle-key="institution"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                <!-- Stats row -->
+                <article
+                    v-for="(stat, i) in stats"
+                    :key="stat.label"
+                    class="bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    :class="{ 'col-span-2': i === 2 }"
+                    :style="{ '--d': 240 + i * 80 + 'ms' }"
+                >
+                    <div class="flex items-center gap-2">
+                        <component
+                            :is="stat.icon"
+                            class="h-3 w-3 text-muted-foreground/80"
+                        />
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                        >
+                            {{ stat.label }}
+                        </span>
                     </div>
-                </section>
-
-                <!-- Tech Stack Section -->
-                <section class="px-6 py-16">
-                    <div class="mx-auto max-w-4xl">
-                        <div class="grid gap-8 lg:grid-cols-[220px_1fr] lg:gap-12">
-                            <!-- Left: Section Header -->
-                            <div
-                                class="reveal"
-                                :style="{ animationDelay: `${stagger.techHeader}ms` }"
-                                :class="{ 'is-visible': isVisible }"
-                            >
-                                <div class="lg:sticky lg:top-24">
-                                    <h2
-                                        class="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl"
-                                    >
-                                        Technology Stack
-                                    </h2>
-                                    <p class="mt-2 text-sm text-muted-foreground">
-                                        Tools and technologies I use to build modern applications.
-                                    </p>
-                                    <div class="mt-4 h-px w-12 bg-border/60"></div>
-                                </div>
-                            </div>
-
-                            <!-- Right: Tech Groups -->
-                            <div class="space-y-8">
-                                <div
-                                    v-for="(techs, type, index) in groupedTechStacks"
-                                    :key="type"
-                                    class="reveal"
-                                    :style="{
-                                        animationDelay: `${stagger.techGroups + (index as number) * 80}ms`,
-                                    }"
-                                    :class="{ 'is-visible': isVisible }"
-                                >
-                                    <h3
-                                        class="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70"
-                                    >
-                                        {{ type }}
-                                    </h3>
-                                    <div
-                                        class="grid grid-cols-2 gap-3 sm:grid-cols-3"
-                                    >
-                                        <TechCard
-                                            v-for="tech in techs"
-                                            :key="tech.id"
-                                            :name="tech.name"
-                                            :logo="tech.logo"
-                                            :type="tech.type"
-                                            :description="tech.description"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div
+                        class="mt-3 font-serif text-[clamp(1.25rem,4vw,1.75rem)] leading-tight tracking-tight text-foreground sm:mt-4"
+                    >
+                        {{ stat.value }}
                     </div>
-                </section>
-            </template>
-        </div>
+                </article>
+            </div>
+
+            <!-- SECTION 02 — EXPERIENCE -->
+            <section class="mt-10 sm:mt-14">
+                <div class="reveal mb-6 flex items-end justify-between gap-4 border-b border-border/50 pb-4 sm:mb-8" style="--d: 0ms">
+                    <div>
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px]"
+                        >
+                            Chapter 02
+                        </span>
+                        <h2
+                            class="mt-1.5 font-serif text-3xl leading-[0.95] tracking-tight text-foreground sm:text-4xl md:text-5xl"
+                        >
+                            Experience.
+                        </h2>
+                    </div>
+                    <span
+                        class="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 sm:inline-flex"
+                    >
+                        {{ workExperience.length }} role<span v-if="workExperience.length !== 1">s</span>
+                    </span>
+                </div>
+
+                <div v-if="workExperience.length">
+                    <article
+                        v-for="(job, i) in workExperience"
+                        :key="job.id"
+                        class="timeline-row reveal group relative grid grid-cols-1 gap-3 border-t border-border/40 py-6 md:grid-cols-[10rem_1fr_auto] md:gap-8 md:py-8 first:border-t-0"
+                        :style="{ '--d': 120 + i * 90 + 'ms' }"
+                    >
+                        <div class="flex flex-col gap-1">
+                            <span
+                                class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/80"
+                            >
+                                {{ String(i + 1).padStart(2, '0') }}
+                            </span>
+                            <span
+                                class="font-serif text-2xl leading-none tracking-tight text-foreground tabular-nums sm:text-3xl"
+                            >
+                                {{ job.from }}
+                            </span>
+                            <span
+                                class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+                            >
+                                → {{ job.to || 'Present' }}
+                            </span>
+                        </div>
+
+                        <div class="min-w-0">
+                            <h3 class="font-serif text-xl text-foreground sm:text-2xl">
+                                {{ job.title }}
+                            </h3>
+                            <div
+                                class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:text-xs"
+                            >
+                                <span>{{ job.company }}</span>
+                                <span
+                                    v-if="job.position"
+                                    class="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 normal-case tracking-wide"
+                                >
+                                    {{ job.position }}
+                                </span>
+                            </div>
+                            <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+                                {{ job.description }}
+                            </p>
+                        </div>
+
+                        <div
+                            class="hidden items-start md:flex"
+                        >
+                            <span
+                                class="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-card/60 text-muted-foreground transition-all duration-300 group-hover:-rotate-45 group-hover:border-foreground/60 group-hover:text-foreground"
+                            >
+                                <ArrowUpRight class="h-3.5 w-3.5" />
+                            </span>
+                        </div>
+                    </article>
+                </div>
+                <p v-else class="text-sm text-muted-foreground">No experience yet.</p>
+            </section>
+
+            <!-- SECTION 03 — EDUCATION -->
+            <section class="mt-10 sm:mt-14">
+                <div class="reveal mb-6 flex items-end justify-between gap-4 border-b border-border/50 pb-4 sm:mb-8" style="--d: 0ms">
+                    <div>
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px]"
+                        >
+                            Chapter 03
+                        </span>
+                        <h2
+                            class="mt-1.5 font-serif text-3xl leading-[0.95] tracking-tight text-foreground sm:text-4xl md:text-5xl"
+                        >
+                            Education.
+                        </h2>
+                    </div>
+                    <span
+                        class="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 sm:inline-flex items-center gap-1.5"
+                    >
+                        <GraduationCap class="h-3 w-3" />
+                        {{ education.length }} record<span v-if="education.length !== 1">s</span>
+                    </span>
+                </div>
+
+                <div v-if="education.length">
+                    <article
+                        v-for="(edu, i) in education"
+                        :key="edu.id"
+                        class="timeline-row reveal group relative grid grid-cols-1 gap-3 border-t border-border/40 py-6 md:grid-cols-[10rem_1fr_auto] md:gap-8 md:py-8 first:border-t-0"
+                        :style="{ '--d': 120 + i * 90 + 'ms' }"
+                    >
+                        <div class="flex flex-col gap-1">
+                            <span
+                                class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/80"
+                            >
+                                {{ String(i + 1).padStart(2, '0') }}
+                            </span>
+                            <span
+                                class="font-serif text-2xl leading-none tracking-tight text-foreground tabular-nums sm:text-3xl"
+                            >
+                                {{ edu.from }}
+                            </span>
+                            <span
+                                class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+                            >
+                                → {{ edu.to || 'Present' }}
+                            </span>
+                        </div>
+
+                        <div class="min-w-0">
+                            <h3 class="font-serif text-xl text-foreground sm:text-2xl">
+                                {{ edu.title }}
+                            </h3>
+                            <div
+                                class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:text-xs"
+                            >
+                                <span>{{ edu.institution }}</span>
+                                <span
+                                    v-if="edu.major"
+                                    class="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 normal-case tracking-wide"
+                                >
+                                    {{ edu.major }}
+                                </span>
+                            </div>
+                            <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+                                {{ edu.description }}
+                            </p>
+                        </div>
+
+                        <div class="hidden items-start md:flex">
+                            <span
+                                class="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-card/60 text-muted-foreground transition-all duration-300 group-hover:-rotate-45 group-hover:border-foreground/60 group-hover:text-foreground"
+                            >
+                                <GraduationCap class="h-3.5 w-3.5" />
+                            </span>
+                        </div>
+                    </article>
+                </div>
+                <p v-else class="text-sm text-muted-foreground">No education records yet.</p>
+            </section>
+
+            <!-- SECTION 04 — STACK -->
+            <section class="mt-10 sm:mt-14">
+                <div class="reveal mb-6 flex items-end justify-between gap-4 border-b border-border/50 pb-4 sm:mb-8" style="--d: 0ms">
+                    <div>
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px]"
+                        >
+                            Chapter 04
+                        </span>
+                        <h2
+                            class="mt-1.5 font-serif text-3xl leading-[0.95] tracking-tight text-foreground sm:text-4xl md:text-5xl"
+                        >
+                            Stack.
+                        </h2>
+                    </div>
+                    <span
+                        class="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 sm:inline-flex"
+                    >
+                        {{ techStacks.length }} tools
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
+                    <article
+                        v-for="(group, gi) in groupedTechStacks"
+                        :key="group.type"
+                        class="bento-card reveal col-span-2 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-6"
+                        :style="{ '--d': 120 + gi * 100 + 'ms' }"
+                    >
+                        <div class="flex items-center justify-between">
+                            <span
+                                class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                            >
+                                / {{ group.type }}
+                            </span>
+                            <span
+                                class="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:text-[10px]"
+                            >
+                                {{ group.items.length }}
+                            </span>
+                        </div>
+
+                        <ul class="mt-4 flex flex-wrap gap-2">
+                            <li
+                                v-for="tech in group.items"
+                                :key="tech.id"
+                                class="tech-chip"
+                                :title="tech.description"
+                            >
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    :alt="tech.name"
+                                    class="tech-chip-logo"
+                                    loading="lazy"
+                                />
+                                <span
+                                    v-else
+                                    class="inline-flex h-4 w-4 items-center justify-center rounded-md bg-muted font-mono text-[9px] font-semibold text-muted-foreground"
+                                >
+                                    {{ tech.name.charAt(0) }}
+                                </span>
+                                <span class="tech-chip-name">{{ tech.name }}</span>
+                            </li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Footer tag -->
+            <div
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                style="--d: 700ms"
+            >
+                <span>© {{ new Date().getFullYear() }} {{ user?.name || 'Portfolio' }}</span>
+                <span>End of file →</span>
+            </div>
+        </section>
     </FrontendLayout>
 </template>
 
 <style scoped>
-/* --- Reveal animation --- */
 .reveal {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(18px);
 }
 
-.reveal.is-visible {
-    animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.is-visible .reveal {
+    animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--d, 0ms);
 }
 
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translateY(18px);
     }
     to {
         opacity: 1;
@@ -418,13 +599,151 @@ const stats = computed(() => [
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .reveal {
-        opacity: 1;
-        transform: none;
+/* Fonts */
+h1,
+h2,
+h3,
+.font-serif {
+    font-family: 'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+    font-feature-settings: 'ss01', 'liga';
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* Ambient */
+.ambient-blob {
+    position: absolute;
+    width: 40rem;
+    height: 40rem;
+    border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--color-foreground) 7%, transparent),
+        transparent 70%
+    );
+    filter: blur(60px);
+    transition:
+        left 600ms cubic-bezier(0.22, 1, 0.36, 1),
+        top 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: left, top;
+}
+
+.grain-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* Bento cards */
+.bento-card {
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .bento-card:hover {
+        transform: translateY(-3px);
+        border-color: color-mix(in oklab, var(--color-foreground) 20%, var(--color-border));
     }
-    .reveal.is-visible {
-        animation: none;
+}
+
+/* Timeline row hover accent */
+.timeline-row {
+    transition: background-color 0.3s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .timeline-row:hover {
+        background-color: color-mix(in oklab, var(--color-foreground) 2%, transparent);
+    }
+}
+
+/* Portrait corner ticks */
+.corner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-color: rgba(255, 255, 255, 0.75);
+    pointer-events: none;
+}
+.corner-tl {
+    top: 10px;
+    left: 10px;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+}
+.corner-tr {
+    top: 10px;
+    right: 10px;
+    border-top: 1.5px solid;
+    border-right: 1.5px solid;
+}
+.corner-bl {
+    bottom: 10px;
+    left: 10px;
+    border-bottom: 1.5px solid;
+    border-left: 1.5px solid;
+}
+.corner-br {
+    bottom: 10px;
+    right: 10px;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
+}
+
+/* CTA */
+.cta-primary {
+    box-shadow: 0 10px 30px -10px color-mix(in oklab, var(--color-foreground) 40%, transparent);
+}
+.cta-primary:hover {
+    box-shadow: 0 14px 40px -12px color-mix(in oklab, var(--color-foreground) 55%, transparent);
+}
+
+/* Tech chips */
+.tech-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.8rem 0.35rem 0.45rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 70%, transparent);
+    backdrop-filter: blur(8px);
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+.tech-chip:hover {
+    transform: translateY(-1.5px);
+    border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
+}
+.tech-chip-logo {
+    width: 1.125rem;
+    height: 1.125rem;
+    object-fit: contain;
+}
+.tech-chip-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--color-foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .is-visible .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .ambient-blob {
+        transition: none;
     }
 }
 </style>
