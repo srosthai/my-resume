@@ -1,17 +1,31 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowRight, Github, Linkedin, Mail, Book, MapPin, Briefcase, Rss } from 'lucide-vue-next'
+import {
+    ArrowUpRight,
+    Github,
+    Linkedin,
+    Mail,
+    Book,
+    MapPin,
+    Rss,
+} from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
+import LanyardCard from '@/components/LanyardCard.vue'
 
 const props = defineProps({
     users: {
         type: Object,
         required: true,
+    },
+    techStacks: {
+        type: Array,
+        default: () => [],
+    },
+    stats: {
+        type: Object,
+        default: () => ({ projects: 0, techStacks: 0, experience: 0, notes: 0 }),
     },
     title: {
         type: String,
@@ -25,53 +39,79 @@ const props = defineProps({
 
 const isLoading = ref(true)
 const isVisible = ref(false)
-const animatedText = ref('')
-const textIndex = ref(0)
 
-const stagger = {
-    greeting: 0,
-    name: 120,
-    position: 240,
-    divider: 340,
-    description: 420,
-    meta: 520,
-    social: 620,
-    cta: 740,
-    avatar: 180,
+const now = ref(new Date())
+let clockTimer = null
+
+const timeInPhnomPenh = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Phnom_Penh',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+        }).format(now.value)
+    } catch (e) {
+        return '--:--:--'
+    }
+})
+
+const dateInPhnomPenh = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Phnom_Penh',
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(now.value)
+    } catch (e) {
+        return ''
+    }
+})
+
+const firstName = computed(() => {
+    const parts = (props.users?.name || 'Developer').trim().split(/\s+/)
+    return parts[0] || 'Developer'
+})
+
+const lastName = computed(() => {
+    const parts = (props.users?.name || '').trim().split(/\s+/)
+    return parts.slice(1).join(' ')
+})
+
+const doubledStacks = computed(() => {
+    const arr = props.techStacks || []
+    return arr.length ? [...arr, ...arr] : []
+})
+
+const pointer = ref({ x: 50, y: 50 })
+const handlePointer = (e) => {
+    const x = (e.clientX / window.innerWidth) * 100
+    const y = (e.clientY / window.innerHeight) * 100
+    pointer.value = { x, y }
 }
 
 onMounted(() => {
     setTimeout(() => {
         isLoading.value = false
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             isVisible.value = true
-            // Start typing after name fade-in completes (120ms delay + 700ms animation)
-            setTimeout(animateText, stagger.name + 700)
-        }, 50)
-    }, 600)
+        })
+    }, 450)
+
+    clockTimer = setInterval(() => {
+        now.value = new Date()
+    }, 1000)
+
+    window.addEventListener('pointermove', handlePointer, { passive: true })
 })
 
-const animateText = () => {
-    const fullText = props.users.name
-    const typeSpeed = 100
-    const pauseBeforeLoop = 2000
-
-    const typeText = () => {
-        if (textIndex.value < fullText.length) {
-            animatedText.value += fullText.charAt(textIndex.value)
-            textIndex.value++
-            setTimeout(typeText, typeSpeed)
-        } else {
-            setTimeout(() => {
-                animatedText.value = ''
-                textIndex.value = 0
-                setTimeout(typeText, 500)
-            }, pauseBeforeLoop)
-        }
-    }
-
-    typeText()
-}
+onBeforeUnmount(() => {
+    if (clockTimer) clearInterval(clockTimer)
+    window.removeEventListener('pointermove', handlePointer)
+})
 </script>
 
 <template>
@@ -81,352 +121,423 @@ const animateText = () => {
             <meta name="description" :content="description" />
             <meta
                 name="keywords"
-                content="software developer, portfolio, Vue.js, Laravel, web development, full stack developer, SROS THAI, professional developer, Cambodia developer"
+                content="software developer, portfolio, Vue.js, Laravel, full stack developer, SROS THAI, Cambodia"
             />
             <meta name="author" :content="users.name || 'SROS THAI'" />
-            <meta name="language" content="en" />
-            <meta name="geo.region" content="KH" />
-            <meta name="geo.country" content="Cambodia" />
-            <meta name="theme-color" content="#2563eb" />
-
-            <!-- Open Graph Meta Tags -->
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
-            <meta
-                property="og:image"
-                :content="
-                    users.image
-                        ? users.image.startsWith('http')
-                            ? users.image
-                            : `${$page.url}/${users.image}`
-                        : `${$page.url}/default-og-image.jpg`
-                "
-            />
-            <meta property="og:url" :content="$page.url" />
             <meta property="og:type" content="website" />
-            <meta property="og:site_name" :content="users.name + ' - Portfolio'" />
-
-            <!-- Twitter Card Meta Tags -->
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" :content="title" />
-            <meta name="twitter:description" :content="description" />
-            <meta
-                name="twitter:image"
-                :content="
-                    users.image
-                        ? users.image.startsWith('http')
-                            ? users.image
-                            : `${$page.url}/${users.image}`
-                        : `${$page.url}/default-og-image.jpg`
-                "
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
+                rel="stylesheet"
             />
-
-            <!-- Additional SEO Meta Tags -->
-            <meta
-                name="robots"
-                content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
-            />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <meta name="format-detection" content="telephone=no" />
-            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-            <link rel="canonical" :href="$page.url" />
         </Head>
 
-        <div class="flex items-center overflow-hidden transition-all duration-300">
-            <!-- Skeleton Loading State -->
-            <section
-                v-if="isLoading"
-                class="hero-section mx-auto flex h-full w-full max-w-5xl items-center px-6 py-4"
+        <!-- Skeleton state -->
+        <section
+            v-if="isLoading"
+            class="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+        >
+            <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
+                <Skeleton class="col-span-2 h-[22rem] rounded-3xl sm:h-[24rem] md:col-span-8 md:h-[28rem]" />
+                <Skeleton class="col-span-2 hidden h-[28rem] rounded-3xl md:col-span-4 md:block" />
+                <Skeleton class="col-span-1 h-28 rounded-3xl sm:h-32 md:col-span-4" />
+                <Skeleton class="col-span-1 h-28 rounded-3xl sm:h-32 md:col-span-4" />
+                <Skeleton class="col-span-2 h-28 rounded-3xl sm:h-32 md:col-span-4" />
+                <Skeleton class="col-span-2 h-20 rounded-3xl sm:h-24 md:col-span-12" />
+            </div>
+        </section>
+
+        <section
+            v-else
+            id="home"
+            class="relative mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+            :class="{ 'is-visible': isVisible }"
+        >
+            <!-- Ambient mouse-reactive glow -->
+            <div
+                class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+                aria-hidden="true"
             >
                 <div
-                    class="flex w-full flex-col items-center gap-10 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:gap-16"
-                >
-                    <div
-                        class="order-2 flex w-full flex-col items-center space-y-5 lg:order-1 lg:items-start"
-                    >
-                        <Skeleton class="h-5 w-28 rounded-full" />
-                        <Skeleton class="h-10 w-64 rounded-lg sm:h-14 sm:w-80" />
-                        <Skeleton class="h-5 w-40 rounded-lg sm:w-48" />
-                        <Skeleton class="h-px w-16 rounded-full" />
-                        <div class="w-full max-w-md space-y-2.5">
-                            <Skeleton class="h-3.5 w-full rounded" />
-                            <Skeleton class="h-3.5 w-5/6 rounded" />
-                            <Skeleton class="h-3.5 w-3/4 rounded" />
-                        </div>
-                        <div class="flex gap-3 pt-2">
-                            <Skeleton class="h-9 w-9 rounded-full" />
-                            <Skeleton class="h-9 w-9 rounded-full" />
-                            <Skeleton class="h-9 w-9 rounded-full" />
-                            <Skeleton class="h-9 w-9 rounded-full" />
-                        </div>
-                        <div class="flex gap-3 pt-1">
-                            <Skeleton class="h-11 w-32 rounded-full" />
-                            <Skeleton class="h-11 w-32 rounded-full" />
-                        </div>
-                    </div>
-                    <div class="order-1 flex items-center justify-center lg:order-2">
-                        <Skeleton
-                            class="w-44 h-44 xs:w-52 xs:h-52 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 xl:w-[28rem] xl:h-[28rem] 2xl:w-[32rem] 2xl:h-[32rem] rounded-full"
-                        />
-                    </div>
-                </div>
-            </section>
+                    class="ambient-blob"
+                    :style="{
+                        left: pointer.x + '%',
+                        top: pointer.y + '%',
+                    }"
+                ></div>
+                <div class="grain-overlay"></div>
+            </div>
 
-            <!-- Hero Section -->
-            <section
-                v-else
-                id="home"
-                class="hero-section relative mx-auto flex h-full w-full max-w-5xl items-center px-6 py-4"
+            <!-- Top meta strip -->
+            <div
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                style="--d: 0ms"
             >
-                <!-- Ambient background -->
-                <div class="pointer-events-none absolute inset-0 overflow-hidden">
-                    <div
-                        class="absolute -top-32 right-1/4 h-[28rem] w-[28rem] rounded-full bg-primary/[0.03] blur-[100px]"
-                    ></div>
-                    <div
-                        class="absolute -bottom-32 left-1/4 h-[24rem] w-[24rem] rounded-full bg-primary/[0.04] blur-[100px]"
-                    ></div>
-                </div>
+                <span class="flex items-center gap-2">
+                    <span class="relative flex h-1.5 w-1.5">
+                        <span
+                            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"
+                        ></span>
+                        <span
+                            class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"
+                        ></span>
+                    </span>
+                    Available for work
+                </span>
+                <span class="hidden md:inline">Portfolio / 2026</span>
+                <span class="tabular-nums">{{ dateInPhnomPenh }}</span>
+            </div>
 
-                <div
-                    class="relative z-10 flex w-full flex-col items-center gap-10 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:gap-16"
+            <!-- Main bento grid -->
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
+                <!-- Hero card (name + meta) -->
+                <article
+                    class="bento-card reveal relative col-span-2 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_20px_60px_-30px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8 md:p-10"
+                    style="--d: 80ms"
                 >
-                    <!-- Content -->
+                    <!-- Diagonal stripe decoration -->
                     <div
-                        class="order-2 space-y-4 text-center lg:order-1 lg:space-y-5 lg:text-left"
+                        class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                        aria-hidden="true"
+                    ></div>
+
+                    <!-- Floating mobile avatar chip (hidden on md+) -->
+                    <div
+                        class="absolute right-4 top-4 z-10 md:hidden"
+                        aria-hidden="true"
                     >
-                        <!-- Greeting -->
                         <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.greeting}ms` }"
-                            :class="{ 'is-visible': isVisible }"
+                            class="relative h-20 w-20 overflow-hidden rounded-[1.25rem] border border-border/60 bg-muted shadow-xl ring-1 ring-foreground/5 xs:h-24 xs:w-24 sm:h-28 sm:w-28"
                         >
+                            <img
+                                v-if="users.image"
+                                :src="
+                                    users.image.startsWith('http')
+                                        ? users.image
+                                        : `/${users.image}`
+                                "
+                                :alt="users.name"
+                                class="h-full w-full object-cover object-[center_25%]"
+                            />
+                        </div>
+                        <span
+                            class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-card bg-emerald-500 sm:h-4.5 sm:w-4.5"
+                        >
+                            <span class="h-1.5 w-1.5 animate-ping rounded-full bg-white/80"></span>
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between pr-24 xs:pr-28 sm:pr-32 md:pr-0">
+                        <span
+                            class="inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                        >
+                            <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
+                            Hello, world
+                        </span>
+                    </div>
+
+                    <h1 class="mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
+                        <span
+                            class="block text-[clamp(2.75rem,11vw,7rem)] font-normal text-foreground"
+                        >
+                            {{ firstName }}
+                        </span>
+                        <span
+                            v-if="lastName"
+                            class="block text-[clamp(2.75rem,11vw,7rem)] font-normal italic text-foreground/80"
+                        >
+                            {{ lastName }}.
+                        </span>
+                    </h1>
+
+                    <div class="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1 sm:mt-6">
+                        <span
+                            class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:text-xs"
+                        >
+                            — Currently
+                        </span>
+                        <span class="text-sm text-foreground sm:text-base md:text-lg">
+                            {{ users.position }}
+                        </span>
+                    </div>
+
+                    <p
+                        class="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:mt-5 sm:text-[15px] md:text-base"
+                    >
+                        {{ users.description }}
+                    </p>
+
+                    <!-- CTA row -->
+                    <div class="mt-6 flex flex-wrap items-center gap-2.5 sm:mt-8 sm:gap-3">
+                        <Link
+                            href="/resume"
+                            class="cta-primary group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-medium text-background transition-all duration-300 hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-3 sm:text-sm"
+                        >
+                            <span>View résumé</span>
                             <span
-                                class="inline-block text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground/70 sm:text-sm"
+                                class="flex h-6 w-6 items-center justify-center rounded-full bg-background/20 transition-transform duration-300 group-hover:rotate-45 sm:h-7 sm:w-7"
                             >
-                                Hello, I'm
+                                <ArrowUpRight class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                             </span>
-                        </div>
-
-                        <!-- Name -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.name}ms` }"
-                            :class="{ 'is-visible': isVisible }"
+                        </Link>
+                        <Link
+                            href="/portfolio"
+                            class="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"
                         >
-                            <h1
-                                class="text-3xl font-extrabold tracking-tight text-foreground xs:text-4xl sm:text-5xl lg:text-6xl"
-                            >
-                                {{ animatedText }}<span class="animate-pulse">|</span>
-                            </h1>
-                        </div>
-
-                        <!-- Position -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.position}ms` }"
-                            :class="{ 'is-visible': isVisible }"
+                            <span>See projects</span>
+                            <ArrowUpRight
+                                class="h-3 w-3 opacity-60 transition-all duration-300 group-hover:rotate-45 group-hover:opacity-100 sm:h-3.5 sm:w-3.5"
+                            />
+                        </Link>
+                        <Link
+                            href="/feeds"
+                            class="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"
                         >
-                            <h2
-                                class="text-sm font-medium tracking-wide text-primary/80 sm:text-base lg:text-lg"
-                            >
-                                {{ users.position }}
-                            </h2>
-                        </div>
-
-                        <!-- Divider -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.divider}ms` }"
-                            :class="{ 'is-visible': isVisible }"
-                        >
-                            <div
-                                class="mx-auto h-px w-12 bg-border/60 lg:mx-0"
-                            ></div>
-                        </div>
-
-                        <!-- Description -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.description}ms` }"
-                            :class="{ 'is-visible': isVisible }"
-                        >
-                            <p
-                                class="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0 lg:max-w-lg"
-                            >
-                                {{ users.description }}
-                            </p>
-                        </div>
-
-                        <!-- Meta badges -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.meta}ms` }"
-                            :class="{ 'is-visible': isVisible }"
-                        >
-                            <div
-                                class="flex flex-wrap items-center justify-center gap-2 lg:justify-start"
-                            >
-                                <Badge
-                                    variant="outline"
-                                    class="gap-1.5 border-border/40 bg-muted/40 px-3 py-1 text-xs font-normal text-muted-foreground backdrop-blur-sm transition-colors duration-200 hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-                                >
-                                    <MapPin class="h-3 w-3 opacity-60" />
-                                    Cambodia
-                                </Badge>
-                                <Badge
-                                    variant="outline"
-                                    class="gap-1.5 border-border/40 bg-muted/40 px-3 py-1 text-xs font-normal text-muted-foreground backdrop-blur-sm transition-colors duration-200 hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-                                >
-                                    <Briefcase class="h-3 w-3 opacity-60" />
-                                    Software Developer
-                                </Badge>
-                            </div>
-                        </div>
-
-                        <!-- Social Links -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.social}ms` }"
-                            :class="{ 'is-visible': isVisible }"
-                        >
-                            <div
-                                class="flex items-center justify-center gap-1.5 lg:justify-start"
-                            >
-                                <a
-                                    href="https://github.com/srosthai"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="social-icon"
-                                    aria-label="GitHub"
-                                >
-                                    <Github class="h-4 w-4" />
-                                </a>
-                                <a
-                                    href="https://www.linkedin.com/in/sros-thai-b491b42ab/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="social-icon"
-                                    aria-label="LinkedIn"
-                                >
-                                    <Linkedin class="h-4 w-4" />
-                                </a>
-                                <Link href="/contact" class="social-icon" aria-label="Contact">
-                                    <Mail class="h-4 w-4" />
-                                </Link>
-                                <Link href="/note" class="social-icon" aria-label="Notes">
-                                    <Book class="h-4 w-4" />
-                                </Link>
-                                <Link href="/feeds" class="social-icon" aria-label="Feeds">
-                                    <Rss class="h-4 w-4" />
-                                </Link>
-                            </div>
-                        </div>
-
-                        <!-- CTA Buttons -->
-                        <div
-                            class="reveal"
-                            :style="{ animationDelay: `${stagger.cta}ms` }"
-                            :class="{ 'is-visible': isVisible }"
-                        >
-                            <div
-                                class="flex flex-col items-center gap-3 pt-1 xs:flex-row lg:items-start"
-                            >
-                                <Button
-                                    asChild
-                                    class="group rounded-full bg-foreground px-7 py-2.5 text-sm font-medium text-background transition-all duration-300 hover:-translate-y-0.5 hover:bg-foreground/90 hover:shadow-lg active:translate-y-0 active:bg-foreground/80"
-                                >
-                                    <Link href="/resume" class="flex items-center gap-2.5">
-                                        <span>View Resume</span>
-                                        <ArrowRight
-                                            class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
-                                        />
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    class="group rounded-full border-border/50 bg-background/60 px-7 py-2.5 text-sm font-medium backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:bg-accent active:translate-y-0"
-                                >
-                                    <Link href="/portfolio" class="flex items-center gap-2.5">
-                                        <span>Projects</span>
-                                        <ArrowRight
-                                            class="h-3.5 w-3.5 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100"
-                                        />
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    class="group rounded-full border-border/50 bg-background/60 px-7 py-2.5 text-sm font-medium backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:bg-accent active:translate-y-0"
-                                >
-                                    <Link href="/feeds" class="flex items-center gap-2.5">
-                                        <Rss class="h-3.5 w-3.5 opacity-60" />
-                                        <span>My Feeds</span>
-                                    </Link>
-                                </Button>
-                            </div>
-                        </div>
+                            <Rss class="h-3 w-3 opacity-70 sm:h-3.5 sm:w-3.5" />
+                            <span>My feeds</span>
+                        </Link>
                     </div>
 
-                    <!-- Avatar Section -->
+                    <!-- Signature line -->
                     <div
-                        class="reveal order-1 flex items-center justify-center relative lg:order-2"
-                        :style="{ animationDelay: `${stagger.avatar}ms` }"
-                        :class="{ 'is-visible': isVisible }"
+                        class="mt-8 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground/60 sm:mt-10 sm:gap-4 sm:text-[10px] md:text-xs"
                     >
-                        <div class="relative group avatar-container">
-                            <!-- Decorative rings -->
-                            <div
-                                class="absolute inset-0 rounded-full border-2 border-primary/20 scale-110 group-hover:scale-125 group-active:scale-115 transition-transform duration-700"
-                            ></div>
-                            <div
-                                class="absolute inset-0 rounded-full border border-primary/10 scale-125 group-hover:scale-140 group-active:scale-130 transition-transform duration-1000"
-                            ></div>
+                        <span class="h-px flex-1 bg-border/60"></span>
+                        <span>Crafted in Cambodia</span>
+                        <span class="h-px flex-1 bg-border/60"></span>
+                    </div>
+                </article>
 
-                            <Avatar
-                                class="w-44 h-44 xs:w-52 xs:h-52 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 xl:w-[28rem] xl:h-[28rem] 2xl:w-[32rem] 2xl:h-[32rem] floating border-4 border-background shadow-2xl relative z-10"
-                            >
-                                <AvatarImage
-                                    v-if="users.image"
-                                    :src="users.image.startsWith('http') ? users.image : `/${users.image}`"
-                                    :alt="users.name"
-                                    class="object-cover object-[center_30%]"
-                                />
-                                <AvatarFallback
-                                    class="bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold"
-                                >
-                                    {{ users.name?.charAt(0) }}
-                                </AvatarFallback>
-                            </Avatar>
+                <!-- Lanyard card (hidden on mobile; chip lives inside hero card) -->
+                <article
+                    class="bento-card reveal relative col-span-2 hidden overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
+                    style="--d: 160ms"
+                >
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground"
+                        >
+                            / credentials
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70"
+                        >
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            drag me
+                        </span>
+                    </div>
 
-                            <!-- Glowing effect -->
-                            <div
-                                class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 rounded-full blur-2xl -z-10 group-hover:from-primary/20 group-hover:to-primary/10 group-active:from-primary/15 group-active:to-primary/8 transition-all duration-700"
-                            ></div>
+                    <LanyardCard
+                        :name="users.name"
+                        :position="users.position"
+                        :image="users.image"
+                        badge="DEV"
+                        label="ID · 2026"
+                    />
+                </article>
+
+                <!-- Clock / location card -->
+                <article
+                    class="bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    style="--d: 240ms"
+                >
+                    <div class="flex items-center justify-between gap-2">
+                        <span
+                            class="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:gap-2 sm:text-[10px]"
+                        >
+                            <MapPin class="h-3 w-3 shrink-0" />
+                            <span class="truncate">Phnom Penh</span>
+                        </span>
+                        <span
+                            class="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:text-[10px]"
+                        >
+                            UTC+7
+                        </span>
+                    </div>
+                    <div
+                        class="mt-4 font-mono text-[clamp(1.75rem,8vw,3.5rem)] font-medium tabular-nums leading-none tracking-tight text-foreground sm:mt-5"
+                    >
+                        {{ timeInPhnomPenh }}
+                    </div>
+                    <div
+                        class="mt-2 truncate font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground sm:mt-3 sm:text-[11px] sm:tracking-[0.2em]"
+                    >
+                        Local · {{ dateInPhnomPenh }}
+                    </div>
+                </article>
+
+                <!-- Stats card -->
+                <article
+                    class="bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    style="--d: 320ms"
+                >
+                    <span
+                        class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                    >
+                        / by the numbers
+                    </span>
+                    <div class="mt-4 grid grid-cols-2 gap-3 sm:mt-5 sm:gap-4">
+                        <div class="stat-item">
+                            <div class="stat-num">{{ stats.projects }}</div>
+                            <div class="stat-label">Projects</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">{{ stats.techStacks }}</div>
+                            <div class="stat-label">Stacks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">{{ stats.experience }}</div>
+                            <div class="stat-label">Exps</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-num">{{ stats.notes }}</div>
+                            <div class="stat-label">Notes</div>
                         </div>
                     </div>
-                </div>
-            </section>
-        </div>
+                </article>
+
+                <!-- Social / links card -->
+                <article
+                    class="bento-card reveal col-span-2 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    style="--d: 400ms"
+                >
+                    <span
+                        class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                    >
+                        / elsewhere
+                    </span>
+                    <ul class="mt-3 divide-y divide-border/50 sm:mt-4">
+                        <li>
+                            <a
+                                href="https://github.com/srosthai"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="link-row group"
+                            >
+                                <span class="flex items-center gap-3">
+                                    <Github class="h-4 w-4 opacity-70" />
+                                    <span>GitHub</span>
+                                </span>
+                                <ArrowUpRight
+                                    class="h-4 w-4 opacity-40 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                />
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="https://www.linkedin.com/in/sros-thai-b491b42ab/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="link-row group"
+                            >
+                                <span class="flex items-center gap-3">
+                                    <Linkedin class="h-4 w-4 opacity-70" />
+                                    <span>LinkedIn</span>
+                                </span>
+                                <ArrowUpRight
+                                    class="h-4 w-4 opacity-40 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                />
+                            </a>
+                        </li>
+                        <li>
+                            <Link href="/contact" class="link-row group">
+                                <span class="flex items-center gap-3">
+                                    <Mail class="h-4 w-4 opacity-70" />
+                                    <span>Contact</span>
+                                </span>
+                                <ArrowUpRight
+                                    class="h-4 w-4 opacity-40 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                />
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/note" class="link-row group">
+                                <span class="flex items-center gap-3">
+                                    <Book class="h-4 w-4 opacity-70" />
+                                    <span>Notes</span>
+                                </span>
+                                <ArrowUpRight
+                                    class="h-4 w-4 opacity-40 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                />
+                            </Link>
+                        </li>
+                    </ul>
+                </article>
+
+                <!-- Tech stack marquee -->
+                <article
+                    v-if="techStacks.length"
+                    class="bento-card reveal col-span-2 overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl sm:rounded-3xl md:col-span-12"
+                    style="--d: 480ms"
+                >
+                    <div
+                        class="flex items-center justify-between border-b border-border/50 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:px-6 sm:py-3 sm:text-[10px] sm:tracking-[0.25em]"
+                    >
+                        <span>/ daily drivers</span>
+                        <span>{{ stats.techStacks }} tools</span>
+                    </div>
+                    <div class="marquee-viewport group relative py-4 sm:py-6">
+                        <div class="marquee-track">
+                            <div
+                                v-for="(tech, i) in doubledStacks"
+                                :key="`${tech.id}-${i}`"
+                                class="marquee-item"
+                                :title="tech.name"
+                            >
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    :alt="tech.name"
+                                    class="marquee-logo"
+                                    loading="lazy"
+                                />
+                                <span
+                                    v-else
+                                    class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-muted font-mono text-[10px] font-semibold text-muted-foreground sm:h-7 sm:w-7 sm:text-xs"
+                                >
+                                    {{ tech.name?.charAt(0) }}
+                                </span>
+                                <span class="marquee-name">{{ tech.name }}</span>
+                            </div>
+                        </div>
+                        <div class="fade-edge fade-left"></div>
+                        <div class="fade-edge fade-right"></div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Footer tag -->
+            <div
+                class="reveal mt-5 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-6 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                style="--d: 560ms"
+            >
+                <span>© {{ new Date().getFullYear() }} {{ users.name }}</span>
+                <span>Scroll, click, explore →</span>
+            </div>
+        </section>
     </FrontendLayout>
 </template>
 
 <style scoped>
-/* --- Reveal animation --- */
-.reveal {
-    opacity: 0;
-    transform: translateY(14px);
+:global(.font-serif) {
+    font-family: 'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
 }
 
-.reveal.is-visible {
-    animation: revealUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.reveal {
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.is-visible .reveal {
+    animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--d, 0ms);
 }
 
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translateY(18px);
     }
     to {
         opacity: 1;
@@ -434,41 +545,235 @@ const animateText = () => {
     }
 }
 
-/* --- Social icon buttons --- */
-.social-icon {
+/* Serif font (scoped-safe) */
+h1,
+.font-serif {
+    font-family: 'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+    font-feature-settings: 'ss01', 'liga';
+}
+
+/* Mono font */
+.font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* Ambient background blob */
+.ambient-blob {
+    position: absolute;
+    width: 40rem;
+    height: 40rem;
+    border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--color-foreground) 7%, transparent),
+        transparent 70%
+    );
+    filter: blur(60px);
+    transition:
+        left 600ms cubic-bezier(0.22, 1, 0.36, 1),
+        top 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: left, top;
+}
+
+.grain-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+/* Bento cards — lift on hover for desktop only */
+.bento-card {
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .bento-card:hover {
+        transform: translateY(-3px);
+        border-color: color-mix(in oklab, var(--color-foreground) 20%, var(--color-border));
+    }
+}
+
+/* Stat grid */
+.stat-item {
+    padding: 0.4rem 0.2rem;
+    border-top: 1px solid var(--color-border);
+}
+@media (min-width: 640px) {
+    .stat-item {
+        padding: 0.5rem 0.25rem;
+    }
+}
+.stat-num {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: clamp(1.6rem, 6vw, 2.75rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-foreground);
+    font-feature-settings: 'tnum';
+}
+.stat-label {
+    margin-top: 0.35rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+}
+@media (min-width: 640px) {
+    .stat-label {
+        margin-top: 0.5rem;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+    }
+}
+
+/* Link rows */
+.link-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9999px;
-    color: var(--color-muted-foreground);
-    transition:
-        color 0.25s ease,
-        background-color 0.25s ease,
-        transform 0.25s ease;
-}
-
-.social-icon:hover {
+    justify-content: space-between;
+    padding: 0.75rem 0.25rem;
+    font-size: 0.9rem;
     color: var(--color-foreground);
-    background-color: var(--color-muted);
-    transform: translateY(-2px);
+    transition: color 0.2s ease;
+}
+.link-row:hover {
+    color: var(--color-foreground);
 }
 
-.social-icon:active {
-    transform: translateY(0);
+/* Primary CTA shadow pulse */
+.cta-primary {
+    box-shadow: 0 10px 30px -10px color-mix(in oklab, var(--color-foreground) 40%, transparent);
+}
+.cta-primary:hover {
+    box-shadow: 0 14px 40px -12px color-mix(in oklab, var(--color-foreground) 55%, transparent);
 }
 
-/* --- Reduced motion --- */
-@media (prefers-reduced-motion: reduce) {
-    .reveal {
-        opacity: 1;
-        transform: none;
+/* Marquee */
+.marquee-viewport {
+    overflow: hidden;
+    position: relative;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+@media (min-width: 640px) {
+    .marquee-viewport {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
     }
-    .reveal.is-visible {
+}
+.marquee-track {
+    display: flex;
+    gap: 1rem;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+}
+@media (min-width: 640px) {
+    .marquee-track {
+        gap: 2rem;
+    }
+}
+.marquee-viewport.group:hover .marquee-track,
+.marquee-viewport:hover .marquee-track {
+    animation-play-state: paused;
+}
+.marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.75rem 0.3rem 0.4rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-card) 60%, transparent);
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease;
+}
+@media (min-width: 640px) {
+    .marquee-item {
+        gap: 0.6rem;
+        padding: 0.35rem 0.9rem 0.35rem 0.5rem;
+    }
+}
+.marquee-item:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--color-foreground) 40%, var(--color-border));
+}
+.marquee-logo {
+    width: 1.1rem;
+    height: 1.1rem;
+    object-fit: contain;
+}
+@media (min-width: 640px) {
+    .marquee-logo {
+        width: 1.4rem;
+        height: 1.4rem;
+    }
+}
+.marquee-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--color-foreground);
+}
+@media (min-width: 640px) {
+    .marquee-name {
+        font-size: 0.75rem;
+    }
+}
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+.fade-edge {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4rem;
+    z-index: 2;
+}
+.fade-left {
+    left: 0;
+    background: linear-gradient(
+        to right,
+        var(--color-card),
+        transparent
+    );
+}
+.fade-right {
+    right: 0;
+    background: linear-gradient(
+        to left,
+        var(--color-card),
+        transparent
+    );
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .is-visible .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .marquee-track {
         animation: none;
     }
-    .social-icon {
+    .ambient-blob {
         transition: none;
     }
 }

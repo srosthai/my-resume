@@ -28,8 +28,20 @@ class PortfolioController extends Controller
     public function home()
     {
         $users = User::latest()->first();
+
+        $techStacks = TechStack::orderBy('id')->get(['id', 'name', 'logo', 'type']);
+
+        $stats = [
+            'projects'   => Project::count(),
+            'techStacks' => TechStack::count(),
+            'experience' => WorkExperience::count(),
+            'notes'      => Note::published()->count(),
+        ];
+
         return Inertia::render('frontend/Home', [
-            'users' => $users,
+            'users'      => $users,
+            'techStacks' => $techStacks,
+            'stats'      => $stats,
         ]);
     }
 
