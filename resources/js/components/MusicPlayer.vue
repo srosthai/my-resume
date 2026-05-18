@@ -306,7 +306,7 @@ watch(currentSongIndex, () => {
 </script>
 
 <template>
-    <div class="pointer-events-auto fixed right-6 bottom-6 z-50">
+    <div class="pointer-events-auto fixed right-5 bottom-24 z-40 md:right-6 md:bottom-6 md:z-50">
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -330,7 +330,7 @@ watch(currentSongIndex, () => {
     </div>
 
     <!-- Expanded Music Player -->
-    <div v-if="isExpanded" class="pointer-events-none fixed right-4 bottom-4 left-4 z-40">
+    <div v-if="isExpanded" class="pointer-events-none fixed right-4 bottom-28 left-4 z-40 md:bottom-4">
         <div class="pointer-events-auto mx-auto max-w-6xl">
             <TooltipProvider>
                 <Card class="music-player border-border/50 bg-background/95 shadow-2xl transition-all duration-300">

@@ -12,10 +12,12 @@ interface DockItem {
   icon: any
   href: string
   isExternal?: boolean
+  isTheme?: boolean
 }
 
 interface Props {
   items: DockItem[]
+  currentRoute?: string
   className?: string
   mobileClassName?: string
   direction?: 'top' | 'middle' | 'bottom'
@@ -23,6 +25,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  currentRoute: '/',
   className: '',
   mobileClassName: '',
   direction: 'middle',
@@ -32,6 +35,35 @@ const props = withDefaults(defineProps<Props>(), {
 // Split items into navigation and social links
 const navItems = computed(() => props.items.slice(0, 5))
 const socialItems = computed(() => props.items.slice(5))
+
+const isActive = (href: string) => {
+  if (href.startsWith('#')) return false
+  const current = props.currentRoute || '/'
+  if (href === '/') return current === '/'
+  return current === href || current.startsWith(`${href}/`)
+}
+
+const navLinkClasses = (href: string, mobile = false) => {
+  const active = isActive(href)
+
+  if (mobile) {
+    return cn(
+      'group inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-300',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70',
+      active
+        ? 'min-w-[7.25rem] bg-white/14 px-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_28px_-18px_rgba(255,255,255,0.75)]'
+        : 'w-11 text-white/55 hover:bg-white/8 hover:text-white'
+    )
+  }
+
+  return cn(
+    'group inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-300',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    active
+      ? 'bg-foreground px-4 text-background shadow-[0_14px_34px_-22px_rgba(0,0,0,0.75)]'
+      : 'w-11 text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+  )
+}
 </script>
 
 <template>
@@ -43,20 +75,21 @@ const socialItems = computed(() => props.items.slice(5))
         <DockIcon v-for="item in navItems" :key="item.title">
           <Tooltip>
             <TooltipTrigger as-child>
+              <ThemeToggle
+                v-if="item.isTheme"
+                class="size-4 shrink-0 text-current"
+                :button-class="navLinkClasses(item.href)"
+              />
               <!-- Internal Link -->
               <Link
-                v-if="!item.isExternal && !item.href.startsWith('http')"
+                v-else-if="!item.isExternal && !item.href.startsWith('http')"
                 :href="item.href"
                 :aria-label="item.title"
-                :class="cn(
-                  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all',
-                  'disabled:pointer-events-none disabled:opacity-50',
-                  'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-                  'size-10 sm:size-11 md:size-12 hover:scale-110 transition-transform duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                )"
+                :aria-current="isActive(item.href) ? 'page' : undefined"
+                :class="navLinkClasses(item.href)"
               >
-                <component :is="item.icon" class="size-3 sm:size-3.5 md:size-4" />
+                <component :is="item.icon" class="size-4 shrink-0" />
+                <span v-if="isActive(item.href)">{{ item.title }}</span>
               </Link>
               <!-- External Link -->
               <a
@@ -65,15 +98,10 @@ const socialItems = computed(() => props.items.slice(5))
                 :aria-label="item.title"
                 :target="item.isExternal || item.href.startsWith('http') ? '_blank' : undefined"
                 :rel="item.isExternal || item.href.startsWith('http') ? 'noopener noreferrer' : undefined"
-                :class="cn(
-                  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all',
-                  'disabled:pointer-events-none disabled:opacity-50',
-                  'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-                  'size-10 sm:size-11 md:size-12 hover:scale-110 transition-transform duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                )"
+                :class="navLinkClasses(item.href)"
               >
-                <component :is="item.icon" class="size-3 sm:size-3.5 md:size-4" />
+                <component :is="item.icon" class="size-4 shrink-0" />
+                <span v-if="isActive(item.href)">{{ item.title }}</span>
               </a>
             </TooltipTrigger>
             <TooltipContent>
@@ -89,20 +117,21 @@ const socialItems = computed(() => props.items.slice(5))
         <DockIcon v-for="item in socialItems" :key="item.title">
           <Tooltip>
             <TooltipTrigger as-child>
+              <ThemeToggle
+                v-if="item.isTheme"
+                class="size-4 shrink-0 text-current"
+                :button-class="navLinkClasses(item.href)"
+              />
               <!-- Internal Link -->
               <Link
-                v-if="!item.isExternal && !item.href.startsWith('http')"
+                v-else-if="!item.isExternal && !item.href.startsWith('http')"
                 :href="item.href"
                 :aria-label="item.title"
-                :class="cn(
-                  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all',
-                  'disabled:pointer-events-none disabled:opacity-50',
-                  'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-                  'size-10 sm:size-11 md:size-12 hover:scale-110 transition-transform duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                )"
+                :aria-current="isActive(item.href) ? 'page' : undefined"
+                :class="navLinkClasses(item.href)"
               >
-                <component :is="item.icon" class="size-3 sm:size-3.5 md:size-4" />
+                <component :is="item.icon" class="size-4 shrink-0" />
+                <span v-if="isActive(item.href)">{{ item.title }}</span>
               </Link>
               <!-- External Link -->
               <a
@@ -111,15 +140,10 @@ const socialItems = computed(() => props.items.slice(5))
                 :aria-label="item.title"
                 :target="item.isExternal || item.href.startsWith('http') ? '_blank' : undefined"
                 :rel="item.isExternal || item.href.startsWith('http') ? 'noopener noreferrer' : undefined"
-                :class="cn(
-                  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all',
-                  'disabled:pointer-events-none disabled:opacity-50',
-                  'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-                  'size-10 sm:size-11 md:size-12 hover:scale-110 transition-transform duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                )"
+                :class="navLinkClasses(item.href)"
               >
-                <component :is="item.icon" class="size-3 sm:size-3.5 md:size-4" />
+                <component :is="item.icon" class="size-4 shrink-0" />
+                <span v-if="isActive(item.href)">{{ item.title }}</span>
               </a>
             </TooltipTrigger>
             <TooltipContent>
@@ -145,22 +169,30 @@ const socialItems = computed(() => props.items.slice(5))
       </Dock>
 
       <!-- Mobile Dock -->
-      <Dock :className="cn('md:hidden gap-0.5 px-2', mobileClassName)">
+      <Dock
+        :className="
+          cn(
+            'md:hidden h-[4.25rem] gap-1.5 border-white/10 !bg-neutral-950 px-3 shadow-[0_22px_70px_-32px_rgba(0,0,0,0.85)] supports-[backdrop-filter]:!bg-neutral-950/95',
+            mobileClassName,
+          )
+        "
+      >
         <DockIcon v-for="item in items.slice(0, 5)" :key="item.title">
+          <ThemeToggle
+            v-if="item.isTheme"
+            class="size-5 shrink-0 text-current"
+            :button-class="navLinkClasses(item.href, true)"
+          />
           <!-- Internal Link -->
           <Link
-            v-if="!item.isExternal && !item.href.startsWith('http')"
+            v-else-if="!item.isExternal && !item.href.startsWith('http')"
             :href="item.href"
             :aria-label="item.title"
-            :class="cn(
-              'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all',
-              'disabled:pointer-events-none disabled:opacity-50',
-              'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-              'size-8 sm:size-9 hover:scale-105 transition-transform duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-            )"
+            :aria-current="isActive(item.href) ? 'page' : undefined"
+            :class="navLinkClasses(item.href, true)"
           >
-            <component :is="item.icon" class="size-3 sm:size-3.5" />
+            <component :is="item.icon" class="size-5 shrink-0" />
+            <span v-if="isActive(item.href)" class="leading-none">{{ item.title }}</span>
           </Link>
           <!-- External Link -->
           <a
@@ -169,23 +201,11 @@ const socialItems = computed(() => props.items.slice(5))
             :aria-label="item.title"
             :target="item.isExternal || item.href.startsWith('http') ? '_blank' : undefined"
             :rel="item.isExternal || item.href.startsWith('http') ? 'noopener noreferrer' : undefined"
-            :class="cn(
-              'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all',
-              'disabled:pointer-events-none disabled:opacity-50',
-              'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-              'size-8 sm:size-9 hover:scale-105 transition-transform duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-            )"
+            :class="navLinkClasses(item.href, true)"
           >
-            <component :is="item.icon" class="size-3 sm:size-3.5" />
+            <component :is="item.icon" class="size-5 shrink-0" />
+            <span v-if="isActive(item.href)" class="leading-none">{{ item.title }}</span>
           </a>
-        </DockIcon>
-        
-        <!-- Mobile Theme Toggle -->
-        <DockIcon v-if="showThemeToggle">
-          <div class="flex items-center justify-center size-8 sm:size-9 hover:scale-105 transition-transform duration-200">
-            <ThemeToggle class="size-3 sm:size-3.5" />
-          </div>
         </DockIcon>
       </Dock>
     </TooltipProvider>

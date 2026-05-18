@@ -1,35 +1,23 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { Head, useForm } from '@inertiajs/vue3'
-import {
-    Facebook,
-    Linkedin,
-    Instagram,
-    Send,
-    Github,
-    Mail,
-    MapPin,
-    Clock,
-    ArrowUpRight,
-    CheckCircle,
-    AlertCircle,
-} from 'lucide-vue-next'
-import { Skeleton } from '@/components/ui/skeleton'
-import FrontendLayout from '@/layouts/FrontendLayout.vue'
+import { Skeleton } from '@/components/ui/skeleton';
+import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { AlertCircle, ArrowUpRight, CheckCircle, Clock, Facebook, Github, Instagram, Linkedin, Mail, MapPin, Send } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
     title: { type: String, default: 'Contact' },
     description: { type: String, default: '' },
-})
+});
 
-const isLoading = ref(true)
-const isVisible = ref(false)
-const showSuccessMessage = ref(false)
-const showErrorMessage = ref(false)
-const errorMessage = ref('')
+const isLoading = ref(true);
+const isVisible = ref(false);
+const showSuccessMessage = ref(false);
+const showErrorMessage = ref(false);
+const errorMessage = ref('');
 
-const now = ref(new Date())
-let clockTimer = null
+const now = ref(new Date());
+let clockTimer = null;
 
 const dateString = computed(() => {
     try {
@@ -39,11 +27,11 @@ const dateString = computed(() => {
             day: '2-digit',
             month: 'short',
             year: 'numeric',
-        }).format(now.value)
+        }).format(now.value);
     } catch (e) {
-        return ''
+        return '';
     }
-})
+});
 
 const timeInPhnomPenh = computed(() => {
     try {
@@ -52,48 +40,47 @@ const timeInPhnomPenh = computed(() => {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
-        }).format(now.value)
+        }).format(now.value);
     } catch (e) {
-        return '--:--'
+        return '--:--';
     }
-})
+});
 
-const pointer = ref({ x: 50, y: 50 })
+const pointer = ref({ x: 50, y: 50 });
 const handlePointer = (e) => {
     pointer.value = {
         x: (e.clientX / window.innerWidth) * 100,
         y: (e.clientY / window.innerHeight) * 100,
-    }
-}
+    };
+};
 
 const form = useForm({
     name: '',
     email: '',
     subject: '',
     message: '',
-})
+});
 
 const submitForm = () => {
     form.post(route('contact.send'), {
         onSuccess: () => {
-            showSuccessMessage.value = true
-            showErrorMessage.value = false
-            form.reset()
+            showSuccessMessage.value = true;
+            showErrorMessage.value = false;
+            form.reset();
             setTimeout(() => {
-                showSuccessMessage.value = false
-            }, 5000)
+                showSuccessMessage.value = false;
+            }, 5000);
         },
         onError: (errors) => {
-            showErrorMessage.value = true
-            showSuccessMessage.value = false
-            errorMessage.value =
-                errors.message || 'Failed to send message. Please try again.'
+            showErrorMessage.value = true;
+            showSuccessMessage.value = false;
+            errorMessage.value = errors.message || 'Failed to send message. Please try again.';
             setTimeout(() => {
-                showErrorMessage.value = false
-            }, 5000)
+                showErrorMessage.value = false;
+            }, 5000);
         },
-    })
-}
+    });
+};
 
 const socialLinks = [
     {
@@ -138,33 +125,33 @@ const socialLinks = [
         username: 'srosthai00@gmail.com',
         handle: 'direct line',
     },
-]
+];
 
 const openLink = (url) => {
     if (typeof window !== 'undefined') {
-        window.open(url, '_blank', 'noopener,noreferrer')
+        window.open(url, '_blank', 'noopener,noreferrer');
     }
-}
+};
 
 onMounted(() => {
     setTimeout(() => {
-        isLoading.value = false
+        isLoading.value = false;
         requestAnimationFrame(() => {
-            isVisible.value = true
-        })
-    }, 400)
+            isVisible.value = true;
+        });
+    }, 400);
 
     clockTimer = setInterval(() => {
-        now.value = new Date()
-    }, 30000)
+        now.value = new Date();
+    }, 30000);
 
-    window.addEventListener('pointermove', handlePointer, { passive: true })
-})
+    window.addEventListener('pointermove', handlePointer, { passive: true });
+});
 
 onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer)
-    window.removeEventListener('pointermove', handlePointer)
-})
+    if (clockTimer) clearInterval(clockTimer);
+    window.removeEventListener('pointermove', handlePointer);
+});
 </script>
 
 <template>
@@ -172,10 +159,7 @@ onBeforeUnmount(() => {
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description" />
-            <meta
-                name="keywords"
-                content="contact, get in touch, hire developer, collaboration, web developer contact, SROS THAI"
-            />
+            <meta name="keywords" content="contact, get in touch, hire developer, collaboration, web developer contact, SROS THAI" />
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
@@ -186,42 +170,29 @@ onBeforeUnmount(() => {
         </Head>
 
         <!-- Skeleton -->
-        <section
-            v-if="isLoading"
-            class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
-        >
+        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-64 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-[34rem] rounded-3xl md:col-span-8" />
                 <Skeleton class="col-span-2 h-[34rem] rounded-3xl md:col-span-4" />
-                <Skeleton
-                    v-for="i in 6"
-                    :key="i"
-                    class="col-span-2 h-28 rounded-2xl sm:col-span-1 md:col-span-4"
-                />
+                <Skeleton v-for="i in 6" :key="i" class="col-span-2 h-28 rounded-2xl sm:col-span-1 md:col-span-4" />
             </div>
         </section>
 
         <section
             v-else
-            class="relative mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+            class="contact-screen relative mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
             :class="{ 'is-visible': isVisible }"
         >
             <!-- Ambient + grain -->
-            <div
-                class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-                aria-hidden="true"
-            >
-                <div
-                    class="ambient-blob"
-                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
-                ></div>
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+                <div class="ambient-blob" :style="{ left: pointer.x + '%', top: pointer.y + '%' }"></div>
                 <div class="grain-overlay"></div>
             </div>
 
             <!-- Top meta strip -->
             <div
-                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                class="mobile-status reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] tracking-[0.22em] text-muted-foreground/70 uppercase sm:mb-5 sm:text-[10px] md:text-xs"
                 style="--d: 0ms"
             >
                 <span class="flex items-center gap-2">
@@ -234,16 +205,16 @@ onBeforeUnmount(() => {
 
             <!-- HERO -->
             <article
-                class="reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                class="mobile-contact-hero reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
                 style="--d: 80ms"
             >
                 <div
-                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                    class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
                     aria-hidden="true"
                 ></div>
 
                 <div
-                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                    class="flex items-center justify-between font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase sm:text-[10px] md:text-xs"
                 >
                     <span class="inline-flex items-center gap-2">
                         <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
@@ -258,24 +229,14 @@ onBeforeUnmount(() => {
                     </span>
                 </div>
 
-                <h1 class="mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
-                    <span
-                        class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground"
-                    >
-                        Get in
-                    </span>
-                    <span
-                        class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal italic text-foreground/80"
-                    >
-                        touch.
-                    </span>
+                <h1 class="mobile-title mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
+                    <span class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground"> Get in </span>
+                    <span class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground/80 italic"> touch. </span>
                 </h1>
 
-                <p
-                    class="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-[15px] md:text-base"
-                >
-                    Open to collaborations, freelance work, and a good conversation about code.
-                    Drop a message below, or reach out directly — whichever feels right.
+                <p class="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-[15px] md:text-base">
+                    Open to collaborations, freelance work, and a good conversation about code. Drop a message below, or reach out directly —
+                    whichever feels right.
                 </p>
             </article>
 
@@ -283,21 +244,17 @@ onBeforeUnmount(() => {
             <div class="mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:gap-5 md:grid-cols-12">
                 <!-- Contact form card (8 cols) -->
                 <article
-                    class="reveal relative col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8"
+                    class="mobile-form-card reveal relative col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8"
                     style="--d: 160ms"
                 >
                     <div
-                        class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
+                        class="flex items-center justify-between font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]"
                     >
                         <span>/ Send a message</span>
                         <span>{{ timeInPhnomPenh }} · ICT</span>
                     </div>
 
-                    <h2
-                        class="mt-3 font-serif text-3xl leading-tight tracking-tight text-foreground sm:text-4xl"
-                    >
-                        Write something nice.
-                    </h2>
+                    <h2 class="mt-3 font-serif text-3xl leading-tight tracking-tight text-foreground sm:text-4xl">Write something nice.</h2>
 
                     <!-- Success / Error -->
                     <div
@@ -315,10 +272,7 @@ onBeforeUnmount(() => {
                         <span>{{ errorMessage }}</span>
                     </div>
 
-                    <form
-                        @submit.prevent="submitForm"
-                        class="mt-6 space-y-5 sm:mt-8"
-                    >
+                    <form @submit.prevent="submitForm" class="mt-6 space-y-5 sm:mt-8">
                         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <div class="field">
                                 <label for="name" class="field-label">
@@ -333,10 +287,7 @@ onBeforeUnmount(() => {
                                     placeholder="e.g. Alex Rivera"
                                     :class="['field-input', form.errors.name ? 'field-input-error' : '']"
                                 />
-                                <span
-                                    v-if="form.errors.name"
-                                    class="field-error"
-                                >
+                                <span v-if="form.errors.name" class="field-error">
                                     {{ form.errors.name }}
                                 </span>
                             </div>
@@ -353,10 +304,7 @@ onBeforeUnmount(() => {
                                     placeholder="you@domain.com"
                                     :class="['field-input', form.errors.email ? 'field-input-error' : '']"
                                 />
-                                <span
-                                    v-if="form.errors.email"
-                                    class="field-error"
-                                >
+                                <span v-if="form.errors.email" class="field-error">
                                     {{ form.errors.email }}
                                 </span>
                             </div>
@@ -375,10 +323,7 @@ onBeforeUnmount(() => {
                                 placeholder="What's this about?"
                                 :class="['field-input', form.errors.subject ? 'field-input-error' : '']"
                             />
-                            <span
-                                v-if="form.errors.subject"
-                                class="field-error"
-                            >
+                            <span v-if="form.errors.subject" class="field-error">
                                 {{ form.errors.subject }}
                             </span>
                         </div>
@@ -397,15 +342,10 @@ onBeforeUnmount(() => {
                                 :class="['field-input field-textarea', form.errors.message ? 'field-input-error' : '']"
                             ></textarea>
                             <div class="mt-1.5 flex items-center justify-between">
-                                <span
-                                    v-if="form.errors.message"
-                                    class="field-error"
-                                >
+                                <span v-if="form.errors.message" class="field-error">
                                     {{ form.errors.message }}
                                 </span>
-                                <span
-                                    class="ml-auto font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60"
-                                >
+                                <span class="ml-auto font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                                     {{ form.message.length }} chars
                                 </span>
                             </div>
@@ -425,9 +365,7 @@ onBeforeUnmount(() => {
                                     <Send class="h-3.5 w-3.5" />
                                 </span>
                             </button>
-                            <span
-                                class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/60"
-                            >
+                            <span class="mobile-reply-note font-mono text-[10px] tracking-[0.22em] text-muted-foreground/60 uppercase">
                                 Usually replies within 24h
                             </span>
                         </div>
@@ -441,9 +379,7 @@ onBeforeUnmount(() => {
                         class="reveal bento-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6"
                         style="--d: 240ms"
                     >
-                        <span
-                            class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
-                        >
+                        <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
                             / Direct line
                         </span>
                         <a
@@ -452,9 +388,7 @@ onBeforeUnmount(() => {
                         >
                             srosthai00@gmail.com
                         </a>
-                        <div
-                            class="mt-4 space-y-2 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
-                        >
+                        <div class="mt-4 space-y-2 font-mono text-[11px] tracking-[0.15em] text-muted-foreground uppercase">
                             <div class="flex items-center gap-2">
                                 <MapPin class="h-3 w-3 opacity-70" />
                                 Phnom Penh, Cambodia
@@ -471,9 +405,7 @@ onBeforeUnmount(() => {
                         class="reveal bento-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6"
                         style="--d: 320ms"
                     >
-                        <span
-                            class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px] sm:tracking-[0.25em]"
-                        >
+                        <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
                             / Status
                         </span>
                         <div class="mt-3 space-y-3">
@@ -483,9 +415,7 @@ onBeforeUnmount(() => {
                                     <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                                 </span>
                                 <div>
-                                    <div class="font-serif text-lg leading-tight text-foreground">
-                                        Available for freelance
-                                    </div>
+                                    <div class="font-serif text-lg leading-tight text-foreground">Available for freelance</div>
                                     <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
                                         Open for contracts, collaborations, and short-term builds.
                                     </p>
@@ -494,9 +424,7 @@ onBeforeUnmount(() => {
                             <div class="flex items-start gap-2.5 border-t border-border/50 pt-3">
                                 <span class="mt-1.5 h-2 w-2 rounded-full bg-amber-500"></span>
                                 <div>
-                                    <div class="font-serif text-lg leading-tight text-foreground">
-                                        Full-time: selective
-                                    </div>
+                                    <div class="font-serif text-lg leading-tight text-foreground">Full-time: selective</div>
                                     <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
                                         Considering roles that fit the right team and mission.
                                     </p>
@@ -508,26 +436,15 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- FOLLOW / SOCIAL -->
-            <section class="mt-10 sm:mt-14">
-                <div
-                    class="reveal mb-6 flex items-end justify-between gap-4 border-b border-border/50 pb-4 sm:mb-8"
-                    style="--d: 0ms"
-                >
+            <section class="mobile-social-section mt-10 sm:mt-14">
+                <div class="reveal mb-6 flex items-end justify-between gap-4 border-b border-border/50 pb-4 sm:mb-8" style="--d: 0ms">
                     <div>
-                        <span
-                            class="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px]"
-                        >
-                            Elsewhere
-                        </span>
-                        <h2
-                            class="mt-1.5 font-serif text-3xl leading-[0.95] tracking-tight text-foreground sm:text-4xl md:text-5xl"
-                        >
+                        <span class="font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase sm:text-[10px]"> Elsewhere </span>
+                        <h2 class="mt-1.5 font-serif text-3xl leading-[0.95] tracking-tight text-foreground sm:text-4xl md:text-5xl">
                             Follow along.
                         </h2>
                     </div>
-                    <span
-                        class="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground/60 sm:inline-flex"
-                    >
+                    <span class="hidden font-mono text-[10px] tracking-[0.25em] text-muted-foreground/60 uppercase sm:inline-flex">
                         {{ socialLinks.length }} channels
                     </span>
                 </div>
@@ -547,24 +464,16 @@ onBeforeUnmount(() => {
                     >
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
-                                <span
-                                    class="font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px]"
-                                >
+                                <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">
                                     / {{ String(i + 1).padStart(2, '0') }}
                                 </span>
-                                <h3
-                                    class="mt-2 font-serif text-2xl leading-tight tracking-tight text-foreground"
-                                >
+                                <h3 class="mt-2 font-serif text-2xl leading-tight tracking-tight text-foreground">
                                     {{ social.name }}
                                 </h3>
-                                <p
-                                    class="mt-1 truncate font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
-                                >
+                                <p class="mt-1 truncate font-mono text-[11px] tracking-[0.15em] text-muted-foreground uppercase">
                                     {{ social.username }}
                                 </p>
-                                <p
-                                    class="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60"
-                                >
+                                <p class="mt-0.5 truncate font-mono text-[10px] tracking-[0.15em] text-muted-foreground/60 uppercase">
                                     {{ social.handle }}
                                 </p>
                             </div>
@@ -575,16 +484,10 @@ onBeforeUnmount(() => {
                             </span>
                         </div>
 
-                        <div
-                            class="mt-5 flex items-center justify-between border-t border-border/50 pt-3"
-                        >
-                            <span
-                                class="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70"
-                            >
-                                Open profile
-                            </span>
+                        <div class="mt-5 flex items-center justify-between border-t border-border/50 pt-3">
+                            <span class="font-mono text-[10px] tracking-[0.22em] text-muted-foreground/70 uppercase"> Open profile </span>
                             <ArrowUpRight
-                                class="h-3.5 w-3.5 opacity-60 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                class="h-3.5 w-3.5 opacity-60 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
                             />
                         </div>
                     </article>
@@ -593,7 +496,7 @@ onBeforeUnmount(() => {
 
             <!-- Footer -->
             <div
-                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 700ms"
             >
                 <span>© {{ new Date().getFullYear() }} · Correspondence</span>
@@ -642,11 +545,7 @@ h3,
     height: 40rem;
     border-radius: 9999px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(
-        closest-side,
-        color-mix(in oklab, var(--color-foreground) 7%, transparent),
-        transparent 70%
-    );
+    background: radial-gradient(closest-side, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 70%);
     filter: blur(60px);
     transition:
         left 600ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -771,6 +670,154 @@ h3,
 .social-card:focus-visible {
     border-color: color-mix(in oklab, var(--color-foreground) 40%, var(--color-border));
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-foreground) 20%, transparent);
+}
+
+@media (max-width: 767px) {
+    .contact-screen {
+        min-height: calc(100dvh - 6rem);
+        padding: 0.875rem 0.875rem 1.25rem;
+    }
+
+    .mobile-status {
+        position: sticky;
+        top: 0.625rem;
+        z-index: 20;
+        margin: 0 auto 0.875rem;
+        width: min(100%, 26rem);
+        flex-wrap: nowrap;
+        border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+        border-radius: 9999px;
+        background: color-mix(in oklab, var(--color-background) 86%, transparent);
+        padding: 0.7rem 0.85rem;
+        box-shadow: 0 18px 45px -28px color-mix(in oklab, var(--color-foreground) 35%, transparent);
+        backdrop-filter: blur(18px);
+        letter-spacing: 0.14em;
+    }
+
+    .mobile-status span {
+        min-width: 0;
+    }
+
+    .mobile-status > span:first-child {
+        max-width: 9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-status > span:last-child {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .mobile-contact-hero {
+        border-radius: 2rem;
+        padding: 1.25rem;
+        background:
+            linear-gradient(
+                145deg,
+                color-mix(in oklab, var(--color-card) 92%, transparent),
+                color-mix(in oklab, var(--color-muted) 62%, transparent)
+            ),
+            radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 34%);
+        box-shadow:
+            0 1px 0 color-mix(in oklab, white 16%, transparent) inset,
+            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
+    }
+
+    .mobile-contact-hero .flex.items-center.justify-between > span:last-child {
+        display: none;
+    }
+
+    .mobile-title span {
+        font-size: clamp(3rem, 15vw, 4.35rem);
+    }
+
+    .mobile-contact-hero p {
+        display: -webkit-box;
+        max-width: 20rem;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+    }
+
+    .mobile-form-card,
+    .bento-card,
+    .social-card {
+        border-radius: 1.35rem;
+        background: color-mix(in oklab, var(--color-card) 78%, transparent);
+        padding: 1rem;
+    }
+
+    .mobile-form-card h2 {
+        margin-top: 0.75rem;
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .mobile-form-card form {
+        margin-top: 1.25rem;
+        gap: 1rem;
+    }
+
+    .field {
+        gap: 0.4rem;
+    }
+
+    .field-label {
+        letter-spacing: 0.14em;
+    }
+
+    .field-num {
+        min-width: 1.35rem;
+        padding: 0.1rem 0.35rem;
+    }
+
+    .field-input {
+        min-height: 3rem;
+        border-radius: 1rem;
+        padding: 0.85rem 0.9rem;
+        font-size: 0.82rem;
+    }
+
+    .field-textarea {
+        min-height: 9.5rem;
+    }
+
+    .cta-primary {
+        min-height: 3.1rem;
+        width: 100%;
+        justify-content: space-between;
+        border-radius: 1.1rem;
+        padding-inline: 1.1rem;
+    }
+
+    .mobile-reply-note {
+        width: 100%;
+        text-align: center;
+        letter-spacing: 0.14em;
+    }
+
+    .mobile-social-section {
+        margin-top: 2rem;
+    }
+
+    .mobile-social-section > div:first-child {
+        margin-bottom: 0.75rem;
+        border: 1px solid color-mix(in oklab, var(--color-border) 65%, transparent);
+        border-radius: 1.35rem;
+        background: color-mix(in oklab, var(--color-background) 88%, transparent);
+        padding: 0.9rem 1rem;
+        backdrop-filter: blur(18px);
+    }
+
+    .mobile-social-section h2 {
+        font-size: 2.35rem;
+    }
+
+    .social-card {
+        min-height: 8.25rem;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

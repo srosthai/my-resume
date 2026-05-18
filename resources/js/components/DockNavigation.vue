@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { Briefcase, Command, Home, Phone, Rss, User } from 'lucide-vue-next';
 import FloatingDock from './ui/floating-dock.vue';
-import { Briefcase, Command, FileText, Home, Phone, Rss, User } from 'lucide-vue-next';
 
 interface Props {
     currentRoute?: string;
@@ -12,57 +12,62 @@ const props = withDefaults(defineProps<Props>(), {
 
 const links = [
     {
-        title: "Home",
+        title: 'Home',
         icon: Home,
-        href: "/",
+        href: '/',
         isExternal: false,
     },
     {
-        title: "About",
+        title: 'About',
         icon: User,
-        href: "/about",
+        href: '/about',
         isExternal: false,
     },
     {
-        title: "Projects",
+        title: 'Projects',
         icon: Briefcase,
-        href: "/portfolio",
+        href: '/portfolio',
         isExternal: false,
     },
     {
-        title: "Resume",
-        icon: FileText,
-        href: "/resume",
-        isExternal: false,
-    },
-    {
-        title: "Contact",
+        title: 'Contact',
         icon: Phone,
-        href: "/contact",
+        href: '/contact',
         isExternal: false,
     },
     {
-        title: "Hobbies",
+        title: 'Theme',
+        icon: null,
+        href: '#theme',
+        isExternal: false,
+        isTheme: true,
+    },
+    {
+        title: 'Hobbies',
         icon: Command,
-        href: "/hobby",
+        href: '/hobby',
         isExternal: false,
     },
     {
-        title: "Feeds",
+        title: 'Feeds',
         icon: Rss,
-        href: "/feeds",
+        href: '/feeds',
         isExternal: false,
-    }
+    },
 ];
 </script>
 
 <template>
-    <div class="sticky top-0 z-50 flex items-center justify-center w-full py-2 sm:py-4 px-2 sm:px-4 bg-background/80 backdrop-blur-md border-b border-border/20">
-        <FloatingDock 
+    <div
+        class="fixed inset-x-0 bottom-0 z-50 flex w-full items-center justify-center px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:sticky md:top-0 md:bottom-auto md:border-b md:border-border/20 md:bg-background/80 md:px-4 md:py-4 md:backdrop-blur-md"
+    >
+        <FloatingDock
             :items="links"
+            :current-route="currentRoute"
             direction="middle"
+            :show-theme-toggle="false"
             className="shadow-xl"
-            mobileClassName="max-w-full overflow-x-auto"
+            mobileClassName="max-w-full overflow-x-auto backdrop-blur-xl"
         />
     </div>
 </template>

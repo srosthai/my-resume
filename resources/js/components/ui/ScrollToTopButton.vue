@@ -41,7 +41,7 @@ onUnmounted(() => {
       v-if="isVisible"
       @click="scrollToTop"
       :class="cn(
-        'fixed bottom-6 right-24 z-40 size-12 rounded-full shadow-lg',
+        'fixed bottom-24 right-20 z-40 size-12 rounded-full shadow-lg md:bottom-6',
         'bg-secondary hover:bg-secondary/90 text-secondary-foreground',
         'border border-border/20 backdrop-blur-md',
         'hover:scale-105 active:scale-95 transition-all duration-200',
