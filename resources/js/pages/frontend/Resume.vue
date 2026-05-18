@@ -1,9 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { Head } from '@inertiajs/vue3'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Phone, Mail, MapPin, Printer } from 'lucide-vue-next'
-import FrontendLayout from '@/layouts/FrontendLayout.vue'
+import { Skeleton } from '@/components/ui/skeleton';
+import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import { Mail, MapPin, Phone, Printer } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
     users: { type: Object, default: () => ({}) },
@@ -14,13 +14,13 @@ const props = defineProps({
     projects: { type: Array, default: () => [] },
     title: { type: String, default: 'Resume' },
     description: { type: String, default: '' },
-})
+});
 
-const isLoading = ref(true)
-const isVisible = ref(false)
+const isLoading = ref(true);
+const isVisible = ref(false);
 
-const now = ref(new Date())
-let clockTimer = null
+const now = ref(new Date());
+let clockTimer = null;
 
 const dateString = computed(() => {
     try {
@@ -30,83 +30,78 @@ const dateString = computed(() => {
             day: '2-digit',
             month: 'short',
             year: 'numeric',
-        }).format(now.value)
+        }).format(now.value);
     } catch (e) {
-        return ''
+        return '';
     }
-})
+});
 
-const pointer = ref({ x: 50, y: 50 })
+const pointer = ref({ x: 50, y: 50 });
 const handlePointer = (e) => {
     pointer.value = {
         x: (e.clientX / window.innerWidth) * 100,
         y: (e.clientY / window.innerHeight) * 100,
-    }
-}
+    };
+};
 
 const firstName = computed(() => {
-    const parts = (props.users?.name || 'Name').trim().split(/\s+/)
-    return parts[0] || 'Name'
-})
+    const parts = (props.users?.name || 'Name').trim().split(/\s+/);
+    return parts[0] || 'Name';
+});
 const lastName = computed(() => {
-    const parts = (props.users?.name || '').trim().split(/\s+/)
-    return parts.slice(1).join(' ')
-})
+    const parts = (props.users?.name || '').trim().split(/\s+/);
+    return parts.slice(1).join(' ');
+});
 
 const imageSrc = computed(() => {
-    const img = props.users?.image
-    if (!img) return ''
-    return img.startsWith('http') ? img : `/${img}`
-})
+    const img = props.users?.image;
+    if (!img) return '';
+    return img.startsWith('http') ? img : `/${img}`;
+});
 
 const groupedSkills = computed(() => {
-    const groups = {}
-    const order = []
-    ;(props.techStacks || []).forEach((t) => {
-        const type = t.type || 'Other'
+    const groups = {};
+    const order = [];
+    (props.techStacks || []).forEach((t) => {
+        const type = t.type || 'Other';
         if (!groups[type]) {
-            groups[type] = []
-            order.push(type)
+            groups[type] = [];
+            order.push(type);
         }
-        groups[type].push(t)
-    })
-    return order.map((type) => ({ type, items: groups[type] }))
-})
+        groups[type].push(t);
+    });
+    return order.map((type) => ({ type, items: groups[type] }));
+});
 
-const hasContact = computed(
-    () => props.users?.phone || props.users?.email || props.users?.address,
-)
+const hasContact = computed(() => props.users?.phone || props.users?.email || props.users?.address);
 
 const bio = computed(
-    () =>
-        props.users?.description ||
-        props.aboutMe?.description ||
-        'A passionate developer crafting modern, reliable web applications.',
-)
+    () => props.users?.description || props.aboutMe?.description || 'A passionate developer crafting modern, reliable web applications.',
+);
 
 const printResume = () => {
-    window.print()
-}
+    window.print();
+};
 
 onMounted(() => {
     setTimeout(() => {
-        isLoading.value = false
+        isLoading.value = false;
         requestAnimationFrame(() => {
-            isVisible.value = true
-        })
-    }, 400)
+            isVisible.value = true;
+        });
+    }, 400);
 
     clockTimer = setInterval(() => {
-        now.value = new Date()
-    }, 60000)
+        now.value = new Date();
+    }, 60000);
 
-    window.addEventListener('pointermove', handlePointer, { passive: true })
-})
+    window.addEventListener('pointermove', handlePointer, { passive: true });
+});
 
 onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer)
-    window.removeEventListener('pointermove', handlePointer)
-})
+    if (clockTimer) clearInterval(clockTimer);
+    window.removeEventListener('pointermove', handlePointer);
+});
 </script>
 
 <template>
@@ -114,10 +109,7 @@ onBeforeUnmount(() => {
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description" />
-            <meta
-                name="keywords"
-                content="resume, CV, curriculum vitae, software developer, experience, skills"
-            />
+            <meta name="keywords" content="resume, CV, curriculum vitae, software developer, experience, skills" />
             <meta name="author" :content="users?.name" />
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
@@ -129,10 +121,10 @@ onBeforeUnmount(() => {
         </Head>
 
         <!-- Floating print button (hidden on print) -->
-        <div class="fixed right-4 top-24 z-40 print:hidden sm:right-6 sm:top-28">
+        <div class="resume-print-action fixed top-24 right-4 z-40 sm:top-28 sm:right-6 print:hidden">
             <button
                 @click="printResume"
-                class="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-foreground backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:text-[11px]"
+                class="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-4 py-2 font-mono text-[10px] tracking-[0.22em] text-foreground uppercase backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:text-[11px]"
                 aria-label="Print résumé"
             >
                 <Printer class="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-hover:scale-110" />
@@ -141,10 +133,7 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Skeleton -->
-        <section
-            v-if="isLoading"
-            class="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
-        >
+        <section v-if="isLoading" class="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-72 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-96 rounded-3xl md:col-span-4" />
@@ -154,24 +143,18 @@ onBeforeUnmount(() => {
 
         <section
             v-else
-            class="resume-root relative mx-auto w-full max-w-5xl px-3 py-6 print:max-w-none print:p-0 sm:px-6 sm:py-8 lg:px-10"
+            class="resume-root relative mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10 print:max-w-none print:p-0"
             :class="{ 'is-visible': isVisible }"
         >
             <!-- Ambient + grain (screen only) -->
-            <div
-                class="pointer-events-none fixed inset-0 -z-10 overflow-hidden print:hidden"
-                aria-hidden="true"
-            >
-                <div
-                    class="ambient-blob"
-                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
-                ></div>
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden print:hidden" aria-hidden="true">
+                <div class="ambient-blob" :style="{ left: pointer.x + '%', top: pointer.y + '%' }"></div>
                 <div class="grain-overlay"></div>
             </div>
 
             <!-- Top meta strip (screen only) -->
             <div
-                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 print:hidden sm:mb-5 sm:text-[10px] md:text-xs"
+                class="mobile-status reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] tracking-[0.22em] text-muted-foreground/70 uppercase sm:mb-5 sm:text-[10px] md:text-xs print:hidden"
                 style="--d: 0ms"
             >
                 <span class="flex items-center gap-2">
@@ -184,20 +167,20 @@ onBeforeUnmount(() => {
 
             <!-- MASTHEAD -->
             <article
-                class="masthead reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl print:rounded-none print:border-0 print:border-b print:border-gray-300 print:bg-white print:p-0 print:pb-5 sm:rounded-3xl sm:p-8 md:p-10"
+                class="masthead reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10 print:rounded-none print:border-0 print:border-b print:border-gray-300 print:bg-white print:p-0 print:pb-5"
                 style="--d: 80ms"
             >
                 <div
-                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent print:hidden"
+                    class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent print:hidden"
                     aria-hidden="true"
                 ></div>
 
                 <!-- Eyebrow -->
                 <div
-                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground print:text-gray-500 sm:text-[10px] md:text-xs"
+                    class="flex items-center justify-between font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase sm:text-[10px] md:text-xs print:text-gray-500"
                 >
                     <span class="inline-flex items-center gap-2">
-                        <span class="h-px w-5 bg-foreground/40 print:bg-gray-400 sm:w-6"></span>
+                        <span class="h-px w-5 bg-foreground/40 sm:w-6 print:bg-gray-400"></span>
                         Curriculum Vitæ · 2026
                     </span>
                     <span v-if="users?.position" class="hidden md:inline">
@@ -206,46 +189,30 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Name + portrait -->
-                <div class="mt-5 flex flex-col gap-6 sm:mt-6 md:flex-row md:items-end md:justify-between md:gap-10">
+                <div class="resume-name-row mt-5 flex flex-col gap-6 sm:mt-6 md:flex-row md:items-end md:justify-between md:gap-10">
                     <div class="min-w-0">
-                        <h1
-                            class="font-serif leading-[0.9] tracking-tight"
-                        >
-                            <span
-                                class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground print:text-[3.5rem] print:text-black"
-                            >
+                        <h1 class="font-serif leading-[0.9] tracking-tight">
+                            <span class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground print:text-[3.5rem] print:text-black">
                                 {{ firstName }}
                             </span>
                             <span
                                 v-if="lastName"
-                                class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal italic text-foreground/80 print:text-[3.5rem] print:text-black"
+                                class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground/80 italic print:text-[3.5rem] print:text-black"
                             >
                                 {{ lastName }}.
                             </span>
                         </h1>
-                        <p
-                            class="mt-3 md:hidden font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground print:hidden"
-                        >
+                        <p class="mt-3 font-mono text-xs tracking-[0.22em] text-muted-foreground uppercase md:hidden print:hidden">
                             {{ users?.position }}
                         </p>
                     </div>
 
-                    <div
-                        class="flex items-center gap-4 print:hidden md:flex-col md:items-end md:gap-3"
-                    >
+                    <div class="flex items-center gap-4 md:flex-col md:items-end md:gap-3 print:hidden">
                         <div
-                            class="relative h-20 w-20 overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-lg ring-1 ring-foreground/5 xs:h-24 xs:w-24 sm:h-28 sm:w-28 md:h-32 md:w-32"
+                            class="relative h-20 w-20 overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-lg ring-1 ring-foreground/5 sm:h-28 sm:w-28 md:h-32 md:w-32 xs:h-24 xs:w-24"
                         >
-                            <img
-                                v-if="imageSrc"
-                                :src="imageSrc"
-                                :alt="users?.name"
-                                class="h-full w-full object-cover object-[center_25%]"
-                            />
-                            <div
-                                v-else
-                                class="flex h-full w-full items-center justify-center font-serif text-3xl italic text-muted-foreground"
-                            >
+                            <img v-if="imageSrc" :src="imageSrc" :alt="users?.name" class="h-full w-full object-cover object-[center_25%]" />
+                            <div v-else class="flex h-full w-full items-center justify-center font-serif text-3xl text-muted-foreground italic">
                                 {{ firstName.charAt(0) }}
                             </div>
                         </div>
@@ -255,26 +222,17 @@ onBeforeUnmount(() => {
                 <!-- Contact row -->
                 <div
                     v-if="hasContact"
-                    class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/50 pt-5 font-mono text-xs text-muted-foreground print:text-[11px] print:text-gray-700 sm:mt-7"
+                    class="resume-contact-row mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/50 pt-5 font-mono text-xs text-muted-foreground sm:mt-7 print:text-[11px] print:text-gray-700"
                 >
-                    <span
-                        v-if="users?.phone"
-                        class="inline-flex items-center gap-2"
-                    >
+                    <span v-if="users?.phone" class="inline-flex items-center gap-2">
                         <Phone class="h-3.5 w-3.5 opacity-70" />
                         {{ users.phone }}
                     </span>
-                    <span
-                        v-if="users?.email"
-                        class="inline-flex items-center gap-2"
-                    >
+                    <span v-if="users?.email" class="inline-flex items-center gap-2">
                         <Mail class="h-3.5 w-3.5 opacity-70" />
                         {{ users.email }}
                     </span>
-                    <span
-                        v-if="users?.address"
-                        class="inline-flex items-center gap-2"
-                    >
+                    <span v-if="users?.address" class="inline-flex items-center gap-2">
                         <MapPin class="h-3.5 w-3.5 opacity-70" />
                         {{ users.address }}
                     </span>
@@ -282,14 +240,12 @@ onBeforeUnmount(() => {
             </article>
 
             <!-- BODY: 2-column grid -->
-            <div
-                class="mt-4 grid grid-cols-1 gap-4 print:mt-5 print:gap-5 sm:mt-5 sm:gap-5 md:grid-cols-[280px_1fr]"
-            >
+            <div class="resume-body-grid mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:gap-5 md:grid-cols-[280px_1fr] print:mt-5 print:gap-5">
                 <!-- SIDEBAR -->
-                <aside class="space-y-4 print:space-y-5 sm:space-y-5">
+                <aside class="space-y-4 sm:space-y-5 print:space-y-5">
                     <!-- Profile -->
                     <section
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl print:rounded-none print:border-0 print:bg-transparent print:p-0 sm:rounded-3xl sm:p-6"
+                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 160ms"
                     >
                         <span class="section-eyebrow">/ Profile</span>
@@ -303,26 +259,17 @@ onBeforeUnmount(() => {
                     <!-- Skills -->
                     <section
                         v-if="groupedSkills.length"
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl print:rounded-none print:border-0 print:bg-transparent print:p-0 sm:rounded-3xl sm:p-6"
+                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 240ms"
                     >
                         <span class="section-eyebrow">/ Skills</span>
                         <div class="mt-4 space-y-4 print:mt-2">
-                            <div
-                                v-for="group in groupedSkills"
-                                :key="group.type"
-                            >
-                                <h3
-                                    class="font-serif text-lg text-foreground print:text-[13px] print:font-semibold print:text-black"
-                                >
+                            <div v-for="group in groupedSkills" :key="group.type">
+                                <h3 class="font-serif text-lg text-foreground print:text-[13px] print:font-semibold print:text-black">
                                     {{ group.type }}
                                 </h3>
                                 <ul class="mt-2 flex flex-wrap gap-1.5">
-                                    <li
-                                        v-for="tech in group.items"
-                                        :key="tech.id"
-                                        class="skill-chip"
-                                    >
+                                    <li v-for="tech in group.items" :key="tech.id" class="skill-chip">
                                         {{ tech.name }}
                                     </li>
                                 </ul>
@@ -332,22 +279,17 @@ onBeforeUnmount(() => {
                 </aside>
 
                 <!-- MAIN -->
-                <div class="space-y-4 print:space-y-5 sm:space-y-5">
+                <div class="space-y-4 sm:space-y-5 print:space-y-5">
                     <!-- Experience -->
                     <section
                         v-if="workExperience?.length"
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl print:rounded-none print:border-0 print:bg-transparent print:p-0 sm:rounded-3xl sm:p-7"
+                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-7 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 320ms"
                     >
                         <span class="section-eyebrow">/ Experience</span>
 
                         <div class="mt-4 print:mt-2">
-                            <article
-                                v-for="(work, i) in workExperience"
-                                :key="work.id"
-                                class="resume-row"
-                                :class="{ 'border-t': i > 0 }"
-                            >
+                            <article v-for="(work, i) in workExperience" :key="work.id" class="resume-row" :class="{ 'border-t': i > 0 }">
                                 <div class="resume-row-head">
                                     <div class="min-w-0">
                                         <h3 class="resume-row-title">
@@ -355,35 +297,21 @@ onBeforeUnmount(() => {
                                         </h3>
                                         <div class="resume-row-subtitle">
                                             <span>{{ work.company }}</span>
-                                            <span
-                                                v-if="work.position && work.title && work.title !== work.position"
-                                                class="resume-row-pill"
-                                            >
+                                            <span v-if="work.position && work.title && work.title !== work.position" class="resume-row-pill">
                                                 {{ work.position }}
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="resume-row-meta">
-                                        {{ work.from }} — {{ work.to || 'Present' }}
-                                    </div>
+                                    <div class="resume-row-meta">{{ work.from }} — {{ work.to || 'Present' }}</div>
                                 </div>
 
-                                <ul
-                                    v-if="work.responsibilities"
-                                    class="resume-row-list"
-                                >
-                                    <li
-                                        v-for="r in work.responsibilities.split('\n').filter(Boolean)"
-                                        :key="r"
-                                    >
+                                <ul v-if="work.responsibilities" class="resume-row-list">
+                                    <li v-for="r in work.responsibilities.split('\n').filter(Boolean)" :key="r">
                                         <span class="resume-row-bullet"></span>
                                         {{ r }}
                                     </li>
                                 </ul>
-                                <p
-                                    v-else-if="work.description"
-                                    class="resume-row-body"
-                                >
+                                <p v-else-if="work.description" class="resume-row-body">
                                     {{ work.description }}
                                 </p>
                             </article>
@@ -393,18 +321,13 @@ onBeforeUnmount(() => {
                     <!-- Education -->
                     <section
                         v-if="education?.length"
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl print:rounded-none print:border-0 print:bg-transparent print:p-0 sm:rounded-3xl sm:p-7"
+                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-7 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 400ms"
                     >
                         <span class="section-eyebrow">/ Education</span>
 
                         <div class="mt-4 print:mt-2">
-                            <article
-                                v-for="(edu, i) in education"
-                                :key="edu.id"
-                                class="resume-row"
-                                :class="{ 'border-t': i > 0 }"
-                            >
+                            <article v-for="(edu, i) in education" :key="edu.id" class="resume-row" :class="{ 'border-t': i > 0 }">
                                 <div class="resume-row-head">
                                     <div class="min-w-0">
                                         <h3 class="resume-row-title">
@@ -412,27 +335,19 @@ onBeforeUnmount(() => {
                                         </h3>
                                         <div class="resume-row-subtitle">
                                             <span>{{ edu.institution }}</span>
-                                            <span
-                                                v-if="edu.major"
-                                                class="resume-row-pill"
-                                            >
+                                            <span v-if="edu.major" class="resume-row-pill">
                                                 {{ edu.major }}
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="resume-row-meta">
-                                        {{ edu.from }} — {{ edu.to }}
-                                    </div>
+                                    <div class="resume-row-meta">{{ edu.from }} — {{ edu.to }}</div>
                                 </div>
-                                <p
-                                    v-if="edu.description"
-                                    class="resume-row-body"
-                                >
+                                <p v-if="edu.description" class="resume-row-body">
                                     {{ edu.description }}
                                 </p>
                                 <p
                                     v-if="edu.gpa"
-                                    class="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground print:text-gray-600"
+                                    class="mt-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase print:text-gray-600"
                                 >
                                     GPA · {{ edu.gpa }}
                                 </p>
@@ -444,7 +359,7 @@ onBeforeUnmount(() => {
 
             <!-- Footer (screen) -->
             <div
-                class="reveal mt-8 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 print:hidden sm:mt-10 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                class="reveal mt-8 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-10 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs print:hidden"
                 style="--d: 520ms"
             >
                 <span>
@@ -456,7 +371,7 @@ onBeforeUnmount(() => {
 
             <!-- Print-only footer -->
             <div
-                class="hidden print:mt-6 print:block print:border-t print:border-gray-200 print:pt-3 print:text-center print:font-mono print:text-[9px] print:uppercase print:tracking-[0.2em] print:text-gray-500"
+                class="hidden print:mt-6 print:block print:border-t print:border-gray-200 print:pt-3 print:text-center print:font-mono print:text-[9px] print:tracking-[0.2em] print:text-gray-500 print:uppercase"
             >
                 {{ users?.name }} · {{ users?.email }} · Generated
                 {{ new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
@@ -503,11 +418,7 @@ h3,
     height: 40rem;
     border-radius: 9999px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(
-        closest-side,
-        color-mix(in oklab, var(--color-foreground) 7%, transparent),
-        transparent 70%
-    );
+    background: radial-gradient(closest-side, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 70%);
     filter: blur(60px);
     transition:
         left 600ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -645,11 +556,164 @@ h3,
     font-size: 0.68rem;
     letter-spacing: 0.04em;
     color: var(--color-foreground);
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
 }
 .skill-chip:hover {
     transform: translateY(-1.5px);
     border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
+}
+
+@media (max-width: 767px) {
+    .resume-root {
+        min-height: calc(100dvh - 6rem);
+        padding: 0.875rem 0.875rem 1.25rem;
+    }
+
+    .resume-print-action {
+        position: static;
+        display: flex;
+        justify-content: flex-end;
+        margin: 0 0 0.875rem;
+    }
+
+    .resume-print-action button {
+        min-height: 2.75rem;
+        border-radius: 9999px;
+        background: color-mix(in oklab, var(--color-background) 86%, transparent);
+    }
+
+    .mobile-status {
+        position: sticky;
+        top: 0.625rem;
+        z-index: 20;
+        margin: 0 auto 0.875rem;
+        width: min(100%, 26rem);
+        flex-wrap: nowrap;
+        border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+        border-radius: 9999px;
+        background: color-mix(in oklab, var(--color-background) 86%, transparent);
+        padding: 0.7rem 0.85rem;
+        box-shadow: 0 18px 45px -28px color-mix(in oklab, var(--color-foreground) 35%, transparent);
+        backdrop-filter: blur(18px);
+        letter-spacing: 0.14em;
+    }
+
+    .mobile-status span {
+        min-width: 0;
+    }
+
+    .mobile-status > span:first-child {
+        max-width: 9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobile-status > span:last-child {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .masthead {
+        border-radius: 2rem;
+        padding: 1.25rem;
+        background:
+            linear-gradient(
+                145deg,
+                color-mix(in oklab, var(--color-card) 92%, transparent),
+                color-mix(in oklab, var(--color-muted) 62%, transparent)
+            ),
+            radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 34%);
+        box-shadow:
+            0 1px 0 color-mix(in oklab, white 16%, transparent) inset,
+            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
+    }
+
+    .resume-name-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 1rem;
+    }
+
+    .resume-name-row h1 span {
+        font-size: clamp(3rem, 15vw, 4.35rem);
+    }
+
+    .resume-name-row p {
+        margin-top: 0.85rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+    }
+
+    .resume-name-row .relative {
+        width: 5.25rem;
+        height: 5.25rem;
+        border-radius: 1.1rem;
+    }
+
+    .resume-contact-row {
+        margin-top: 1.25rem;
+        display: grid;
+        gap: 0.65rem;
+        padding-top: 1rem;
+        font-size: 0.72rem;
+    }
+
+    .resume-contact-row span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .resume-body-grid {
+        gap: 0.75rem;
+    }
+
+    .resume-card {
+        border-radius: 1.35rem;
+        background: color-mix(in oklab, var(--color-card) 78%, transparent);
+        padding: 1rem;
+    }
+
+    .section-eyebrow {
+        letter-spacing: 0.16em;
+    }
+
+    .resume-row {
+        padding: 0.95rem 0;
+    }
+
+    .resume-row-title {
+        font-size: 1.35rem;
+        line-height: 1.05;
+    }
+
+    .resume-row-subtitle {
+        gap: 0.4rem;
+        font-size: 0.64rem;
+        letter-spacing: 0.12em;
+    }
+
+    .resume-row-meta {
+        margin-top: 0.35rem;
+        font-size: 0.64rem;
+    }
+
+    .resume-row-body,
+    .resume-row-list {
+        font-size: 0.82rem;
+        line-height: 1.6;
+    }
+
+    .skill-chip {
+        border-radius: 0.85rem;
+        padding: 0.32rem 0.6rem;
+        font-size: 0.66rem;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

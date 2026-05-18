@@ -5,10 +5,12 @@ import { Sun, Moon } from 'lucide-vue-next'
 
 interface Props {
   class?: string
+  buttonClass?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  class: ''
+  class: '',
+  buttonClass: ''
 })
 
 const { appearance, updateAppearance } = useAppearance()
@@ -47,7 +49,10 @@ const toggleTheme = () => {
     @click="toggleTheme"
     :aria-label="tooltipText"
     :title="tooltipText"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    :class="[
+      'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      props.buttonClass
+    ]"
   >
     <component 
       :is="toggleIcon" 
