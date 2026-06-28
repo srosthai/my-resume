@@ -1,9 +1,12 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowUpRight, ExternalLink, Github, Laptop, Search, X } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     title: { type: String, default: 'Portfolio' },
@@ -13,36 +16,16 @@ const props = defineProps({
     filters: { type: Object, default: () => ({ type: '', search: '' }) },
 });
 
-const isLoading = ref(true);
-const isVisible = ref(false);
+const { isLoading, isVisible } = usePageReveal(400);
 
 const selectedCategory = ref(props.filters?.type ? String(props.filters.type) : 'all');
 const searchQuery = ref(props.filters?.search || '');
 
-const now = ref(new Date());
-let clockTimer = null;
+const { date: dateString } = usePhnomPenhClock(60000);
 
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value);
-    } catch (e) {
-        return '';
-    }
-});
+const { pointer } = usePointerGlow();
 
-const pointer = ref({ x: 50, y: 50 });
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    };
-};
+const currentYear = new Date().getFullYear();
 
 const countByType = computed(() => {
     const m = {};
@@ -108,7 +91,7 @@ const getYear = (project) => {
     if (!src) return null;
     try {
         return new Date(src).getFullYear();
-    } catch (e) {
+    } catch {
         return null;
     }
 };
@@ -125,26 +108,6 @@ const techsOf = (project) => {
     }
     return [];
 };
-
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-        requestAnimationFrame(() => {
-            isVisible.value = true;
-        });
-    }, 400);
-
-    clockTimer = setInterval(() => {
-        now.value = new Date();
-    }, 60000);
-
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-});
-
-onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer);
-    window.removeEventListener('pointermove', handlePointer);
-});
 </script>
 
 <template>
@@ -488,7 +451,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 700ms"
             >
-                <span>© {{ new Date().getFullYear() }} · Archive</span>
+                <span>© {{ currentYear }} · Archive</span>
                 <span>End of index →</span>
             </div>
         </section>

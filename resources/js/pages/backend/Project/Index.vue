@@ -1,162 +1,174 @@
 <script setup>
-import { ref } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import Icon from '@/components/Icon.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import Icon from '@/components/Icon.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     projects: {
         type: Array,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Projects', href: '/projects' }
-]
+    { title: 'Projects', href: '/projects' },
+];
 
-const showDeleteConfirm = ref(false)
-const itemToDelete      = ref(null)
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref(null);
+const deleting = ref(false);
 
 const confirmDelete = (item) => {
-    itemToDelete.value      = item
-    showDeleteConfirm.value = true
-}
+    itemToDelete.value = item;
+    showDeleteConfirm.value = true;
+};
 
 const deleteItem = () => {
-    if (itemToDelete.value) {
-        router.delete(route('backend.projects.destroy', itemToDelete.value.id))
-        showDeleteConfirm.value = false
-        itemToDelete.value = null
-    }
-}
+    if (!itemToDelete.value) return;
+    router.delete(route('backend.projects.destroy', itemToDelete.value.id), {
+        onStart: () => (deleting.value = true),
+        onFinish: () => {
+            deleting.value = false;
+            showDeleteConfirm.value = false;
+            itemToDelete.value = null;
+        },
+    });
+};
 
-const cancelDelete = () => {
-    showDeleteConfirm.value = false
-    itemToDelete.value = null
-}
-
-const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString()
-}
+const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
 
 const getStatusBadgeVariant = (status) => {
-    return status === 'completed' ? 'default' : 'secondary'
-}
+    return status === 'completed' ? 'default' : 'secondary';
+};
 </script>
 
 <template>
     <Head title="Projects Management" />
-    
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <Card>
-                <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <CardTitle>Projects Management</CardTitle>
-                        <CardDescription>
-                            View and manage your projects
-                        </CardDescription>
-                    </div>
-                    <div>
-                        <Link href="/backend/projects/create">
-                            <Button variant="default">
-                                <Icon name="plus" class="h-4 w-4" />
-                                Create New
-                            </Button>
-                        </Link>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div class="overflow-x-auto">
-                        <table class="w-full hover:table-hover">
-                            <thead class="bg-gray-100 dark:bg-gray-800">
-                                <tr class="border-b">
-                                    <th class="text-left p-4">#</th>
-                                    <th class="text-left p-4">Image</th>
-                                    <th class="text-left p-4">Title</th>
-                                    <th class="text-left p-4">Type</th>
-                                    <th class="text-left p-4">Status</th>
-                                    <th class="text-left p-4">Created Date</th>
-                                    <th class="text-left p-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in projects" :key="item.id" class="border-b">
-                                    <td class="p-4">{{ index + 1 }}</td>
-                                    <td class="p-4">
-                                        <div class="w-16 h-16 rounded-md overflow-hidden bg-gray-100">
-                                            <img 
-                                                v-if="item.image" 
-                                                :src="`/${item.image}`" 
-                                                :alt="item.title"
-                                                class="w-full h-full object-cover"
-                                            />
-                                            <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                                                <Icon name="image" class="h-6 w-6" />
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-4">{{ item.title || '-' }}</td>
-                                    <td class="p-4">
-                                        <Badge variant="outline">
-                                            {{ item.project_type?.name || '-' }}
-                                        </Badge>
-                                    </td>
-                                    <td class="p-4">
-                                        <Badge :variant="getStatusBadgeVariant(item.status)">
-                                            {{ item.status }}
-                                        </Badge>
-                                    </td>
-                                    <td class="p-4">{{ item.created_date ? formatDate(item.created_date) : '-' }}</td>
-                                    <td class="p-4">
-                                        <div class="flex gap-2">
-                                            <Link :href="`/backend/projects/${item.id}/edit`">
-                                                <Button variant="default" size="sm">
-                                                    <Icon name="edit" class="h-4 w-4" />
-                                                    Edit
-                                                </Button>
-                                            </Link>
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm" 
-                                                @click="confirmDelete(item)"
-                                            >
-                                                <Icon name="trash" class="h-4 w-4" />
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr v-if="projects.length === 0">
-                                    <td colspan="7" class="text-center py-8 text-muted-foreground">
-                                        No projects found
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
 
-        <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div class="bg-background rounded-lg p-6 max-w-md w-full mx-4">
-                <h3 class="text-lg font-semibold mb-4">Confirm Delete</h3>
-                <p class="text-muted-foreground mb-6">
-                    Are you sure you want to delete this project? This action cannot be undone.
-                </p>
-                <div class="flex justify-end gap-3">
-                    <Button variant="outline" @click="cancelDelete">Cancel</Button>
-                    <Button variant="destructive" @click="deleteItem">Delete</Button>
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="mx-auto w-full max-w-7xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="folderKanban" class="size-6" />
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold tracking-tight">Projects</h1>
+                        <p class="text-sm text-muted-foreground">View and manage your projects</p>
+                    </div>
+                </div>
+                <Link href="/backend/projects/create">
+                    <Button class="rounded-xl shadow-sm">
+                        <Icon name="plus" class="size-4" />
+                        Add Project
+                    </Button>
+                </Link>
+            </div>
+
+            <!-- Table card -->
+            <div class="overflow-hidden rounded-2xl border bg-card shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                                <th class="w-16 px-6 py-4 text-left font-medium">#</th>
+                                <th class="px-6 py-4 text-left font-medium">Image</th>
+                                <th class="px-6 py-4 text-left font-medium">Title</th>
+                                <th class="px-6 py-4 text-left font-medium">Type</th>
+                                <th class="px-6 py-4 text-left font-medium">Status</th>
+                                <th class="px-6 py-4 text-left font-medium">Created Date</th>
+                                <th class="px-6 py-4 text-right font-medium">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr
+                                v-for="(item, index) in projects"
+                                :key="item.id"
+                                class="group transition-colors hover:bg-muted/40"
+                            >
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                        {{ index + 1 }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="size-14 overflow-hidden rounded-xl border bg-muted">
+                                        <img
+                                            v-if="item.image"
+                                            :src="`/${item.image}`"
+                                            :alt="item.title"
+                                            class="size-full object-cover"
+                                        />
+                                        <div v-else class="flex size-full items-center justify-center text-muted-foreground">
+                                            <Icon name="image" class="size-5" />
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 font-medium">{{ item.title || '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <Badge variant="secondary" class="rounded-full font-normal">{{ item.project_type?.name || '-' }}</Badge>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <Badge :variant="getStatusBadgeVariant(item.status)" class="rounded-full font-normal">
+                                        {{ item.status }}
+                                    </Badge>
+                                </td>
+                                <td class="px-6 py-4 text-muted-foreground">{{ item.created_date ? formatDate(item.created_date) : '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <Link :href="`/backend/projects/${item.id}/edit`">
+                                            <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
+                                                <Icon name="squarePen" class="size-4" />
+                                                Edit
+                                            </Button>
+                                        </Link>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                            @click="confirmDelete(item)"
+                                        >
+                                            <Icon name="trash2" class="size-4" />
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="projects.length === 0">
+                                <td colspan="7" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3 text-muted-foreground">
+                                        <div class="flex size-12 items-center justify-center rounded-full bg-muted">
+                                            <Icon name="folderKanban" class="size-6" />
+                                        </div>
+                                        <p class="text-sm">No projects found</p>
+                                        <Link href="/backend/projects/create">
+                                            <Button variant="outline" size="sm" class="rounded-lg">
+                                                <Icon name="plus" class="size-4" />
+                                                Add your first project
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <ConfirmDialog
+            v-model:open="showDeleteConfirm"
+            title="Delete project?"
+            description="This project will be permanently removed. This action cannot be undone."
+            confirm-label="Delete"
+            :processing="deleting"
+            @confirm="deleteItem"
+        />
     </AppLayout>
 </template>

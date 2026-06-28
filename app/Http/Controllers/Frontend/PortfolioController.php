@@ -39,9 +39,11 @@ class PortfolioController extends Controller
         ];
 
         return Inertia::render('frontend/Home', [
-            'users'      => $users,
-            'techStacks' => $techStacks,
-            'stats'      => $stats,
+            'title'       => 'Full Stack Developer',
+            'description' => 'SROS THAI (srosthai) — Full Stack Developer from Phnom Penh, Cambodia. Building scalable, maintainable web apps with Laravel, Vue.js and modern web technologies.',
+            'users'       => $users,
+            'techStacks'  => $techStacks,
+            'stats'       => $stats,
         ]);
     }
 
@@ -60,7 +62,7 @@ class PortfolioController extends Controller
 
         return Inertia::render('frontend/About', [
             'title'          => 'About',
-            'description'    => 'Learn more about SROS THAI, our mission, and the team behind the platform.',
+            'description'    => 'Learn more about SROS THAI — a Full Stack Developer from Cambodia, his background, skills, and experience in Laravel and Vue.js development.',
             'user'           => $user,
             'aboutMe'        => $aboutMe,
             'workExperience' => $workExperience,
@@ -147,7 +149,7 @@ class PortfolioController extends Controller
     {
         return Inertia::render('frontend/Contact', [
             'title'       => 'Contact',
-            'description' => 'Get in touch with Anton F. for opportunities, collaborations, or tech discussions.',
+            'description' => 'Get in touch with SROS THAI for opportunities, collaborations, or tech discussions.',
         ]);
     }
 

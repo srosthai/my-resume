@@ -5,18 +5,19 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        $users = User::latest()->paginate(10);
+        $user = User::latest()->first();
 
         return Inertia::render('backend/users/Index', [
-            'users' => $users,
+            'user' => $user,
         ]);
     }
 

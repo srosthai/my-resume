@@ -9,11 +9,15 @@ use App\Http\Controllers\Backend\TechStackController;
 use App\Http\Controllers\Backend\ProjectTypeController;
 use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Frontend\PortfolioController;
+use App\Http\Controllers\Frontend\SitemapController;
 use App\Http\Controllers\Backend\WorkExperienceController;
 use App\Http\Controllers\Backend\PopularSongController;
 use App\Http\Controllers\Backend\NoteController;
 use App\Http\Controllers\Backend\FeedController;
 use App\Http\Controllers\DashboardController;
+
+// SEO
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Public Frontend Routes
 Route::get('/', [PortfolioController::class, 'home'])->name('home');

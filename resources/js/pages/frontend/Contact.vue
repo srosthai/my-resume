@@ -1,86 +1,12 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { AlertCircle, ArrowUpRight, CheckCircle, Clock, Facebook, Github, Instagram, Linkedin, Mail, MapPin, Send } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-
-const props = defineProps({
-    title: { type: String, default: 'Contact' },
-    description: { type: String, default: '' },
-});
-
-const isLoading = ref(true);
-const isVisible = ref(false);
-const showSuccessMessage = ref(false);
-const showErrorMessage = ref(false);
-const errorMessage = ref('');
-
-const now = ref(new Date());
-let clockTimer = null;
-
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value);
-    } catch (e) {
-        return '';
-    }
-});
-
-const timeInPhnomPenh = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-GB', {
-            timeZone: 'Asia/Phnom_Penh',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-        }).format(now.value);
-    } catch (e) {
-        return '--:--';
-    }
-});
-
-const pointer = ref({ x: 50, y: 50 });
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    };
-};
-
-const form = useForm({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-});
-
-const submitForm = () => {
-    form.post(route('contact.send'), {
-        onSuccess: () => {
-            showSuccessMessage.value = true;
-            showErrorMessage.value = false;
-            form.reset();
-            setTimeout(() => {
-                showSuccessMessage.value = false;
-            }, 5000);
-        },
-        onError: (errors) => {
-            showErrorMessage.value = true;
-            showSuccessMessage.value = false;
-            errorMessage.value = errors.message || 'Failed to send message. Please try again.';
-            setTimeout(() => {
-                showErrorMessage.value = false;
-            }, 5000);
-        },
-    });
-};
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 const socialLinks = [
     {
@@ -127,30 +53,77 @@ const socialLinks = [
     },
 ];
 
+const currentYear = new Date().getFullYear();
+
+defineProps({
+    title: { type: String, default: 'Contact' },
+    description: { type: String, default: '' },
+});
+
+const showSuccessMessage = ref(false);
+const showErrorMessage = ref(false);
+const errorMessage = ref('');
+
+const { isLoading, isVisible } = usePageReveal(400);
+const { pointer } = usePointerGlow();
+const { now, time: timeInPhnomPenh } = usePhnomPenhClock(60000);
+
+const dateString = computed(() => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Phnom_Penh',
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(now.value);
+    } catch {
+        return '';
+    }
+});
+
+const form = useForm({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+});
+
+let successTimer = null;
+let errorTimer = null;
+
+const submitForm = () => {
+    form.post(route('contact.send'), {
+        onSuccess: () => {
+            showSuccessMessage.value = true;
+            showErrorMessage.value = false;
+            form.reset();
+            if (successTimer) clearTimeout(successTimer);
+            successTimer = setTimeout(() => {
+                showSuccessMessage.value = false;
+            }, 5000);
+        },
+        onError: (errors) => {
+            showErrorMessage.value = true;
+            showSuccessMessage.value = false;
+            errorMessage.value = errors.message || 'Failed to send message. Please try again.';
+            if (errorTimer) clearTimeout(errorTimer);
+            errorTimer = setTimeout(() => {
+                showErrorMessage.value = false;
+            }, 5000);
+        },
+    });
+};
+
 const openLink = (url) => {
     if (typeof window !== 'undefined') {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 };
 
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-        requestAnimationFrame(() => {
-            isVisible.value = true;
-        });
-    }, 400);
-
-    clockTimer = setInterval(() => {
-        now.value = new Date();
-    }, 30000);
-
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-});
-
 onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer);
-    window.removeEventListener('pointermove', handlePointer);
+    if (successTimer) clearTimeout(successTimer);
+    if (errorTimer) clearTimeout(errorTimer);
 });
 </script>
 
@@ -499,7 +472,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 700ms"
             >
-                <span>© {{ new Date().getFullYear() }} · Correspondence</span>
+                <span>© {{ currentYear }} · Correspondence</span>
                 <span>End of transmission →</span>
             </div>
         </section>

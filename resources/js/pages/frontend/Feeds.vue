@@ -1,8 +1,11 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import axios from 'axios'
 import { Skeleton } from '@/components/ui/skeleton'
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock'
+import { usePointerGlow } from '@/composables/usePointerGlow'
+import { usePageReveal } from '@/composables/usePageReveal'
 import {
     Search,
     MapPin,
@@ -20,7 +23,6 @@ import {
     Sparkles,
     Coffee,
     ScanSearch,
-    ArrowUpRight,
 } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
 
@@ -31,13 +33,13 @@ const props = defineProps({
     activityTypes: { type: Array, default: () => [] },
 })
 
-const isLoading = ref(true)
-const isVisible = ref(false)
+const { isLoading, isVisible } = usePageReveal(400)
 const searchQuery = ref('')
 const selectedFilter = ref('All')
 const searchFocused = ref(false)
 const expandedImages = ref(null)
 const currentImageIndex = ref(0)
+const currentYear = new Date().getFullYear()
 
 // Like / view tracking
 const likedFeeds = ref(
@@ -50,32 +52,11 @@ const likedFeeds = ref(
 const feedStats = reactive({})
 const likingInProgress = ref(new Set())
 
-// Clock for meta strip
-const now = ref(new Date())
-let clockTimer = null
-
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value)
-    } catch (e) {
-        return ''
-    }
-})
+// Clock for meta strip (date only — 60s tick); `date` format matches former dateString
+const { now, date: dateString } = usePhnomPenhClock(60000)
 
 // Mouse-reactive glow
-const pointer = ref({ x: 50, y: 50 })
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    }
-}
+const { pointer } = usePointerGlow()
 
 const initFeedStats = () => {
     props.feeds.forEach((feed) => {
@@ -268,30 +249,18 @@ const prevImage = () => {
 onMounted(() => {
     initFeedStats()
 
+    // Track views once the reveal beat (handled by usePageReveal) has passed.
     setTimeout(() => {
-        isLoading.value = false
-        requestAnimationFrame(() => {
-            isVisible.value = true
-            props.feeds.forEach((feed) => trackView(feed))
-        })
+        props.feeds.forEach((feed) => trackView(feed))
     }, 400)
 
-    clockTimer = setInterval(() => {
-        now.value = new Date()
-    }, 60000)
-
     window.addEventListener('keydown', handleKeydown)
-    window.addEventListener('pointermove', handlePointer, { passive: true })
-})
-
-onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown)
-    document.body.style.overflow = ''
 })
 
 onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer)
-    window.removeEventListener('pointermove', handlePointer)
+    window.removeEventListener('keydown', handleKeydown)
+    // Ensure lightbox scroll-lock can never get stuck after unmount.
+    document.body.style.overflow = ''
 })
 </script>
 
@@ -588,6 +557,7 @@ onBeforeUnmount(() => {
                                                 :alt="feed.title || 'Feed photo'"
                                                 class="w-full max-h-[420px] object-cover transition-transform duration-700 group-hover/img:scale-[1.03]"
                                                 loading="lazy"
+                                                decoding="async"
                                             />
                                         </div>
 
@@ -607,6 +577,7 @@ onBeforeUnmount(() => {
                                                     :alt="`Photo ${idx + 1}`"
                                                     class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                     loading="lazy"
+                                                    decoding="async"
                                                 />
                                             </div>
                                         </div>
@@ -625,6 +596,7 @@ onBeforeUnmount(() => {
                                                     alt="Photo 1"
                                                     class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.04]"
                                                     loading="lazy"
+                                                    decoding="async"
                                                 />
                                             </div>
                                             <div class="flex flex-[1] flex-col gap-1">
@@ -637,6 +609,7 @@ onBeforeUnmount(() => {
                                                         alt="Photo 2"
                                                         class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                         loading="lazy"
+                                                        decoding="async"
                                                     />
                                                 </div>
                                                 <div
@@ -648,6 +621,7 @@ onBeforeUnmount(() => {
                                                         alt="Photo 3"
                                                         class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                         loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     <div
                                                         v-if="feed.images.length > 3"
@@ -734,7 +708,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 900ms"
             >
-                <span>© {{ new Date().getFullYear() }} · Field journal</span>
+                <span>© {{ currentYear }} · Field journal</span>
                 <span>End of transmission →</span>
             </div>
         </section>

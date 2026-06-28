@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -15,6 +15,9 @@ import {
     ArrowUpRight,
 } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock'
+import { usePointerGlow } from '@/composables/usePointerGlow'
+import { usePageReveal } from '@/composables/usePageReveal'
 
 const props = defineProps({
     title: { type: String, default: 'My Notes' },
@@ -25,37 +28,18 @@ const props = defineProps({
     notes: { type: Array, default: () => [] },
 })
 
-const isLoading = ref(true)
-const isVisible = ref(false)
+const { isLoading, isVisible } = usePageReveal(400)
 const searchQuery = ref('')
 const selectedFilter = ref('All')
 const selectedNote = ref(null)
 const copiedCommands = ref(new Set())
 
-const now = ref(new Date())
-let clockTimer = null
+const currentYear = new Date().getFullYear()
 
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value)
-    } catch (e) {
-        return ''
-    }
-})
+// Date format matches the composable's `date` output exactly.
+const { date: dateString } = usePhnomPenhClock(60000)
 
-const pointer = ref({ x: 50, y: 50 })
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    }
-}
+const { pointer } = usePointerGlow()
 
 const categories = computed(() => {
     return ['All', ...new Set(props.notes.map((n) => n.category))]
@@ -87,14 +71,21 @@ const filteredNotes = computed(() => {
     return filtered
 })
 
+const copyTimers = new Map()
+
 const copyCommand = async (command, stepIndex, commandIndex) => {
     try {
         await navigator.clipboard.writeText(command)
         const key = `${stepIndex}-${commandIndex}`
         copiedCommands.value.add(key)
-        setTimeout(() => {
-            copiedCommands.value.delete(key)
-        }, 2000)
+        if (copyTimers.has(key)) clearTimeout(copyTimers.get(key))
+        copyTimers.set(
+            key,
+            setTimeout(() => {
+                copiedCommands.value.delete(key)
+                copyTimers.delete(key)
+            }, 2000),
+        )
     } catch (err) {
         console.error('Failed to copy command:', err)
     }
@@ -125,7 +116,7 @@ const formatDate = (date) => {
             day: '2-digit',
             year: 'numeric',
         })
-    } catch (e) {
+    } catch {
         return ''
     }
 }
@@ -144,24 +135,9 @@ const closeNote = () => {
     }
 }
 
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false
-        requestAnimationFrame(() => {
-            isVisible.value = true
-        })
-    }, 400)
-
-    clockTimer = setInterval(() => {
-        now.value = new Date()
-    }, 60000)
-
-    window.addEventListener('pointermove', handlePointer, { passive: true })
-})
-
 onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer)
-    window.removeEventListener('pointermove', handlePointer)
+    for (const id of copyTimers.values()) clearTimeout(id)
+    copyTimers.clear()
 })
 </script>
 
@@ -193,7 +169,7 @@ onBeforeUnmount(() => {
                 <Skeleton class="col-span-2 h-16 rounded-2xl md:col-span-12" />
                 <Skeleton
                     v-for="i in 6"
-                    :key="i"
+                    :key="`note-skeleton-${i}`"
                     class="col-span-2 h-56 rounded-2xl sm:col-span-1 md:col-span-4"
                 />
             </div>
@@ -439,7 +415,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 800ms"
             >
-                <span>© {{ new Date().getFullYear() }} · Notebook</span>
+                <span>© {{ currentYear }} · Notebook</span>
                 <span>End of index →</span>
             </div>
         </section>
@@ -651,7 +627,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 600ms"
             >
-                <span>© {{ new Date().getFullYear() }} · Entry · {{ selectedNote.category }}</span>
+                <span>© {{ currentYear }} · Entry · {{ selectedNote.category }}</span>
                 <span>End of entry →</span>
             </div>
         </section>

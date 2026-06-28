@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -17,8 +17,11 @@ import {
     ArrowUpRight,
 } from 'lucide-vue-next'
 import FrontendLayout from '@/layouts/FrontendLayout.vue'
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock'
+import { usePointerGlow } from '@/composables/usePointerGlow'
+import { usePageReveal } from '@/composables/usePageReveal'
 
-const props = defineProps({
+defineProps({
     title: { type: String, default: 'Hobbies' },
     description: { type: String, default: '' },
 })
@@ -106,12 +109,11 @@ const categories = [
     'Health',
 ]
 
-const isLoading = ref(true)
-const isVisible = ref(false)
+const { isLoading, isVisible } = usePageReveal(400)
 const selectedCategory = ref('All')
+const currentYear = new Date().getFullYear()
 
-const now = ref(new Date())
-let clockTimer = null
+const { now } = usePhnomPenhClock(60000)
 
 const dateString = computed(() => {
     try {
@@ -122,18 +124,12 @@ const dateString = computed(() => {
             month: 'short',
             year: 'numeric',
         }).format(now.value)
-    } catch (e) {
+    } catch {
         return ''
     }
 })
 
-const pointer = ref({ x: 50, y: 50 })
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    }
-}
+const { pointer } = usePointerGlow()
 
 const countByCategory = computed(() => {
     const map = { All: hobbies.length }
@@ -147,26 +143,6 @@ const countByCategory = computed(() => {
 const filteredHobbies = computed(() => {
     if (selectedCategory.value === 'All') return hobbies
     return hobbies.filter((h) => h.category === selectedCategory.value)
-})
-
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false
-        requestAnimationFrame(() => {
-            isVisible.value = true
-        })
-    }, 400)
-
-    clockTimer = setInterval(() => {
-        now.value = new Date()
-    }, 60000)
-
-    window.addEventListener('pointermove', handlePointer, { passive: true })
-})
-
-onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer)
-    window.removeEventListener('pointermove', handlePointer)
 })
 </script>
 
@@ -351,7 +327,7 @@ onBeforeUnmount(() => {
                 >
                     <article
                         v-for="(hobby, i) in filteredHobbies"
-                        :key="hobby.title"
+                        :key="hobby.category + '-' + hobby.title"
                         class="hobby-card reveal group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:p-6"
                         :style="{ '--d': 240 + i * 60 + 'ms' }"
                     >
@@ -410,7 +386,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 700ms"
             >
-                <span>© {{ new Date().getFullYear() }} · Interludes</span>
+                <span>© {{ currentYear }} · Interludes</span>
                 <span>Back to the screen →</span>
             </div>
         </section>

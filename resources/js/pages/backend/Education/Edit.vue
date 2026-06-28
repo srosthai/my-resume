@@ -1,8 +1,7 @@
 <script setup>
-import Heading from '@/components/Heading.vue';
+import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,7 +18,7 @@ const props = defineProps({
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Education', href: '/eductions' },
-    { title: 'Edit', href: `/backend/education/${props.education.id}/edit` },
+    { title: 'Edit', href: `/backend/eductions/${props.education.id}/edit` },
 ];
 
 const form = useForm({
@@ -40,70 +39,79 @@ const submit = () => {
     <Head title="Edit Education" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <div>
-                <Heading title="Edit Education" />
-                <p class="text-sm text-muted-foreground">Update education record</p>
+        <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex items-center gap-4">
+                <Link href="/eductions">
+                    <Button variant="outline" size="icon" class="rounded-xl">
+                        <Icon name="arrowLeft" class="size-4" />
+                    </Button>
+                </Link>
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="graduationCap" class="size-6" />
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold tracking-tight">Edit Education</h1>
+                        <p class="text-sm text-muted-foreground">Update this education record</p>
+                    </div>
+                </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Edit Education Information</CardTitle>
-                    <CardDescription> Update your education details below </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
+            <form @submit.prevent="submit">
+                <div class="rounded-2xl border bg-card shadow-sm">
+                    <div class="space-y-6 p-6 sm:p-8">
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="title">Degree Title</Label>
-                                <Input id="title" v-model="form.title" type="text" placeholder="Enter degree title" />
+                                <Input id="title" v-model="form.title" type="text" placeholder="e.g. Bachelor of Computer Science" />
                                 <InputError :message="form.errors.title" />
                             </div>
-
-                            <div>
-                                <Label for="major">Major/Field of Study</Label>
-                                <Input id="major" v-model="form.major" type="text" placeholder="Enter major or field of study" />
+                            <div class="space-y-2">
+                                <Label for="major">Major / Field of Study</Label>
+                                <Input id="major" v-model="form.major" type="text" placeholder="e.g. Software Engineering" />
                                 <InputError :message="form.errors.major" />
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="institution">Institution</Label>
-                            <Input id="institution" v-model="form.institution" type="text" placeholder="Enter institution name" />
+                            <Input id="institution" v-model="form.institution" type="text" placeholder="e.g. Royal University of Phnom Penh" />
                             <InputError :message="form.errors.institution" />
                         </div>
 
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="from">From</Label>
-                                <Input id="from" v-model="form.from" type="text" placeholder="Start date (e.g., 2021)" />
+                                <Input id="from" v-model="form.from" type="text" placeholder="Start year (e.g. 2021)" />
                                 <InputError :message="form.errors.from" />
                             </div>
-
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="to">To</Label>
-                                <Input id="to" v-model="form.to" type="text" placeholder="End date (e.g., 2025)" />
+                                <Input id="to" v-model="form.to" type="text" placeholder="End year (e.g. 2025)" />
                                 <InputError :message="form.errors.to" />
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="description">Description</Label>
                             <Textarea id="description" v-model="form.description" placeholder="Describe your education and achievements" :rows="4" />
                             <InputError :message="form.errors.description" />
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Updating...' : 'Update Education' }}
-                            </Button>
-                            <Link href="/eductions">
-                                <Button type="button" variant="outline"> Cancel </Button>
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                    <!-- Footer actions -->
+                    <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
+                        <Link href="/eductions">
+                            <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
+                        </Link>
+                        <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">
+                            <Icon v-if="form.processing" name="loaderCircle" class="size-4 animate-spin" />
+                            {{ form.processing ? 'Updating...' : 'Update Education' }}
+                        </Button>
+                    </div>
+                </div>
+            </form>
         </div>
     </AppLayout>
 </template>

@@ -1,8 +1,7 @@
 <script setup>
-import Heading from '@/components/Heading.vue';
+import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,7 +30,9 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('backend.about-me.update', props.aboutMe.id));
+    form.put(route('backend.about-me.update', props.aboutMe.id), {
+        preserveScroll: true,
+    });
 };
 </script>
 
@@ -39,64 +40,73 @@ const submit = () => {
     <Head title="Edit About Me" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <div>
-                <Heading title="Edit About Me" />
-                <p class="text-sm text-muted-foreground">Update about me information</p>
+        <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex items-center gap-4">
+                <Link href="/about-me">
+                    <Button variant="outline" size="icon" class="rounded-xl">
+                        <Icon name="arrowLeft" class="size-4" />
+                    </Button>
+                </Link>
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="user" class="size-6" />
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold tracking-tight">Edit About Me</h1>
+                        <p class="text-sm text-muted-foreground">Update this about me record</p>
+                    </div>
+                </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Edit About Me Information</CardTitle>
-                    <CardDescription> Update your personal and professional details below </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
+            <form @submit.prevent="submit">
+                <div class="rounded-2xl border bg-card shadow-sm">
+                    <div class="space-y-6 p-6 sm:p-8">
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="title">Title</Label>
-                                <Input id="title" v-model="form.title" type="text" placeholder="Enter title" />
+                                <Input id="title" v-model="form.title" type="text" />
                                 <InputError :message="form.errors.title" />
                             </div>
-
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="location">Location</Label>
-                                <Input id="location" v-model="form.location" type="text" placeholder="Enter location" />
+                                <Input id="location" v-model="form.location" type="text" />
                                 <InputError :message="form.errors.location" />
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
-                                <Label for="year_experience">Years of Experience</Label>
-                                <Input id="year_experience" v-model="form.year_experience" type="text" placeholder="Enter years of experience" />
+                            <div class="space-y-2">
+                                <Label for="year_experience">Experience</Label>
+                                <Input id="year_experience" v-model="form.year_experience" type="text" />
                                 <InputError :message="form.errors.year_experience" />
                             </div>
-
-                            <div>
-                                <Label for="fucus_on">Focus On</Label>
-                                <Input id="fucus_on" v-model="form.fucus_on" type="text" placeholder="Enter focus area" />
+                            <div class="space-y-2">
+                                <Label for="fucus_on">Focus area</Label>
+                                <Input id="fucus_on" v-model="form.fucus_on" type="text" />
                                 <InputError :message="form.errors.fucus_on" />
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="description">Description</Label>
-                            <Textarea id="description" v-model="form.description" placeholder="Enter description" :rows="4" />
+                            <Textarea id="description" v-model="form.description" :rows="6" />
                             <InputError :message="form.errors.description" />
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Updating...' : 'Update About Me' }}
-                            </Button>
-                            <Link href="/about-me">
-                                <Button type="button" variant="outline"> Cancel </Button>
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                    <!-- Footer actions -->
+                    <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
+                        <Link href="/about-me">
+                            <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
+                        </Link>
+                        <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">
+                            <Icon v-if="form.processing" name="loaderCircle" class="size-4 animate-spin" />
+                            {{ form.processing ? 'Saving...' : 'Save changes' }}
+                        </Button>
+                    </div>
+                </div>
+            </form>
         </div>
     </AppLayout>
 </template>

@@ -1,258 +1,211 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import {
-    ArrowLeft,
-    Edit,
-    Book,
-    User,
-    Calendar,
-    Star,
-    Code,
-    Terminal,
-    Lightbulb,
-    Copy,
-    Check
-} from 'lucide-vue-next'
-import { ref } from 'vue'
+import Icon from '@/components/Icon.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     note: {
         type: Object,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Notes', href: '/notes' },
-    { title: props.note.title, href: '' }
-]
+    { title: props.note.title, href: '' },
+];
 
-const copiedCommands = ref(new Set())
+const copiedCommands = ref(new Set());
 
 const copyCommand = async (command, stepIndex, commandIndex) => {
     try {
-        await navigator.clipboard.writeText(command)
-        const key = `${stepIndex}-${commandIndex}`
-        copiedCommands.value.add(key)
+        await navigator.clipboard.writeText(command);
+        const key = `${stepIndex}-${commandIndex}`;
+        copiedCommands.value.add(key);
         setTimeout(() => {
-            copiedCommands.value.delete(key)
-        }, 2000)
+            copiedCommands.value.delete(key);
+        }, 2000);
     } catch (err) {
-        console.error('Failed to copy command:', err)
+        console.error('Failed to copy command:', err);
     }
-}
+};
 
 const isCopied = (stepIndex, commandIndex) => {
-    return copiedCommands.value.has(`${stepIndex}-${commandIndex}`)
-}
+    return copiedCommands.value.has(`${stepIndex}-${commandIndex}`);
+};
 
 const getStatusColor = (status) => {
     const colors = {
-        'draft': 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-        'published': 'bg-green-500/10 text-green-500 border-green-500/20',
-        'archived': 'bg-red-500/10 text-red-500 border-red-500/20'
-    }
-    return colors[status] || 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-}
-
-const getCategoryColor = (category) => {
-    const colors = {
-        'Laravel': 'bg-red-500/10 text-red-500 border-red-500/20',
-        'Vue.js': 'bg-green-500/10 text-green-500 border-green-500/20',
-        'Next.js': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-        'Bootstrap': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-        'React': 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
-        'JavaScript': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-        'PHP': 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20'
-    }
-    return colors[category] || 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-}
-
-const getCategoryIcon = (category) => {
-    const icons = {
-        'Laravel': Code,
-        'Vue.js': Code,
-        'Next.js': Code,
-        'Bootstrap': Lightbulb,
-        'React': Code,
-        'JavaScript': Terminal,
-        'PHP': Code
-    }
-    return icons[category] || Book
-}
+        draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+        published: 'bg-green-500/10 text-green-500 border-green-500/20',
+        archived: 'bg-red-500/10 text-red-500 border-red-500/20',
+    };
+    return colors[status] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+};
 </script>
 
 <template>
-    <AppLayout>
+    <Head :title="note.title" />
 
-        <Head :title="note.title" />
-
-        <div class="space-y-6 p-4">
-            <!-- Header -->
-            <div class="flex items-center justify-between">
-                <Heading :title="note.title" description="Note details" :breadcrumbs="breadcrumbs" />
-                <div class="flex items-center gap-3">
-                    <Button asChild variant="outline">
-                        <Link :href="route('notes.edit', note.id)" class="flex items-center gap-2">
-                        <Edit class="h-4 w-4" />
-                        Edit Note
-                        </Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                        <Link :href="route('notes.index')">
-                        <ArrowLeft class="h-4 w-4 mr-2" />
-                        Back to Notes
-                        </Link>
-                    </Button>
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-4">
+                    <Link :href="route('notes.index')">
+                        <Button variant="outline" size="icon" class="rounded-xl">
+                            <Icon name="arrowLeft" class="size-4" />
+                        </Button>
+                    </Link>
+                    <div class="flex items-center gap-4">
+                        <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                            <Icon name="stickyNote" class="size-6" />
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-semibold tracking-tight">{{ note.title }}</h1>
+                            <p class="text-sm text-muted-foreground">Note details</p>
+                        </div>
+                    </div>
                 </div>
+                <Link :href="route('notes.edit', note.id)">
+                    <Button class="rounded-xl shadow-sm">
+                        <Icon name="squarePen" class="size-4" />
+                        Edit Note
+                    </Button>
+                </Link>
             </div>
 
             <!-- Note Info -->
-            <Card>
-                <CardHeader>
-                    <div class="flex items-start justify-between">
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-3">
-                                <component :is="getCategoryIcon(note.category)" class="h-6 w-6 text-primary" />
-                                <Badge variant="outline" :class="getCategoryColor(note.category)">
-                                    {{ note.category }}
-                                </Badge>
-                                <Badge variant="outline" :class="getStatusColor(note.status)" class="capitalize">
-                                    {{ note.status }}
-                                </Badge>
-                                <Badge v-if="note.is_featured" variant="outline"
-                                    class="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-                                    <Star class="h-3 w-3 mr-1 fill-current" />
-                                    Featured
-                                </Badge>
-                            </div>
-                            <CardTitle class="text-2xl">{{ note.title }}</CardTitle>
-                            <CardDescription class="text-lg">{{ note.description }}</CardDescription>
-                        </div>
+            <div class="rounded-2xl border bg-card shadow-sm">
+                <div class="space-y-4 p-6 sm:p-8">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary" class="rounded-full font-normal">{{ note.category }}</Badge>
+                        <Badge variant="outline" :class="getStatusColor(note.status)" class="rounded-full font-normal capitalize">
+                            {{ note.status }}
+                        </Badge>
+                        <Badge
+                            v-if="note.is_featured"
+                            variant="outline"
+                            class="rounded-full border-yellow-500/20 bg-yellow-500/10 font-normal text-yellow-500"
+                        >
+                            <Icon name="star" class="mr-1 size-3 fill-current" />
+                            Featured
+                        </Badge>
                     </div>
-                </CardHeader>
-                <CardContent>
+
+                    <div class="space-y-1">
+                        <h2 class="text-xl font-semibold tracking-tight">{{ note.title }}</h2>
+                        <p class="text-muted-foreground">{{ note.description }}</p>
+                    </div>
+
                     <!-- Tags -->
-                    <div v-if="note.tags && note.tags.length" class="mb-4">
-                        <h4 class="text-sm font-medium mb-2">Tags</h4>
+                    <div v-if="note.tags && note.tags.length" class="space-y-2">
+                        <h4 class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Tags</h4>
                         <div class="flex flex-wrap gap-2">
-                            <Badge v-for="tag in note.tags" :key="tag" variant="secondary">
+                            <Badge v-for="tag in note.tags" :key="tag" variant="secondary" class="rounded-full font-normal">
                                 {{ tag }}
                             </Badge>
                         </div>
                     </div>
 
                     <!-- Meta Information -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                    <div class="grid grid-cols-1 gap-4 border-t pt-4 text-sm text-muted-foreground md:grid-cols-3">
                         <div class="flex items-center gap-2">
-                            <User class="h-4 w-4" />
+                            <Icon name="user" class="size-4" />
                             <span>{{ note.user?.name || 'Admin' }}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <Calendar class="h-4 w-4" />
+                            <Icon name="calendar" class="size-4" />
                             <span>Created: {{ new Date(note.created_at).toLocaleDateString() }}</span>
                         </div>
                         <div v-if="note.published_at" class="flex items-center gap-2">
-                            <Calendar class="h-4 w-4" />
+                            <Icon name="calendar" class="size-4" />
                             <span>Published: {{ new Date(note.published_at).toLocaleDateString() }}</span>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            <!-- Content -->
-            <div class="space-y-6">
-                <!-- Overview -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <Lightbulb class="h-5 w-5 text-primary" />
-                            Overview
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p class="text-muted-foreground leading-relaxed">
-                            {{ note.content?.overview }}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <!-- Requirements -->
-                <Card v-if="note.content?.requirements?.length">
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <Book class="h-5 w-5 text-primary" />
-                            Requirements
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul class="space-y-2">
-                            <li v-for="requirement in note.content.requirements" :key="requirement"
-                                class="flex items-center gap-2 text-muted-foreground">
-                                <div class="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
-                                {{ requirement }}
-                            </li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <!-- Steps -->
-                <div v-if="note.content?.steps?.length" class="space-y-6">
-                    <h2 class="text-2xl font-bold flex items-center gap-2">
-                        <Terminal class="h-6 w-6 text-primary" />
-                        Installation Steps
+            <!-- Overview -->
+            <div class="rounded-2xl border bg-card shadow-sm">
+                <div class="space-y-3 p-6 sm:p-8">
+                    <h2 class="flex items-center gap-2 text-base font-semibold tracking-tight">
+                        <Icon name="lightbulb" class="size-5 text-muted-foreground" />
+                        Overview
                     </h2>
+                    <p class="leading-relaxed text-muted-foreground">
+                        {{ note.content?.overview }}
+                    </p>
+                </div>
+            </div>
 
-                    <div v-for="(step, stepIndex) in note.content.steps" :key="stepIndex" class="relative">
-                        <!-- Timeline connector -->
-                        <div v-if="stepIndex < note.content.steps.length - 1"
-                            class="absolute left-6 top-16 w-px h-16 bg-gradient-to-b from-primary to-primary/20 hidden md:block">
+            <!-- Requirements -->
+            <div v-if="note.content?.requirements?.length" class="rounded-2xl border bg-card shadow-sm">
+                <div class="space-y-3 p-6 sm:p-8">
+                    <h2 class="flex items-center gap-2 text-base font-semibold tracking-tight">
+                        <Icon name="book" class="size-5 text-muted-foreground" />
+                        Requirements
+                    </h2>
+                    <ul class="space-y-2">
+                        <li
+                            v-for="requirement in note.content.requirements"
+                            :key="requirement"
+                            class="flex items-center gap-2 text-muted-foreground"
+                        >
+                            <div class="size-2 flex-shrink-0 rounded-full bg-primary"></div>
+                            {{ requirement }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Steps -->
+            <div v-if="note.content?.steps?.length" class="space-y-4">
+                <h2 class="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                    <Icon name="terminal" class="size-5 text-muted-foreground" />
+                    Installation Steps
+                </h2>
+
+                <div
+                    v-for="(step, stepIndex) in note.content.steps"
+                    :key="stepIndex"
+                    class="rounded-2xl border bg-card shadow-sm"
+                >
+                    <div class="space-y-4 p-6 sm:p-8">
+                        <div class="flex items-start gap-3">
+                            <span class="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                                {{ stepIndex + 1 }}
+                            </span>
+                            <div class="space-y-1">
+                                <h3 class="text-base font-semibold tracking-tight">{{ step.title }}</h3>
+                                <p class="text-sm text-muted-foreground">{{ step.description }}</p>
+                            </div>
                         </div>
 
-                        <Card class="relative md:ml-16">
-                            <!-- Step number -->
+                        <div class="space-y-3">
                             <div
-                                class="absolute -left-20 top-6 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg hidden md:flex">
-                                {{ stepIndex + 1 }}
-                            </div>
-
-                            <CardHeader>
-                                <CardTitle class="text-lg">
-                                    <span
-                                        class="md:hidden bg-primary text-primary-foreground px-2 py-1 rounded-full text-sm mr-2">
-                                        {{ stepIndex + 1 }}
-                                    </span>
-                                    {{ step.title }}
-                                </CardTitle>
-                                <CardDescription>
-                                    {{ step.description }}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div class="space-y-3">
-                                    <div v-for="(command, commandIndex) in step.commands" :key="commandIndex"
-                                        class="relative group">
-                                        <div
-                                            class="bg-muted/50 rounded-lg p-3 pr-12 font-mono text-sm border border-border/50 hover:border-primary/50 transition-all duration-300">
-                                            <code class="text-foreground break-all">{{ command }}</code>
-                                        </div>
-                                        <Button @click="copyCommand(command, stepIndex, commandIndex)" size="sm"
-                                            variant="ghost"
-                                            class="absolute right-2 top-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/10">
-                                            <Check v-if="isCopied(stepIndex, commandIndex)"
-                                                class="h-4 w-4 text-green-500" />
-                                            <Copy v-else class="h-4 w-4" />
-                                        </Button>
-                                    </div>
+                                v-for="(command, commandIndex) in step.commands"
+                                :key="commandIndex"
+                                class="group relative"
+                            >
+                                <div class="rounded-xl border border-border/50 bg-muted/50 p-3 pr-12 font-mono text-sm transition-all duration-300 hover:border-primary/50">
+                                    <code class="break-all text-foreground">{{ command }}</code>
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    class="absolute right-2 top-2 size-8 rounded-lg p-0 opacity-0 transition-opacity hover:bg-primary/10 group-hover:opacity-100"
+                                    @click="copyCommand(command, stepIndex, commandIndex)"
+                                >
+                                    <Icon v-if="isCopied(stepIndex, commandIndex)" name="check" class="size-4 text-green-500" />
+                                    <Icon v-else name="copy" class="size-4" />
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

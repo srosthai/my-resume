@@ -2,9 +2,12 @@
 import LanyardCard from '@/components/LanyardCard.vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Book, Github, Linkedin, Mail, MapPin, Rss } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     users: {
@@ -29,39 +32,9 @@ const props = defineProps({
     },
 });
 
-const isLoading = ref(true);
-const isVisible = ref(false);
-
-const now = ref(new Date());
-let clockTimer = null;
-
-const timeInPhnomPenh = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-GB', {
-            timeZone: 'Asia/Phnom_Penh',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-        }).format(now.value);
-    } catch (e) {
-        return '--:--:--';
-    }
-});
-
-const dateInPhnomPenh = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value);
-    } catch (e) {
-        return '';
-    }
-});
+const { isLoading, isVisible } = usePageReveal();
+const { time: timeInPhnomPenh, date: dateInPhnomPenh } = usePhnomPenhClock();
+const { pointer } = usePointerGlow();
 
 const firstName = computed(() => {
     const parts = (props.users?.name || 'Developer').trim().split(/\s+/);
@@ -76,33 +49,6 @@ const lastName = computed(() => {
 const doubledStacks = computed(() => {
     const arr = props.techStacks || [];
     return arr.length ? [...arr, ...arr] : [];
-});
-
-const pointer = ref({ x: 50, y: 50 });
-const handlePointer = (e) => {
-    const x = (e.clientX / window.innerWidth) * 100;
-    const y = (e.clientY / window.innerHeight) * 100;
-    pointer.value = { x, y };
-};
-
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-        requestAnimationFrame(() => {
-            isVisible.value = true;
-        });
-    }, 450);
-
-    clockTimer = setInterval(() => {
-        now.value = new Date();
-    }, 1000);
-
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-});
-
-onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer);
-    window.removeEventListener('pointermove', handlePointer);
 });
 </script>
 
@@ -231,17 +177,6 @@ onBeforeUnmount(() => {
 
                     <!-- CTA row -->
                     <div class="mt-6 flex flex-wrap items-center gap-2.5 sm:mt-8 sm:gap-3">
-                        <Link
-                            href="/resume"
-                            class="mobile-action-primary cta-primary group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-medium text-background transition-all duration-300 hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-3 sm:text-sm"
-                        >
-                            <span>View résumé</span>
-                            <span
-                                class="flex h-6 w-6 items-center justify-center rounded-full bg-background/20 transition-transform duration-300 group-hover:rotate-45 sm:h-7 sm:w-7"
-                            >
-                                <ArrowUpRight class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                            </span>
-                        </Link>
                         <Link
                             href="/portfolio"
                             class="mobile-action group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"

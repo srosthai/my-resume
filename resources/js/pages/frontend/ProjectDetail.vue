@@ -1,8 +1,11 @@
 <script setup>
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Github, Laptop } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     title: { type: String, default: 'Project' },
@@ -12,33 +15,13 @@ const props = defineProps({
     nextProject: { type: Object, default: null },
 });
 
-const isLoading = ref(true);
-const isVisible = ref(false);
+const { isVisible } = usePageReveal(300);
 
-const now = ref(new Date());
-let clockTimer = null;
+// Date-only display: tick once a minute (seconds not shown). Composable `date`
+// matches the previous local format exactly (en-US short weekday/day/month/year, Phnom Penh tz).
+const { date: dateString } = usePhnomPenhClock(60000);
 
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value);
-    } catch (e) {
-        return '';
-    }
-});
-
-const pointer = ref({ x: 50, y: 50 });
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    };
-};
+const { pointer } = usePointerGlow();
 
 const statusMeta = computed(() => {
     const s = props.project?.status;
@@ -64,7 +47,7 @@ const formattedDate = computed(() => {
             month: 'long',
             day: 'numeric',
         });
-    } catch (e) {
+    } catch {
         return null;
     }
 });
@@ -74,7 +57,7 @@ const year = computed(() => {
     if (!raw) return null;
     try {
         return new Date(raw).getFullYear();
-    } catch (e) {
+    } catch {
         return null;
     }
 });
@@ -116,26 +99,6 @@ const goBack = () => {
 const goToProject = (id) => {
     router.visit(route('portfolio.show', id));
 };
-
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-        requestAnimationFrame(() => {
-            isVisible.value = true;
-        });
-    }, 300);
-
-    clockTimer = setInterval(() => {
-        now.value = new Date();
-    }, 60000);
-
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-});
-
-onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer);
-    window.removeEventListener('pointermove', handlePointer);
-});
 </script>
 
 <template>
@@ -233,7 +196,14 @@ onBeforeUnmount(() => {
                 style="--d: 220ms"
             >
                 <div class="relative aspect-[16/9] overflow-hidden bg-muted/30">
-                    <img v-if="project.image" :src="project.image" :alt="project.title" class="h-full w-full object-cover" />
+                    <img
+                        v-if="project.image"
+                        :src="project.image"
+                        :alt="project.title"
+                        loading="lazy"
+                        decoding="async"
+                        class="h-full w-full object-cover"
+                    />
                     <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/60 to-muted/20">
                         <Laptop class="h-14 w-14 text-muted-foreground/40" />
                     </div>
