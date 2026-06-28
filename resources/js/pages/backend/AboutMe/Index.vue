@@ -1,11 +1,11 @@
 <script setup>
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     aboutMes: {
@@ -19,8 +19,11 @@ const breadcrumbs = [
     { title: 'About Me', href: '/about-me' },
 ];
 
+const aboutMe = computed(() => props.aboutMes?.[0] || null);
+
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
+const deleting = ref(false);
 
 const confirmDelete = (item) => {
     itemToDelete.value = item;
@@ -28,20 +31,26 @@ const confirmDelete = (item) => {
 };
 
 const deleteItem = () => {
-    if (itemToDelete.value) {
-        router.delete(route('backend.about-me.destroy', itemToDelete.value.id));
-        showDeleteConfirm.value = false;
-        itemToDelete.value = null;
-    }
-};
-
-const cancelDelete = () => {
-    showDeleteConfirm.value = false;
-    itemToDelete.value = null;
+    if (!itemToDelete.value) return;
+    router.delete(route('backend.about-me.destroy', itemToDelete.value.id), {
+        preserveScroll: true,
+        onStart: () => (deleting.value = true),
+        onFinish: () => {
+            deleting.value = false;
+            showDeleteConfirm.value = false;
+            itemToDelete.value = null;
+        },
+    });
 };
 
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
+    if (!dateString) return 'Not set';
+
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+    }).format(new Date(dateString));
 };
 </script>
 
@@ -49,81 +58,108 @@ const formatDate = (dateString) => {
     <Head title="About Me Management" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <Card>
-                <CardHeader class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <CardTitle>About Me Management</CardTitle>
-                        <CardDescription> View and manage your about me information </CardDescription>
+        <div class="mx-auto w-full max-w-7xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="user" class="size-6" />
                     </div>
                     <div>
-                        <Link href="/backend/about-me/create">
-                            <Button variant="default">
-                                <Icon name="plus" class="h-4 w-4" />
-                                Create New
-                            </Button>
-                        </Link>
+                        <h1 class="text-2xl font-semibold tracking-tight">About Me</h1>
+                        <p class="text-sm text-muted-foreground">View and manage your about me content</p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div class="overflow-x-auto">
-                        <table class="hover:table-hover w-full">
-                            <thead class="bg-gray-100 dark:bg-gray-800">
-                                <tr class="border-b">
-                                    <th class="p-4 text-left">#</th>
-                                    <th class="p-4 text-left">Title</th>
-                                    <th class="p-4 text-left">Location</th>
-                                    <th class="p-4 text-left">Experience</th>
-                                    <th class="p-4 text-left">Focus</th>
-                                    <th class="p-4 text-left">Created</th>
-                                    <th class="p-4 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in aboutMes" :key="item.id" class="border-b">
-                                    <td class="p-4">{{ index + 1 }}</td>
-                                    <td class="p-4">{{ item.title || '-' }}</td>
-                                    <td class="p-4">
-                                        <Badge variant="outline">{{ item.location || '-' }}</Badge>
-                                    </td>
-                                    <td class="p-4">{{ item.year_experience || '-' }}</td>
-                                    <td class="p-4">{{ item.fucus_on || '-' }}</td>
-                                    <td class="p-4">{{ formatDate(item.created_at) }}</td>
-                                    <td class="p-4">
-                                        <div class="flex gap-2">
-                                            <Link :href="`/backend/about-me/${item.id}/edit`">
-                                                <Button variant="default" size="sm">
-                                                    <Icon name="edit" class="h-4 w-4" />
-                                                    Edit
-                                                </Button>
-                                            </Link>
-                                            <Button variant="destructive" size="sm" @click="confirmDelete(item)">
-                                                <Icon name="trash" class="h-4 w-4" />
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr v-if="aboutMes.length === 0">
-                                    <td colspan="7" class="py-8 text-center text-muted-foreground">No about me records found</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+                <Link v-if="!aboutMe" href="/backend/about-me/create">
+                    <Button class="rounded-xl shadow-sm">
+                        <Icon name="plus" class="size-4" />
+                        Add About Me
+                    </Button>
+                </Link>
+            </div>
 
-        <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="mx-4 w-full max-w-md rounded-lg bg-background p-6">
-                <h3 class="mb-4 text-lg font-semibold">Confirm Delete</h3>
-                <p class="mb-6 text-muted-foreground">Are you sure you want to delete this about me record? This action cannot be undone.</p>
-                <div class="flex justify-end gap-3">
-                    <Button variant="outline" @click="cancelDelete">Cancel</Button>
-                    <Button variant="destructive" @click="deleteItem">Delete</Button>
+            <!-- Table card -->
+            <div class="overflow-hidden rounded-2xl border bg-card shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                                <th class="w-16 px-6 py-4 text-left font-medium">#</th>
+                                <th class="px-6 py-4 text-left font-medium">Title</th>
+                                <th class="px-6 py-4 text-left font-medium">Focus</th>
+                                <th class="px-6 py-4 text-left font-medium">Location</th>
+                                <th class="px-6 py-4 text-left font-medium">Experience</th>
+                                <th class="px-6 py-4 text-left font-medium">Created</th>
+                                <th class="px-6 py-4 text-right font-medium">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr
+                                v-for="(item, index) in aboutMes"
+                                :key="item.id"
+                                class="group transition-colors hover:bg-muted/40"
+                            >
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                        {{ index + 1 }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-medium">{{ item.title || '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <Badge variant="secondary" class="rounded-full font-normal">{{ item.fucus_on || '-' }}</Badge>
+                                </td>
+                                <td class="px-6 py-4 text-muted-foreground">{{ item.location || '-' }}</td>
+                                <td class="px-6 py-4 text-muted-foreground">{{ item.year_experience || '-' }}</td>
+                                <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <Link :href="`/backend/about-me/${item.id}/edit`">
+                                            <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
+                                                <Icon name="squarePen" class="size-4" />
+                                                Edit
+                                            </Button>
+                                        </Link>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                            @click="confirmDelete(item)"
+                                        >
+                                            <Icon name="trash2" class="size-4" />
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="aboutMes.length === 0">
+                                <td colspan="7" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3 text-muted-foreground">
+                                        <div class="flex size-12 items-center justify-center rounded-full bg-muted">
+                                            <Icon name="user" class="size-6" />
+                                        </div>
+                                        <p class="text-sm">No about me content found</p>
+                                        <Link href="/backend/about-me/create">
+                                            <Button variant="outline" size="sm" class="rounded-lg">
+                                                <Icon name="plus" class="size-4" />
+                                                Add your first record
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <ConfirmDialog
+            v-model:open="showDeleteConfirm"
+            title="Delete about me content?"
+            description="This about me content will be permanently removed. This action cannot be undone."
+            confirm-label="Delete"
+            :processing="deleting"
+            @confirm="deleteItem"
+        />
     </AppLayout>
 </template>

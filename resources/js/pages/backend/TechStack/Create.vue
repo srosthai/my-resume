@@ -1,55 +1,59 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import InputError from '@/components/InputError.vue'
+import Icon from '@/components/Icon.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Tech Stack', href: '/tech-stacks' },
-    { title: 'Create', href: '/backend/tech-stacks/create' }
-]
+    { title: 'Create', href: '/backend/tech-stacks/create' },
+];
 
 const form = useForm({
     name: '',
     logo: '',
     type: '',
     description: '',
-})
+});
 
 const submit = () => {
-    form.post(route('backend.tech-stacks.store'))
-}
+    form.post(route('backend.tech-stacks.store'));
+};
 </script>
 
 <template>
     <Head title="Add Technology" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <div>
-                <Heading title="Add Technology" />
-                <p class="text-sm text-muted-foreground">
-                    Add new technology to your stack
-                </p>
+        <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex items-center gap-4">
+                <Link href="/tech-stacks">
+                    <Button variant="outline" size="icon" class="rounded-xl">
+                        <Icon name="arrowLeft" class="size-4" />
+                    </Button>
+                </Link>
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="layers" class="size-6" />
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold tracking-tight">Add Technology</h1>
+                        <p class="text-sm text-muted-foreground">Add new technology to your stack</p>
+                    </div>
+                </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Technology Information</CardTitle>
-                    <CardDescription>
-                        Enter the technology details below
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
+            <form @submit.prevent="submit">
+                <div class="rounded-2xl border bg-card shadow-sm">
+                    <div class="space-y-6 p-6 sm:p-8">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="space-y-2">
                                 <Label for="name">Technology Name</Label>
                                 <Input
                                     id="name"
@@ -62,7 +66,7 @@ const submit = () => {
                                 <InputError :message="form.errors.name" />
                             </div>
 
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="type">Type/Category</Label>
                                 <Input
                                     id="type"
@@ -74,7 +78,7 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="logo">Logo URL</Label>
                             <Input
                                 id="logo"
@@ -83,12 +87,12 @@ const submit = () => {
                                 placeholder="Enter logo URL (optional)"
                             />
                             <InputError :message="form.errors.logo" />
-                            <p class="text-xs text-muted-foreground mt-1">
+                            <p class="text-xs text-muted-foreground">
                                 You can use CDN URLs like devicons or upload your own logo
                             </p>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="description">Description</Label>
                             <Textarea
                                 id="description"
@@ -98,20 +102,20 @@ const submit = () => {
                             />
                             <InputError :message="form.errors.description" />
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Creating...' : 'Create Technology' }}
-                            </Button>
-                            <Link href="/backend/tech-stack">
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                    <!-- Footer actions -->
+                    <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
+                        <Link href="/tech-stacks">
+                            <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
+                        </Link>
+                        <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">
+                            <Icon v-if="form.processing" name="loaderCircle" class="size-4 animate-spin" />
+                            {{ form.processing ? 'Creating...' : 'Create Technology' }}
+                        </Button>
+                    </div>
+                </div>
+            </form>
         </div>
     </AppLayout>
 </template>

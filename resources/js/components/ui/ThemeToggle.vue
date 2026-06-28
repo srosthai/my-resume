@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAppearance } from '@/composables/useAppearance'
-import { Sun, Moon } from 'lucide-vue-next'
+import { Moon, Sun } from 'lucide-vue-next'
 
 interface Props {
   class?: string
@@ -15,29 +15,16 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { appearance, updateAppearance } = useAppearance()
 
-// Determine current theme for display
-const currentTheme = computed(() => {
-  if (appearance.value === 'system') {
-    // Check system preference
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
-    return 'light'
-  }
-  return appearance.value
-})
+const currentTheme = computed(() => appearance.value)
 
-// Get the icon to display (opposite of current theme)
 const toggleIcon = computed(() => {
-  return currentTheme.value === 'dark' ? Sun : Moon
+  return currentTheme.value === 'dark' ? Moon : Sun
 })
 
-// Get tooltip text
 const tooltipText = computed(() => {
-  return currentTheme.value === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'
+  return currentTheme.value === 'dark' ? 'Dark mode active. Switch to light mode' : 'Light mode active. Switch to dark mode'
 })
 
-// Toggle between light and dark (skip system for simplicity)
 const toggleTheme = () => {
   const newTheme = currentTheme.value === 'dark' ? 'light' : 'dark'
   updateAppearance(newTheme)
@@ -58,5 +45,6 @@ const toggleTheme = () => {
       :is="toggleIcon" 
       :class="[props.class, 'transition-transform duration-200 hover:rotate-12']"
     />
+    <span class="sr-only">{{ tooltipText }}</span>
   </button>
 </template>

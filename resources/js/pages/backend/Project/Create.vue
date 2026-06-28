@@ -1,28 +1,27 @@
 <script setup>
-import { ref } from 'vue'
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import InputError from '@/components/InputError.vue'
+import Icon from '@/components/Icon.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     projectTypes: {
         type: Array,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Projects', href: '/projects' },
-    { title: 'Create', href: '/backend/projects/create' }
-]
+    { title: 'Create', href: '/backend/projects/create' },
+];
 
 const form = useForm({
     title: '',
@@ -33,67 +32,72 @@ const form = useForm({
     created_date: '',
     status: 'processing',
     links: [],
-})
+});
 
-const technologiesString = ref('')
+const technologiesString = ref('');
 const links = ref([
     { label: 'Github', url: '' },
-    { label: 'View', url: '' }
-])
+    { label: 'View', url: '' },
+]);
 
 const addLink = () => {
-    links.value.push({ label: '', url: '' })
-}
+    links.value.push({ label: '', url: '' });
+};
 
 const removeLink = (index) => {
     if (links.value.length > 1) {
-        links.value.splice(index, 1)
+        links.value.splice(index, 1);
     }
-}
+};
 
 const submit = () => {
     // Parse technologies from string
-    form.technologies = technologiesString.value ? technologiesString.value.split(',').map(tech => tech.trim()) : []
-    
+    form.technologies = technologiesString.value ? technologiesString.value.split(',').map((tech) => tech.trim()) : [];
+
     // Convert links to the desired JSON structure
     form.links = links.value
-        .filter(link => link.label.trim() && link.url.trim())
-        .map(link => ({ [link.label.trim()]: link.url.trim() }))
-    
+        .filter((link) => link.label.trim() && link.url.trim())
+        .map((link) => ({ [link.label.trim()]: link.url.trim() }));
+
     // Convert null project_type_id to empty string for backend
     if (form.project_type_id === null) {
-        form.project_type_id = ''
+        form.project_type_id = '';
     }
-    
+
     form.post(route('backend.projects.store'), {
         forceFormData: true,
-    })
-}
+    });
+};
 </script>
 
 <template>
     <Head title="Create Project" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <div>
-                <Heading title="Create Project" />
-                <p class="text-sm text-muted-foreground">
-                    Add new project information
-                </p>
+        <div class="mx-auto w-full max-w-4xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex items-center gap-4">
+                <Link href="/projects">
+                    <Button variant="outline" size="icon" class="rounded-xl">
+                        <Icon name="arrowLeft" class="size-4" />
+                    </Button>
+                </Link>
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="folderKanban" class="size-6" />
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold tracking-tight">Create Project</h1>
+                        <p class="text-sm text-muted-foreground">Add new project information</p>
+                    </div>
+                </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Project Information</CardTitle>
-                    <CardDescription>
-                        Enter the project details below
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
+            <form @submit.prevent="submit">
+                <div class="rounded-2xl border bg-card shadow-sm">
+                    <div class="space-y-6 p-6 sm:p-8">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="space-y-2">
                                 <Label for="title">Title *</Label>
                                 <Input
                                     id="title"
@@ -105,16 +109,16 @@ const submit = () => {
                                 <InputError :message="form.errors.title" />
                             </div>
 
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="project_type_id">Project Type</Label>
                                 <Select v-model="form.project_type_id">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select project type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem 
-                                            v-for="type in projectTypes" 
-                                            :key="type.id" 
+                                        <SelectItem
+                                            v-for="type in projectTypes"
+                                            :key="type.id"
                                             :value="type.id.toString()"
                                         >
                                             {{ type.name }}
@@ -125,8 +129,8 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="space-y-2">
                                 <Label for="status">Status *</Label>
                                 <Select v-model="form.status">
                                     <SelectTrigger>
@@ -140,7 +144,7 @@ const submit = () => {
                                 <InputError :message="form.errors.status" />
                             </div>
 
-                            <div>
+                            <div class="space-y-2">
                                 <Label for="created_date">Created Date</Label>
                                 <Input
                                     id="created_date"
@@ -151,7 +155,7 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="image">Project Image</Label>
                             <Input
                                 id="image"
@@ -159,13 +163,13 @@ const submit = () => {
                                 accept="image/*"
                                 @change="form.image = $event.target.files[0]"
                             />
-                            <p class="text-sm text-muted-foreground mt-1">
+                            <p class="text-sm text-muted-foreground">
                                 Upload an image for the project (JPEG, PNG, JPG, GIF - max 2MB)
                             </p>
                             <InputError :message="form.errors.image" />
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="description">Description</Label>
                             <Textarea
                                 id="description"
@@ -176,7 +180,7 @@ const submit = () => {
                             <InputError :message="form.errors.description" />
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="technologies">Technologies</Label>
                             <Input
                                 id="technologies"
@@ -184,27 +188,27 @@ const submit = () => {
                                 type="text"
                                 placeholder="Enter technologies (comma-separated)"
                             />
-                            <p class="text-sm text-muted-foreground mt-1">
+                            <p class="text-sm text-muted-foreground">
                                 Enter technologies separated by commas (e.g., Vue.js, Laravel, MySQL)
                             </p>
                             <InputError :message="form.errors.technologies" />
                         </div>
 
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
                                 <Label>Project Links</Label>
-                                <Button type="button" @click="addLink" variant="outline" size="sm">
-                                    <Icon name="plus" class="h-4 w-4 mr-1" />
+                                <Button type="button" @click="addLink" variant="outline" size="sm" class="rounded-lg">
+                                    <Icon name="plus" class="size-4" />
                                     Add Link
                                 </Button>
                             </div>
                             <div class="space-y-3">
-                                <div 
-                                    v-for="(link, index) in links" 
+                                <div
+                                    v-for="(link, index) in links"
                                     :key="index"
-                                    class="flex gap-3 items-end"
+                                    class="flex items-end gap-3"
                                 >
-                                    <div class="flex-1">
+                                    <div class="flex-1 space-y-2">
                                         <Label :for="`link-label-${index}`">Label</Label>
                                         <Input
                                             :id="`link-label-${index}`"
@@ -213,7 +217,7 @@ const submit = () => {
                                             placeholder="e.g., Github, View, Demo"
                                         />
                                     </div>
-                                    <div class="flex-[2]">
+                                    <div class="flex-[2] space-y-2">
                                         <Label :for="`link-url-${index}`">URL</Label>
                                         <Input
                                             :id="`link-url-${index}`"
@@ -222,36 +226,37 @@ const submit = () => {
                                             placeholder="https://example.com"
                                         />
                                     </div>
-                                    <Button 
-                                        type="button" 
+                                    <Button
+                                        type="button"
                                         @click="removeLink(index)"
-                                        variant="destructive" 
-                                        size="sm"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                         :disabled="links.length === 1"
                                     >
-                                        <Icon name="trash" class="h-4 w-4" />
+                                        <Icon name="trash2" class="size-4" />
                                     </Button>
                                 </div>
                             </div>
-                            <p class="text-sm text-muted-foreground mt-1">
+                            <p class="text-sm text-muted-foreground">
                                 Add project links like Github repository, live demo, etc.
                             </p>
                             <InputError :message="form.errors.links" />
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Creating...' : 'Create Project' }}
-                            </Button>
-                            <Link href="/projects">
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                    <!-- Footer actions -->
+                    <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
+                        <Link href="/projects">
+                            <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
+                        </Link>
+                        <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">
+                            <Icon v-if="form.processing" name="loaderCircle" class="size-4 animate-spin" />
+                            {{ form.processing ? 'Creating...' : 'Create Project' }}
+                        </Button>
+                    </div>
+                </div>
+            </form>
         </div>
     </AppLayout>
 </template>

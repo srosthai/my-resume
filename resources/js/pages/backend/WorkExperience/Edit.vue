@@ -1,26 +1,32 @@
-<script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import InputError from '@/components/InputError.vue'
+<script setup lang="ts">
+import Icon from '@/components/Icon.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
-const props = defineProps({
-    workExperience: {
-        type: Object,
-        required: true
-    }
-})
+interface WorkExperience {
+    id: number;
+    title?: string | null;
+    position?: string | null;
+    company?: string | null;
+    description?: string | null;
+    from?: string | null;
+    to?: string | null;
+}
+
+const props = defineProps<{
+    workExperience: WorkExperience;
+}>();
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Work Experience', href: '/work-experience' },
-    { title: 'Edit', href: `/backend/work-experience/${props.workExperience.id}/edit` }
-]
+    { title: 'Edit', href: `/backend/work-experience/${props.workExperience.id}/edit` },
+];
 
 const form = useForm({
     title: props.workExperience.title || '',
@@ -29,117 +35,95 @@ const form = useForm({
     description: props.workExperience.description || '',
     from: props.workExperience.from || '',
     to: props.workExperience.to || '',
-})
+});
 
 const submit = () => {
-    form.put(route('backend.work-experience.update', props.workExperience.id))
-}
+    form.put(route('backend.work-experience.update', props.workExperience.id));
+};
 </script>
 
 <template>
     <Head title="Edit Work Experience" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
-            <div>
-                <Heading title="Edit Work Experience" />
-                <p class="text-sm text-muted-foreground">
-                    Update work experience record
-                </p>
+        <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
+            <!-- Page header -->
+            <div class="flex items-center gap-4">
+                <Link href="/work-experience">
+                    <Button variant="outline" size="icon" class="rounded-xl">
+                        <Icon name="arrowLeft" class="size-4" />
+                    </Button>
+                </Link>
+                <div class="flex items-center gap-4">
+                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <Icon name="briefcase" class="size-6" />
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold tracking-tight">Edit Work Experience</h1>
+                        <p class="text-sm text-muted-foreground">Update this work experience record</p>
+                    </div>
+                </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Edit Work Experience Information</CardTitle>
-                    <CardDescription>
-                        Update your work experience details below
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <Label for="title">Job Title</Label>
-                                <Input
-                                    id="title"
-                                    v-model="form.title"
-                                    type="text"
-                                    placeholder="Enter job title"
-                                />
+            <form @submit.prevent="submit">
+                <div class="rounded-2xl border bg-card shadow-sm">
+                    <div class="space-y-6 p-6 sm:p-8">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label for="title">Display title</Label>
+                                <Input id="title" v-model="form.title" type="text" placeholder="Senior Full Stack Developer" />
                                 <InputError :message="form.errors.title" />
                             </div>
-
-                            <div>
-                                <Label for="position">Position</Label>
-                                <Input
-                                    id="position"
-                                    v-model="form.position"
-                                    type="text"
-                                    placeholder="Enter position"
-                                />
+                            <div class="space-y-2">
+                                <Label for="position">Position badge</Label>
+                                <Input id="position" v-model="form.position" type="text" placeholder="Senior Developer" />
                                 <InputError :message="form.errors.position" />
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="company">Company</Label>
-                            <Input
-                                id="company"
-                                v-model="form.company"
-                                type="text"
-                                placeholder="Enter company name"
-                            />
+                            <Input id="company" v-model="form.company" type="text" placeholder="Tech Solutions Co., Ltd." />
                             <InputError :message="form.errors.company" />
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <Label for="from">From</Label>
-                                <Input
-                                    id="from"
-                                    v-model="form.from"
-                                    type="text"
-                                    placeholder="Start date (e.g., Jan 2023)"
-                                />
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label for="from">Start period</Label>
+                                <Input id="from" v-model="form.from" type="text" placeholder="2022" />
                                 <InputError :message="form.errors.from" />
                             </div>
-
-                            <div>
-                                <Label for="to">To</Label>
-                                <Input
-                                    id="to"
-                                    v-model="form.to"
-                                    type="text"
-                                    placeholder="End date (e.g., Present)"
-                                />
+                            <div class="space-y-2">
+                                <Label for="to">End period</Label>
+                                <Input id="to" v-model="form.to" type="text" placeholder="Present" />
                                 <InputError :message="form.errors.to" />
                             </div>
                         </div>
 
-                        <div>
+                        <div class="space-y-2">
                             <Label for="description">Description</Label>
                             <Textarea
                                 id="description"
                                 v-model="form.description"
-                                placeholder="Describe your responsibilities and achievements"
-                                :rows="4"
+                                placeholder="Summarize responsibilities, achievements, and business impact."
+                                :rows="6"
                             />
                             <InputError :message="form.errors.description" />
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" :disabled="form.processing">
-                                {{ form.processing ? 'Updating...' : 'Update Experience' }}
-                            </Button>
-                            <Link href="/work-experience">
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                    <!-- Footer actions -->
+                    <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
+                        <Link href="/work-experience">
+                            <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
+                        </Link>
+                        <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">
+                            <Icon v-if="form.processing" name="loaderCircle" class="size-4 animate-spin" />
+                            {{ form.processing ? 'Updating...' : 'Update Experience' }}
+                        </Button>
+                    </div>
+                </div>
+            </form>
         </div>
     </AppLayout>
 </template>

@@ -1,9 +1,12 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { Mail, MapPin, Phone, Printer } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     users: { type: Object, default: () => ({}) },
@@ -16,33 +19,14 @@ const props = defineProps({
     description: { type: String, default: '' },
 });
 
-const isLoading = ref(true);
-const isVisible = ref(false);
+const { isLoading, isVisible } = usePageReveal(400);
 
-const now = ref(new Date());
-let clockTimer = null;
+const { date: dateString } = usePhnomPenhClock(60000);
 
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value);
-    } catch (e) {
-        return '';
-    }
-});
+const { pointer } = usePointerGlow();
 
-const pointer = ref({ x: 50, y: 50 });
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    };
-};
+const lastUpdated = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const generatedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 const firstName = computed(() => {
     const parts = (props.users?.name || 'Name').trim().split(/\s+/);
@@ -82,26 +66,6 @@ const bio = computed(
 const printResume = () => {
     window.print();
 };
-
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-        requestAnimationFrame(() => {
-            isVisible.value = true;
-        });
-    }, 400);
-
-    clockTimer = setInterval(() => {
-        now.value = new Date();
-    }, 60000);
-
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-});
-
-onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer);
-    window.removeEventListener('pointermove', handlePointer);
-});
 </script>
 
 <template>
@@ -289,7 +253,7 @@ onBeforeUnmount(() => {
                         <span class="section-eyebrow">/ Experience</span>
 
                         <div class="mt-4 print:mt-2">
-                            <article v-for="(work, i) in workExperience" :key="work.id" class="resume-row" :class="{ 'border-t': i > 0 }">
+                            <article v-for="(work, i) in workExperience" :key="work.id || i" class="resume-row" :class="{ 'border-t': i > 0 }">
                                 <div class="resume-row-head">
                                     <div class="min-w-0">
                                         <h3 class="resume-row-title">
@@ -327,7 +291,7 @@ onBeforeUnmount(() => {
                         <span class="section-eyebrow">/ Education</span>
 
                         <div class="mt-4 print:mt-2">
-                            <article v-for="(edu, i) in education" :key="edu.id" class="resume-row" :class="{ 'border-t': i > 0 }">
+                            <article v-for="(edu, i) in education" :key="edu.id || i" class="resume-row" :class="{ 'border-t': i > 0 }">
                                 <div class="resume-row-head">
                                     <div class="min-w-0">
                                         <h3 class="resume-row-title">
@@ -362,10 +326,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-8 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-10 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs print:hidden"
                 style="--d: 520ms"
             >
-                <span>
-                    Last updated —
-                    {{ new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
-                </span>
+                <span> Last updated — {{ lastUpdated }} </span>
                 <span>End of document →</span>
             </div>
 
@@ -374,7 +335,7 @@ onBeforeUnmount(() => {
                 class="hidden print:mt-6 print:block print:border-t print:border-gray-200 print:pt-3 print:text-center print:font-mono print:text-[9px] print:tracking-[0.2em] print:text-gray-500 print:uppercase"
             >
                 {{ users?.name }} · {{ users?.email }} · Generated
-                {{ new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+                {{ generatedDate }}
             </div>
         </section>
     </FrontendLayout>

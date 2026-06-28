@@ -111,8 +111,6 @@ const onYouTubeIframeAPIReady = () => {
         return
     }
     
-    console.log('Initializing YouTube player with video ID:', videoId)
-    
     try {
         player.value = new window.YT.Player('youtube-player-music', {
             height: '0',
@@ -140,7 +138,6 @@ const onYouTubeIframeAPIReady = () => {
 
 const onPlayerReady = () => {
     playerReady.value = true
-    console.log('YouTube player ready')
 }
 
 const onPlayerStateChange = (event) => {
@@ -216,7 +213,6 @@ const loadCurrentTrack = () => {
     const track = playlist.value[currentTrack.value]
     const videoId = extractYouTubeId(track.youtubeUrl)
     if (videoId) {
-        console.log('Loading YouTube video:', videoId)
         try {
             player.value.loadVideoById(videoId)
         } catch (error) {

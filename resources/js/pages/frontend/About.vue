@@ -1,9 +1,12 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Briefcase, Code2, GraduationCap, MapPin, Target } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
     user: { type: Object, default: () => ({}) },
@@ -15,33 +18,13 @@ const props = defineProps({
     description: { type: String, default: '' },
 });
 
-const isLoading = ref(true);
-const isVisible = ref(false);
+const { isLoading, isVisible } = usePageReveal(400);
 
-const now = ref(new Date());
-let clockTimer = null;
+const { date: dateString } = usePhnomPenhClock(60000);
 
-const dateString = computed(() => {
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            timeZone: 'Asia/Phnom_Penh',
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).format(now.value);
-    } catch (e) {
-        return '';
-    }
-});
+const { pointer } = usePointerGlow();
 
-const pointer = ref({ x: 50, y: 50 });
-const handlePointer = (e) => {
-    pointer.value = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-    };
-};
+const currentYear = new Date().getFullYear();
 
 const firstName = computed(() => {
     const parts = (props.user?.name || props.aboutMe?.title || 'About').trim().split(/\s+/);
@@ -91,32 +74,6 @@ const stats = computed(() => [
     },
 ]);
 
-const formatRange = (from, to) => {
-    const f = from || '';
-    const t = to || 'Present';
-    if (!f && !t) return '';
-    return `${f}${t ? ' — ' + t : ''}`;
-};
-
-onMounted(() => {
-    setTimeout(() => {
-        isLoading.value = false;
-        requestAnimationFrame(() => {
-            isVisible.value = true;
-        });
-    }, 400);
-
-    clockTimer = setInterval(() => {
-        now.value = new Date();
-    }, 60000);
-
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-});
-
-onBeforeUnmount(() => {
-    if (clockTimer) clearInterval(clockTimer);
-    window.removeEventListener('pointermove', handlePointer);
-});
 </script>
 
 <template>
@@ -292,7 +249,7 @@ onBeforeUnmount(() => {
                 <!-- Stats row -->
                 <article
                     v-for="(stat, i) in stats"
-                    :key="stat.label"
+                    :key="stat.label + '-' + i"
                     class="mobile-stat-card bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
                     :class="{ 'col-span-2': i === 2 }"
                     :style="{ '--d': 240 + i * 80 + 'ms' }"
@@ -489,7 +446,7 @@ onBeforeUnmount(() => {
                 class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 700ms"
             >
-                <span>© {{ new Date().getFullYear() }} {{ user?.name || 'Portfolio' }}</span>
+                <span>© {{ currentYear }} {{ user?.name || 'Portfolio' }}</span>
                 <span>End of file →</span>
             </div>
         </section>

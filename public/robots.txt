@@ -1,2 +1,12 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Keep admin / auth surfaces out of the index
+Disallow: /dashboard
+Disallow: /backend/
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+Sitemap: https://srosthai.dev/sitemap.xml
