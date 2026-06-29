@@ -190,10 +190,10 @@ const stats = computed(() => [
 
                     <div class="mobile-action-row mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3">
                         <Link
-                            href="/resume"
+                            href="/portfolio"
                             class="mobile-action-primary cta-primary group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-medium text-background transition-all duration-300 hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-3 sm:text-sm"
                         >
-                            <span>View résumé</span>
+                            <span>View projects</span>
                             <span
                                 class="flex h-6 w-6 items-center justify-center rounded-full bg-background/20 transition-transform duration-300 group-hover:rotate-45 sm:h-7 sm:w-7"
                             >
