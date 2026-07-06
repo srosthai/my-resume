@@ -9,4 +9,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /api/
 
-Sitemap: https://srosthai.dev/sitemap.xml
+Sitemap: https://srosthai.me/sitemap.xml

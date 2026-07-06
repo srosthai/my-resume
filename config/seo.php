@@ -9,7 +9,7 @@ return [
     | domain via the SEO_URL env var so it stays correct even when APP_URL points
     | at a local host (e.g. me.test).
     */
-    'url' => rtrim(env('SEO_URL', 'https://srosthai.dev'), '/'),
+    'url' => rtrim(env('SEO_URL', 'https://srosthai.me'), '/'),
 
     // Brand / site name shown in titles and og:site_name.
     'name' => env('SEO_NAME', 'SROS THAI'),
