@@ -143,7 +143,7 @@ const imageSrc = computed(() => {
 
         <!-- Pendulum pivots at its origin (top-center of root) -->
         <div class="pendulum" :style="rotateStyle">
-            <!-- Strap -->
+            <!-- Woven strap -->
             <div class="strap" aria-hidden="true">
                 <div class="strap-texture">
                     <span v-for="i in 6" :key="i" class="strap-text">
@@ -158,9 +158,6 @@ const imageSrc = computed(() => {
                 <div class="clip-body"></div>
             </div>
 
-            <!-- Hole through the card top -->
-            <div class="card-hole" aria-hidden="true"></div>
-
             <!-- ID card -->
             <div
                 ref="card"
@@ -169,10 +166,15 @@ const imageSrc = computed(() => {
                 role="button"
                 :aria-label="`Drag to swing ${name}'s ID card`"
             >
+                <div class="card-slot" aria-hidden="true"></div>
+
                 <div class="card-top">
                     <span class="card-badge">{{ badge }}</span>
                     <span class="card-id">{{ label }}</span>
                 </div>
+
+                <div class="card-rule" aria-hidden="true"></div>
+
                 <div class="card-photo">
                     <img
                         v-if="imageSrc"
@@ -184,6 +186,7 @@ const imageSrc = computed(() => {
                         {{ firstName.charAt(0) }}
                     </div>
                 </div>
+
                 <div class="card-info">
                     <div class="card-name">
                         <div>{{ firstName }}</div>
@@ -191,7 +194,12 @@ const imageSrc = computed(() => {
                     </div>
                     <div class="card-title">{{ position }}</div>
                 </div>
-                <div class="card-stripe"></div>
+
+                <div class="card-foot">
+                    <div class="card-barcode" aria-hidden="true"></div>
+                    <span class="card-foot-text">PNH · KH</span>
+                </div>
+
                 <div class="card-shine"></div>
             </div>
         </div>
@@ -219,7 +227,7 @@ const imageSrc = computed(() => {
     transform: translate(-50%, -50%);
     background: radial-gradient(
         ellipse at center,
-        color-mix(in oklab, var(--color-foreground) 8%, transparent),
+        color-mix(in oklab, var(--color-foreground) 6%, transparent),
         transparent 70%
     );
     filter: blur(30px);
@@ -227,24 +235,25 @@ const imageSrc = computed(() => {
     z-index: 0;
 }
 
+/* Wall pin the whole thing hangs from */
 .pin {
     position: absolute;
     top: 12px;
     left: 50%;
-    width: 16px;
-    height: 16px;
-    margin-left: -8px;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
     border-radius: 50%;
     background: radial-gradient(
-        circle at 30% 30%,
-        #b8b8b8 0%,
-        #606060 45%,
-        #1a1a1a 100%
+        circle at 32% 30%,
+        #c9c9c9 0%,
+        #6b6b6b 48%,
+        #1c1c1c 100%
     );
     box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.5),
-        inset 0 -1px 1.5px rgba(255, 255, 255, 0.25),
-        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        0 0 0 3px color-mix(in oklab, var(--color-foreground) 6%, transparent),
+        0 2px 5px rgba(0, 0, 0, 0.45),
+        inset 0 1px 1px rgba(255, 255, 255, 0.45);
     z-index: 6;
 }
 
@@ -257,7 +266,7 @@ const imageSrc = computed(() => {
     height: 4px;
     margin: -2px 0 0 -2px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.65), transparent);
 }
 
 .pendulum {
@@ -271,25 +280,54 @@ const imageSrc = computed(() => {
     z-index: 2;
 }
 
-/* Strap hangs from pivot down to clip */
+/* Woven fabric strap — diagonal weave + edge stitching */
 .strap {
     position: absolute;
     top: 0;
-    left: -13px;
-    width: 26px;
-    height: 140px;
-    background: linear-gradient(
-        180deg,
-        #0a0a0a 0%,
-        #141414 50%,
-        #0a0a0a 100%
-    );
-    border-left: 1px solid rgba(255, 255, 255, 0.04);
-    border-right: 1px solid rgba(0, 0, 0, 0.8);
+    left: -15px;
+    width: 30px;
+    height: 138px;
+    background:
+        repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.035) 0 1.5px,
+            transparent 1.5px 3.5px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            rgba(255, 255, 255, 0.025) 0 1.5px,
+            transparent 1.5px 3.5px
+        ),
+        linear-gradient(180deg, #0e0e0e 0%, #191919 50%, #0e0e0e 100%);
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.85);
+    border-radius: 0 0 2px 2px;
     box-shadow:
-        inset 2px 0 4px rgba(0, 0, 0, 0.5),
-        0 2px 6px rgba(0, 0, 0, 0.25);
+        inset 2px 0 5px rgba(0, 0, 0, 0.55),
+        inset -2px 0 5px rgba(0, 0, 0, 0.35),
+        0 3px 8px rgba(0, 0, 0, 0.3);
     overflow: hidden;
+}
+
+/* Edge stitch lines */
+.strap::before,
+.strap::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.22) 0 3px,
+        transparent 3px 6px
+    );
+}
+.strap::before {
+    left: 3.5px;
+}
+.strap::after {
+    right: 3.5px;
 }
 
 .strap-texture {
@@ -306,96 +344,98 @@ const imageSrc = computed(() => {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 7.5px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.18);
-    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.16em;
     transform: rotate(-90deg);
     white-space: nowrap;
     line-height: 1;
 }
 
-/* Metal clip at bottom of strap */
+/* Brushed-metal clip threaded through the card slot */
 .clip {
     position: absolute;
-    top: 135px;
-    left: -17px;
-    width: 34px;
-    height: 24px;
-    z-index: 3;
+    top: 130px;
+    left: -16px;
+    width: 32px;
+    height: 30px;
+    z-index: 5;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
 
 .clip-ring {
     position: absolute;
     left: 50%;
     top: 0;
-    width: 20px;
+    width: 18px;
     height: 12px;
-    margin-left: -10px;
-    border: 1.5px solid #2a2a2a;
+    margin-left: -9px;
+    border: 2px solid #3c3c3c;
     border-bottom: none;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    background: linear-gradient(
-        180deg,
-        #d4d4d4 0%,
-        #7a7a7a 55%,
-        #3a3a3a 100%
-    );
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background: linear-gradient(180deg, #e2e2e2 0%, #8a8a8a 60%, #4a4a4a 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .clip-body {
     position: absolute;
     top: 10px;
     left: 0;
-    width: 34px;
-    height: 14px;
+    width: 32px;
+    height: 18px;
     background: linear-gradient(
         180deg,
-        #cfcfcf 0%,
-        #6a6a6a 50%,
-        #2a2a2a 100%
+        #e6e6e6 0%,
+        #b9b9b9 35%,
+        #767676 70%,
+        #3d3d3d 100%
     );
-    border-radius: 2px;
-    border: 1px solid #141414;
+    border-radius: 3px;
+    border: 1px solid #1f1f1f;
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.3),
-        0 1px 2px rgba(0, 0, 0, 0.4);
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.35);
 }
 
-.card-hole {
+/* Thin latch groove on the clip face */
+.clip-body::after {
+    content: '';
     position: absolute;
-    top: 151px;
-    left: 50%;
-    width: 28px;
-    height: 5px;
-    margin-left: -14px;
-    border-radius: 2px;
-    background: #0a0a0a;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
-    z-index: 5;
+    left: 6px;
+    right: 6px;
+    top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    border-radius: 1px;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.45),
+        rgba(255, 255, 255, 0.25)
+    );
 }
 
 /* The ID card itself */
 .card {
     position: absolute;
-    top: 160px;
+    top: 152px;
     left: 50%;
-    width: 260px;
-    height: 340px;
-    margin-left: -130px;
-    background:
-        linear-gradient(140deg, #fafafa 0%, #e8e8e8 100%);
-    color: #111;
-    border-radius: 16px;
-    padding: 16px 16px 18px;
+    width: 264px;
+    height: 348px;
+    margin-left: -132px;
+    background: linear-gradient(150deg, #fcfbf9 0%, #efedea 100%);
+    color: #141414;
+    border-radius: 18px;
+    padding: 26px 18px 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 11px;
     cursor: grab;
     box-shadow:
-        0 28px 50px -20px rgba(0, 0, 0, 0.55),
-        0 6px 12px -2px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+        0 32px 60px -24px rgba(0, 0, 0, 0.5),
+        0 12px 24px -12px rgba(0, 0, 0, 0.25),
+        0 2px 6px -2px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.07);
     overflow: hidden;
     z-index: 4;
     touch-action: none;
@@ -405,29 +445,57 @@ const imageSrc = computed(() => {
     cursor: grabbing;
 }
 
+/* Punch slot the clip threads through */
+.card-slot {
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    width: 30px;
+    height: 6px;
+    margin-left: -15px;
+    border-radius: 3px;
+    background: #101010;
+    box-shadow:
+        inset 0 1.5px 2.5px rgba(0, 0, 0, 0.95),
+        0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
 .card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
+    font-size: 9px;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     flex-shrink: 0;
 }
 
 .card-badge {
-    background: #111;
-    color: #f8f8f8;
-    padding: 4px 9px;
-    border-radius: 4px;
-    font-weight: 700;
-    letter-spacing: 0.22em;
+    background: #141414;
+    color: #f8f7f5;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .card-id {
-    color: #666;
-    font-weight: 600;
+    color: #8a8580;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.card-rule {
+    height: 1px;
+    flex-shrink: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.12),
+        rgba(0, 0, 0, 0.04) 60%,
+        transparent
+    );
 }
 
 .card-photo {
@@ -435,8 +503,11 @@ const imageSrc = computed(() => {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    border-radius: 9px;
-    background: #d4d4d4;
+    border-radius: 11px;
+    background: #dedcd8;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.07),
+        inset 0 -18px 24px -18px rgba(0, 0, 0, 0.25);
 }
 
 .card-photo img {
@@ -456,81 +527,100 @@ const imageSrc = computed(() => {
     justify-content: center;
     font-family: 'Instrument Serif', Georgia, serif;
     font-size: 88px;
-    color: #888;
-    background: linear-gradient(135deg, #e5e5e5 0%, #bfbfbf 100%);
+    color: #969189;
+    background: linear-gradient(135deg, #ebe9e5 0%, #c9c6c1 100%);
 }
 
 .card-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
     flex-shrink: 0;
 }
 
 .card-name {
     font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 28px;
-    line-height: 1;
-    color: #111;
+    font-size: 27px;
+    line-height: 1.02;
+    color: #141414;
     letter-spacing: -0.01em;
 }
 
 .card-name-italic {
     font-style: italic;
-    opacity: 0.8;
-    font-size: 24px;
-    margin-top: 2px;
+    color: #4d4a46;
+    font-size: 23px;
+    margin-top: 1px;
 }
 
 .card-title {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 9.5px;
-    letter-spacing: 0.18em;
+    font-size: 9px;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #666;
-    margin-top: 5px;
+    color: #8a8580;
+    margin-top: 6px;
     font-weight: 500;
 }
 
-.card-stripe {
-    position: absolute;
-    bottom: 9px;
-    left: 16px;
-    right: 16px;
-    height: 4px;
-    border-radius: 2px;
-    background: linear-gradient(
-        90deg,
-        #111 0%,
-        #111 40%,
-        transparent 40%,
-        transparent 50%,
-        #f43f5e 50%,
-        #eab308 100%
-    );
-    opacity: 0.85;
+/* Barcode footer — replaces the old color stripe */
+.card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+    padding-top: 9px;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
 }
 
-/* Subtle highlight strip — creates a lamination feel */
+.card-barcode {
+    flex: 1;
+    height: 16px;
+    max-width: 150px;
+    background: repeating-linear-gradient(
+        90deg,
+        #1a1a1a 0 1.5px,
+        transparent 1.5px 3px,
+        #1a1a1a 3px 6px,
+        transparent 6px 7.5px,
+        #1a1a1a 7.5px 8.5px,
+        transparent 8.5px 12px,
+        #1a1a1a 12px 13px,
+        transparent 13px 15.5px
+    );
+    opacity: 0.82;
+}
+
+.card-foot-text {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 8px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #a19c96;
+    white-space: nowrap;
+}
+
+/* Soft lamination sheen */
 .card-shine {
     position: absolute;
     inset: 0;
     pointer-events: none;
     background: linear-gradient(
-        115deg,
+        118deg,
         transparent 0%,
-        transparent 38%,
-        rgba(255, 255, 255, 0.25) 48%,
-        transparent 58%,
+        transparent 40%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 60%,
         transparent 100%
     );
     mix-blend-mode: overlay;
-    border-radius: 16px;
+    border-radius: 18px;
 }
 
-/* Dark mode: keep the card readable, bit of contrast shift */
+/* Dark mode: slightly dimmed paper so the card doesn't glow */
 :global(.dark) .card {
-    background: linear-gradient(140deg, #f0f0f0 0%, #d6d6d6 100%);
+    background: linear-gradient(150deg, #f2f0ed 0%, #dcd9d5 100%);
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 @media (prefers-reduced-motion: reduce) {

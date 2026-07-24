@@ -212,8 +212,13 @@ const doubledStacks = computed(() => {
                 >
                     <div class="flex items-center justify-between">
                         <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"> / credentials </span>
-                        <span class="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
-                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                        <span
+                            class="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 py-1 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/80 uppercase"
+                        >
+                            <span class="relative flex h-1.5 w-1.5">
+                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60"></span>
+                                <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            </span>
                             drag me
                         </span>
                     </div>
