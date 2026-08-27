@@ -184,7 +184,7 @@ const doubledStacks = computed(() => {
                     <div class="mt-6 flex flex-wrap items-center gap-2.5 sm:mt-8 sm:gap-3">
                         <Link
                             href="/portfolio"
-                            class="mobile-action mobile-action-solid group inline-flex items-center gap-2 rounded-full border border-foreground bg-foreground px-4 py-2.5 text-xs font-medium text-background shadow-[0_14px_34px_-22px_rgba(0,0,0,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/85 hover:bg-foreground/85 hover:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)] sm:px-5 sm:py-3 sm:text-sm"
+                            class="mobile-action mobile-action-solid group inline-flex items-center gap-2 rounded-full border border-foreground bg-foreground px-4 py-2.5 text-xs font-medium text-background shadow-[0_14px_34px_-22px_rgba(0,0,0,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/85 hover:bg-foreground/85 hover:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)] sm:px-5 sm:py-3 sm:text-sm dark:shadow-[0_14px_34px_-20px_rgba(255,255,255,0.55)] dark:hover:shadow-[0_18px_40px_-18px_rgba(255,255,255,0.7)]"
                         >
                             <span>See projects</span>
                             <ArrowUpRight
