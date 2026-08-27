@@ -154,7 +154,7 @@ const goToProject = (id) => {
 
             <!-- HERO -->
             <article
-                class="mobile-detail-hero reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                class="card-3d mobile-detail-hero reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:p-10"
                 style="--d: 140ms"
             >
                 <div
@@ -192,7 +192,7 @@ const goToProject = (id) => {
 
             <!-- IMAGE -->
             <article
-                class="mobile-image-card reveal mt-4 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 backdrop-blur-xl sm:mt-5 sm:rounded-3xl"
+                class="card-3d mobile-image-card reveal mt-4 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 backdrop-blur-xl sm:mt-5 sm:rounded-[1.5rem]"
                 style="--d: 220ms"
             >
                 <div class="relative aspect-[16/9] overflow-hidden bg-muted/30">
@@ -218,7 +218,7 @@ const goToProject = (id) => {
             <div class="mobile-content-grid mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:gap-5 lg:grid-cols-[1fr_300px]">
                 <!-- Main column -->
                 <article
-                    class="mobile-content-card reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+                    class="card-3d mobile-content-card reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8"
                     style="--d: 300ms"
                 >
                     <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"> — About this entry </span>
@@ -240,7 +240,7 @@ const goToProject = (id) => {
                 <aside class="space-y-4 sm:space-y-5">
                     <!-- Details card -->
                     <article
-                        class="mobile-side-card reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl"
+                        class="card-3d mobile-side-card reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem]"
                         style="--d: 380ms"
                     >
                         <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
@@ -273,7 +273,7 @@ const goToProject = (id) => {
                     <!-- Links card -->
                     <article
                         v-if="projectLinks.length"
-                        class="mobile-side-card reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl"
+                        class="card-3d mobile-side-card reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem]"
                         style="--d: 440ms"
                     >
                         <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
@@ -307,7 +307,7 @@ const goToProject = (id) => {
             <!-- PAGINATION -->
             <nav class="mobile-pager reveal mt-8 border-t border-border/50 pt-6 sm:mt-10 sm:pt-8" style="--d: 500ms">
                 <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-4">
-                    <button v-if="previousProject" @click="goToProject(previousProject.id)" class="pager-btn group pager-prev">
+                    <button v-if="previousProject" @click="goToProject(previousProject.id)" class="btn-3d pager-btn group pager-prev">
                         <ChevronLeft class="h-4 w-4 shrink-0 opacity-60 transition-transform duration-300 group-hover:-translate-x-0.5" />
                         <div class="min-w-0 text-left">
                             <p class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">← Previous</p>
@@ -320,12 +320,12 @@ const goToProject = (id) => {
 
                     <button
                         @click="goBack"
-                        class="inline-flex items-center justify-center gap-2 rounded-full border border-border/60 bg-background/40 px-5 py-3 font-mono text-[10px] tracking-[0.22em] text-foreground uppercase backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:self-center"
+                        class="btn-3d inline-flex items-center justify-center gap-2 rounded-full bg-background/40 px-5 py-3 font-mono text-[10px] tracking-[0.22em] text-foreground uppercase backdrop-blur-sm sm:self-center"
                     >
                         All entries
                     </button>
 
-                    <button v-if="nextProject" @click="goToProject(nextProject.id)" class="pager-btn group pager-next">
+                    <button v-if="nextProject" @click="goToProject(nextProject.id)" class="btn-3d pager-btn group pager-next">
                         <div class="min-w-0 text-right">
                             <p class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">Next →</p>
                             <p class="mt-1 truncate font-serif text-base text-foreground sm:text-lg">
@@ -353,7 +353,7 @@ const goToProject = (id) => {
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 .is-visible .reveal {
     animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -362,11 +362,11 @@ const goToProject = (id) => {
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -519,10 +519,6 @@ h1,
     backdrop-filter: blur(8px);
     text-align: left;
     cursor: pointer;
-    transition:
-        transform 0.3s ease,
-        border-color 0.3s ease,
-        background-color 0.3s ease;
 }
 @media (min-width: 640px) {
     .pager-btn {
@@ -531,7 +527,6 @@ h1,
     }
 }
 .pager-btn:hover {
-    transform: translateY(-2px);
     border-color: color-mix(in oklab, var(--color-foreground) 30%, var(--color-border));
 }
 .pager-next {
@@ -590,7 +585,7 @@ h1,
     }
 
     .mobile-detail-hero {
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         padding: 1.25rem;
         background:
             linear-gradient(
@@ -599,9 +594,6 @@ h1,
                 color-mix(in oklab, var(--color-muted) 62%, transparent)
             ),
             radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 34%);
-        box-shadow:
-            0 1px 0 color-mix(in oklab, white 16%, transparent) inset,
-            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .mobile-detail-hero h1 {
@@ -618,7 +610,7 @@ h1,
     }
 
     .mobile-image-card {
-        border-radius: 1.45rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
     }
 
@@ -636,7 +628,7 @@ h1,
 
     .mobile-content-card,
     .mobile-side-card {
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
         padding: 1rem;
     }
@@ -694,7 +686,7 @@ h1,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .ambient-blob {

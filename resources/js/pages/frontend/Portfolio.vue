@@ -160,7 +160,7 @@ const techsOf = (project) => {
 
             <!-- HERO -->
             <article
-                class="mobile-archive-card reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                class="card-3d mobile-archive-card reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:p-10"
                 style="--d: 80ms"
             >
                 <div
@@ -191,7 +191,7 @@ const techsOf = (project) => {
 
             <!-- FILTER BAR -->
             <div class="mobile-filter-card reveal mt-4 sm:mt-5" style="--d: 160ms">
-                <div class="rounded-[1.25rem] border border-border/60 bg-card/60 p-3 backdrop-blur-xl sm:rounded-2xl sm:p-4">
+                <div class="card-3d rounded-[1.25rem] border border-border/60 bg-card/60 p-3 backdrop-blur-xl sm:rounded-[1.25rem] sm:p-4">
                     <!-- Search + count -->
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <div class="relative flex-1">
@@ -219,7 +219,7 @@ const techsOf = (project) => {
                     <div class="relative mt-3">
                         <div class="scroll-row flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
                             <button
-                                class="filter-pill shrink-0"
+                                class="btn-3d filter-pill shrink-0"
                                 :class="{ 'filter-pill-active': selectedCategory === 'all' }"
                                 @click="selectedCategory = 'all'"
                             >
@@ -229,7 +229,7 @@ const techsOf = (project) => {
                             <button
                                 v-for="type in projectTypes"
                                 :key="type.id"
-                                class="filter-pill shrink-0"
+                                class="btn-3d filter-pill shrink-0"
                                 :class="{ 'filter-pill-active': selectedCategory === String(type.id) }"
                                 @click="selectedCategory = String(type.id)"
                             >
@@ -251,7 +251,7 @@ const techsOf = (project) => {
                 <!-- Empty state -->
                 <div
                     v-if="filteredProjects.length === 0"
-                    class="reveal rounded-[1.25rem] border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center backdrop-blur-xl sm:rounded-3xl sm:py-24"
+                    class="card-3d reveal rounded-[1.25rem] border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center backdrop-blur-xl sm:rounded-[1.5rem] sm:py-24"
                     style="--d: 240ms"
                 >
                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-muted/40">
@@ -272,7 +272,7 @@ const techsOf = (project) => {
                     </p>
                     <button
                         v-if="searchQuery || selectedCategory !== 'all'"
-                        class="mt-6 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/60 px-5 py-2.5 font-mono text-[10px] tracking-[0.25em] text-foreground uppercase transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60"
+                        class="btn-3d mt-6 inline-flex items-center gap-2 rounded-full bg-background/60 px-5 py-2.5 font-mono text-[10px] tracking-[0.25em] text-foreground uppercase"
                         @click="resetFilters"
                     >
                         Reset filters
@@ -285,7 +285,7 @@ const techsOf = (project) => {
                     <article
                         v-for="(project, i) in filteredProjects"
                         :key="project.id"
-                        class="mobile-project-card project-card reveal group relative cursor-pointer overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl"
+                        class="card-3d mobile-project-card project-card reveal group relative cursor-pointer overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 backdrop-blur-xl"
                         :class="{
                             'project-card-featured sm:col-span-2 lg:col-span-2': i === 0 && filteredProjects.length > 1,
                             'lg:col-span-3': i === 0 && filteredProjects.length === 1,
@@ -354,7 +354,7 @@ const techsOf = (project) => {
                                     :href="getGithubUrl(project)"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="quick-link"
+                                    class="btn-3d quick-link"
                                     @click.stop
                                     aria-label="View on GitHub"
                                 >
@@ -365,7 +365,7 @@ const techsOf = (project) => {
                                     :href="getLiveUrl(project)"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="quick-link"
+                                    class="btn-3d quick-link"
                                     @click.stop
                                     aria-label="Open live demo"
                                 >
@@ -461,7 +461,7 @@ const techsOf = (project) => {
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 .is-visible .reveal {
     animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -470,11 +470,11 @@ const techsOf = (project) => {
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -555,14 +555,8 @@ h3,
     color: var(--color-foreground);
     white-space: nowrap;
     cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        background-color 0.2s ease,
-        color 0.2s ease;
 }
 .filter-pill:hover {
-    transform: translateY(-1.5px);
     border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
 }
 .filter-pill-active {
@@ -571,7 +565,6 @@ h3,
     border-color: var(--color-foreground);
 }
 .filter-pill-active:hover {
-    transform: translateY(-1.5px);
     border-color: var(--color-foreground);
 }
 .filter-count {
@@ -586,36 +579,14 @@ h3,
     letter-spacing: 0.04em;
 }
 
-/* Project cards */
+/* Project cards — lift, hover press and shadow all come from .card-3d.
+   Keyboard focus is an outline so it never replaces the offset shadow. */
 .project-card {
-    transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.4s ease,
-        box-shadow 0.4s ease;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
     outline: none;
 }
-@media (hover: hover) and (pointer: fine) {
-    .project-card:hover {
-        transform: translateY(-4px);
-        border-color: color-mix(in oklab, var(--color-foreground) 25%, var(--color-border));
-        box-shadow: 0 24px 50px -30px rgba(0, 0, 0, 0.45);
-    }
-    .project-card-featured:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 36px 70px -35px rgba(0, 0, 0, 0.55);
-    }
-}
 .project-card:focus-visible {
-    border-color: color-mix(in oklab, var(--color-foreground) 40%, var(--color-border));
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-foreground) 20%, transparent);
-}
-
-/* Featured card — deeper base shadow to give it gravity */
-.project-card-featured {
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 22px 50px -30px rgba(0, 0, 0, 0.35);
+    outline: 2px solid var(--card-ink);
+    outline-offset: 3px;
 }
 
 /* Badges on image */
@@ -694,12 +665,8 @@ h3,
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.95);
     color: #0a0a0a;
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease;
 }
 .quick-link:hover {
-    transform: translateY(-1.5px);
     background: #fff;
 }
 
@@ -777,7 +744,7 @@ h3,
 
     .mobile-archive-card {
         min-height: 18.25rem;
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         padding: 1.25rem;
         background:
             linear-gradient(
@@ -786,9 +753,6 @@ h3,
                 color-mix(in oklab, var(--color-muted) 62%, transparent)
             ),
             radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 34%);
-        box-shadow:
-            0 1px 0 color-mix(in oklab, white 16%, transparent) inset,
-            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .mobile-title span {
@@ -810,9 +774,8 @@ h3,
     }
 
     .mobile-filter-card > div {
-        border-radius: 1.55rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-background) 88%, transparent);
-        box-shadow: 0 18px 48px -34px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .search-input {
@@ -829,18 +792,13 @@ h3,
 
     .project-card.mobile-project-card {
         grid-column: span 1 !important;
-        border-radius: 1.45rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
-        box-shadow: 0 20px 56px -42px color-mix(in oklab, var(--color-foreground) 75%, transparent);
     }
 
     .mobile-project-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.75rem;
-    }
-
-    .mobile-project-card.project-card-featured {
-        box-shadow: 0 22px 60px -42px color-mix(in oklab, var(--color-foreground) 80%, transparent);
     }
 
     .mobile-project-media {
@@ -958,7 +916,7 @@ h3,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .ambient-blob {

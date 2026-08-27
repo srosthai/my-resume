@@ -178,7 +178,7 @@ onBeforeUnmount(() => {
 
             <!-- HERO -->
             <article
-                class="mobile-contact-hero reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                class="card-3d mobile-contact-hero reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:p-10"
                 style="--d: 80ms"
             >
                 <div
@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
             <div class="mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:gap-5 md:grid-cols-12">
                 <!-- Contact form card (8 cols) -->
                 <article
-                    class="mobile-form-card reveal relative col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8"
+                    class="card-3d mobile-form-card reveal relative col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:col-span-8"
                     style="--d: 160ms"
                 >
                     <div
@@ -328,7 +328,7 @@ onBeforeUnmount(() => {
                             <button
                                 type="submit"
                                 :disabled="form.processing"
-                                class="cta-primary group inline-flex items-center gap-3 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-all duration-300 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                                class="btn-3d cta-primary group inline-flex items-center gap-3 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <span v-if="form.processing">Sending…</span>
                                 <span v-else>Send message</span>
@@ -349,7 +349,7 @@ onBeforeUnmount(() => {
                 <aside class="col-span-1 space-y-4 sm:space-y-5 md:col-span-4">
                     <!-- Direct contact card -->
                     <article
-                        class="reveal bento-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6"
+                        class="card-3d reveal bento-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6"
                         style="--d: 240ms"
                     >
                         <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
@@ -375,7 +375,7 @@ onBeforeUnmount(() => {
 
                     <!-- Availability card -->
                     <article
-                        class="reveal bento-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6"
+                        class="card-3d reveal bento-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6"
                         style="--d: 320ms"
                     >
                         <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
@@ -426,7 +426,7 @@ onBeforeUnmount(() => {
                     <article
                         v-for="(social, i) in socialLinks"
                         :key="social.name"
-                        class="social-card reveal group relative cursor-pointer overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl"
+                        class="card-3d social-card reveal group relative cursor-pointer overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl"
                         :style="{ '--d': 120 + i * 70 + 'ms' }"
                         tabindex="0"
                         role="link"
@@ -482,7 +482,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 .is-visible .reveal {
     animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -491,11 +491,11 @@ onBeforeUnmount(() => {
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -534,26 +534,7 @@ h3,
     pointer-events: none;
 }
 
-/* Bento card hover lift */
-.bento-card {
-    transition:
-        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.35s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-    .bento-card:hover {
-        transform: translateY(-3px);
-        border-color: color-mix(in oklab, var(--color-foreground) 20%, var(--color-border));
-    }
-}
-
 /* CTA */
-.cta-primary {
-    box-shadow: 0 10px 30px -10px color-mix(in oklab, var(--color-foreground) 40%, transparent);
-}
-.cta-primary:hover {
-    box-shadow: 0 14px 40px -12px color-mix(in oklab, var(--color-foreground) 55%, transparent);
-}
 
 /* Form fields */
 .field {
@@ -627,22 +608,11 @@ h3,
 
 /* Social cards */
 .social-card {
-    transition:
-        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.35s ease,
-        box-shadow 0.35s ease;
     outline: none;
 }
-@media (hover: hover) and (pointer: fine) {
-    .social-card:hover {
-        transform: translateY(-3px);
-        border-color: color-mix(in oklab, var(--color-foreground) 25%, var(--color-border));
-        box-shadow: 0 22px 45px -28px rgba(0, 0, 0, 0.4);
-    }
-}
 .social-card:focus-visible {
-    border-color: color-mix(in oklab, var(--color-foreground) 40%, var(--color-border));
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-foreground) 20%, transparent);
+    outline: 2px solid var(--card-ink);
+    outline-offset: 3px;
 }
 
 @media (max-width: 767px) {
@@ -684,7 +654,7 @@ h3,
     }
 
     .mobile-contact-hero {
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         padding: 1.25rem;
         background:
             linear-gradient(
@@ -693,9 +663,6 @@ h3,
                 color-mix(in oklab, var(--color-muted) 62%, transparent)
             ),
             radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 34%);
-        box-shadow:
-            0 1px 0 color-mix(in oklab, white 16%, transparent) inset,
-            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .mobile-contact-hero .flex.items-center.justify-between > span:last-child {
@@ -717,7 +684,7 @@ h3,
     .mobile-form-card,
     .bento-card,
     .social-card {
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
         padding: 1rem;
     }
@@ -778,7 +745,7 @@ h3,
     .mobile-social-section > div:first-child {
         margin-bottom: 0.75rem;
         border: 1px solid color-mix(in oklab, var(--color-border) 65%, transparent);
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-background) 88%, transparent);
         padding: 0.9rem 1rem;
         backdrop-filter: blur(18px);
@@ -797,7 +764,7 @@ h3,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .ambient-blob {

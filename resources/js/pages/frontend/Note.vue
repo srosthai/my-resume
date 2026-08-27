@@ -1,23 +1,12 @@
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
-import { Head } from '@inertiajs/vue3'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-    Search,
-    Copy,
-    Check,
-    ArrowLeft,
-    Book,
-    Code2,
-    Terminal,
-    Lightbulb,
-    X,
-    ArrowUpRight,
-} from 'lucide-vue-next'
-import FrontendLayout from '@/layouts/FrontendLayout.vue'
-import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock'
-import { usePointerGlow } from '@/composables/usePointerGlow'
-import { usePageReveal } from '@/composables/usePageReveal'
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePageReveal } from '@/composables/usePageReveal';
+import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
+import { usePointerGlow } from '@/composables/usePointerGlow';
+import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import { ArrowLeft, ArrowUpRight, Book, Check, Code2, Copy, Lightbulb, Search, Terminal, X } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 const props = defineProps({
     title: { type: String, default: 'My Notes' },
@@ -26,74 +15,74 @@ const props = defineProps({
         default: 'My collection of programming notes and tutorials',
     },
     notes: { type: Array, default: () => [] },
-})
+});
 
-const { isLoading, isVisible } = usePageReveal(400)
-const searchQuery = ref('')
-const selectedFilter = ref('All')
-const selectedNote = ref(null)
-const copiedCommands = ref(new Set())
+const { isLoading, isVisible } = usePageReveal(400);
+const searchQuery = ref('');
+const selectedFilter = ref('All');
+const selectedNote = ref(null);
+const copiedCommands = ref(new Set());
 
-const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear();
 
 // Date format matches the composable's `date` output exactly.
-const { date: dateString } = usePhnomPenhClock(60000)
+const { date: dateString } = usePhnomPenhClock(60000);
 
-const { pointer } = usePointerGlow()
+const { pointer } = usePointerGlow();
 
 const categories = computed(() => {
-    return ['All', ...new Set(props.notes.map((n) => n.category))]
-})
+    return ['All', ...new Set(props.notes.map((n) => n.category))];
+});
 
 const countByCategory = computed(() => {
-    const m = { All: props.notes.length }
+    const m = { All: props.notes.length };
     for (const cat of categories.value) {
-        if (cat === 'All') continue
-        m[cat] = props.notes.filter((n) => n.category === cat).length
+        if (cat === 'All') continue;
+        m[cat] = props.notes.filter((n) => n.category === cat).length;
     }
-    return m
-})
+    return m;
+});
 
 const filteredNotes = computed(() => {
-    let filtered = props.notes
+    let filtered = props.notes;
     if (selectedFilter.value !== 'All') {
-        filtered = filtered.filter((n) => n.category === selectedFilter.value)
+        filtered = filtered.filter((n) => n.category === selectedFilter.value);
     }
-    const q = searchQuery.value.trim().toLowerCase()
+    const q = searchQuery.value.trim().toLowerCase();
     if (q) {
         filtered = filtered.filter(
             (n) =>
                 (n.title || '').toLowerCase().includes(q) ||
                 (n.description || '').toLowerCase().includes(q) ||
                 (Array.isArray(n.tags) && n.tags.some((t) => t.toLowerCase().includes(q))),
-        )
+        );
     }
-    return filtered
-})
+    return filtered;
+});
 
-const copyTimers = new Map()
+const copyTimers = new Map();
 
 const copyCommand = async (command, stepIndex, commandIndex) => {
     try {
-        await navigator.clipboard.writeText(command)
-        const key = `${stepIndex}-${commandIndex}`
-        copiedCommands.value.add(key)
-        if (copyTimers.has(key)) clearTimeout(copyTimers.get(key))
+        await navigator.clipboard.writeText(command);
+        const key = `${stepIndex}-${commandIndex}`;
+        copiedCommands.value.add(key);
+        if (copyTimers.has(key)) clearTimeout(copyTimers.get(key));
         copyTimers.set(
             key,
             setTimeout(() => {
-                copiedCommands.value.delete(key)
-                copyTimers.delete(key)
+                copiedCommands.value.delete(key);
+                copyTimers.delete(key);
             }, 2000),
-        )
+        );
     } catch (err) {
-        console.error('Failed to copy command:', err)
+        console.error('Failed to copy command:', err);
     }
-}
+};
 
 const isCopied = (stepIndex, commandIndex) => {
-    return copiedCommands.value.has(`${stepIndex}-${commandIndex}`)
-}
+    return copiedCommands.value.has(`${stepIndex}-${commandIndex}`);
+};
 
 const getCategoryIcon = (category) => {
     const icons = {
@@ -104,41 +93,41 @@ const getCategoryIcon = (category) => {
         React: Code2,
         JavaScript: Terminal,
         PHP: Code2,
-    }
-    return icons[category] || Book
-}
+    };
+    return icons[category] || Book;
+};
 
 const formatDate = (date) => {
-    if (!date) return ''
+    if (!date) return '';
     try {
         return new Date(date).toLocaleDateString('en-US', {
             month: 'short',
             day: '2-digit',
             year: 'numeric',
-        })
+        });
     } catch {
-        return ''
+        return '';
     }
-}
+};
 
 const openNote = (note) => {
-    selectedNote.value = note
+    selectedNote.value = note;
     if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-}
+};
 
 const closeNote = () => {
-    selectedNote.value = null
+    selectedNote.value = null;
     if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-}
+};
 
 onBeforeUnmount(() => {
-    for (const id of copyTimers.values()) clearTimeout(id)
-    copyTimers.clear()
-})
+    for (const id of copyTimers.values()) clearTimeout(id);
+    copyTimers.clear();
+});
 </script>
 
 <template>
@@ -146,10 +135,7 @@ onBeforeUnmount(() => {
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description" />
-            <meta
-                name="keywords"
-                content="programming notes, tutorials, coding guides, developer notebook"
-            />
+            <meta name="keywords" content="programming notes, tutorials, coding guides, developer notebook" />
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
@@ -160,18 +146,11 @@ onBeforeUnmount(() => {
         </Head>
 
         <!-- Skeleton -->
-        <section
-            v-if="isLoading"
-            class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
-        >
+        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-56 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-16 rounded-2xl md:col-span-12" />
-                <Skeleton
-                    v-for="i in 6"
-                    :key="`note-skeleton-${i}`"
-                    class="col-span-2 h-56 rounded-2xl sm:col-span-1 md:col-span-4"
-                />
+                <Skeleton v-for="i in 6" :key="`note-skeleton-${i}`" class="col-span-2 h-56 rounded-2xl sm:col-span-1 md:col-span-4" />
             </div>
         </section>
 
@@ -182,20 +161,14 @@ onBeforeUnmount(() => {
             :class="{ 'is-visible': isVisible }"
         >
             <!-- Ambient + grain -->
-            <div
-                class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-                aria-hidden="true"
-            >
-                <div
-                    class="ambient-blob"
-                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
-                ></div>
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+                <div class="ambient-blob" :style="{ left: pointer.x + '%', top: pointer.y + '%' }"></div>
                 <div class="grain-overlay"></div>
             </div>
 
             <!-- Top meta strip -->
             <div
-                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] tracking-[0.22em] text-muted-foreground/70 uppercase sm:mb-5 sm:text-[10px] md:text-xs"
                 style="--d: 0ms"
             >
                 <span class="flex items-center gap-2">
@@ -208,16 +181,16 @@ onBeforeUnmount(() => {
 
             <!-- HERO -->
             <article
-                class="reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                class="card-3d reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:p-10"
                 style="--d: 80ms"
             >
                 <div
-                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                    class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
                     aria-hidden="true"
                 ></div>
 
                 <div
-                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                    class="flex items-center justify-between font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase sm:text-[10px] md:text-xs"
                 >
                     <span class="inline-flex items-center gap-2">
                         <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
@@ -227,45 +200,25 @@ onBeforeUnmount(() => {
                 </div>
 
                 <h1 class="mt-5 font-serif leading-[0.9] tracking-tight sm:mt-6">
-                    <span
-                        class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground"
-                    >
-                        Note
-                    </span>
-                    <span
-                        class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal italic text-foreground/80"
-                    >
-                        -book.
-                    </span>
+                    <span class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground"> Note </span>
+                    <span class="block text-[clamp(2.5rem,9vw,6.5rem)] font-normal text-foreground/80 italic"> -book. </span>
                 </h1>
 
-                <p
-                    class="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-[15px] md:text-base"
-                >
-                    A working notebook of installation guides, configuration recipes, and quick
-                    references — the things I keep wanting to look up.
+                <p class="mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-[15px] md:text-base">
+                    A working notebook of installation guides, configuration recipes, and quick references — the things I keep wanting to look up.
                 </p>
             </article>
 
             <!-- FILTER BAR -->
             <div class="reveal mt-4 sm:mt-5" style="--d: 160ms">
-                <div
-                    class="rounded-[1.25rem] border border-border/60 bg-card/60 p-3 backdrop-blur-xl sm:rounded-2xl sm:p-4"
-                >
+                <div class="card-3d rounded-[1.25rem] border border-border/60 bg-card/60 p-3 backdrop-blur-xl sm:rounded-[1.25rem] sm:p-4">
                     <div class="relative">
-                        <Search
-                            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50"
-                        />
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="Search notes, tags, or content…"
-                            class="search-input"
-                        />
+                        <Search class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                        <input v-model="searchQuery" type="text" placeholder="Search notes, tags, or content…" class="search-input" />
                         <button
                             v-if="searchQuery"
                             @click="searchQuery = ''"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors hover:text-foreground"
+                            class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground/60 transition-colors hover:text-foreground"
                             aria-label="Clear search"
                         >
                             <X class="h-4 w-4" />
@@ -273,13 +226,11 @@ onBeforeUnmount(() => {
                     </div>
 
                     <div class="relative mt-3">
-                        <div
-                            class="scroll-row flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"
-                        >
+                        <div class="scroll-row flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
                             <button
                                 v-for="category in categories"
                                 :key="category"
-                                class="filter-pill shrink-0"
+                                class="btn-3d filter-pill shrink-0"
                                 :class="{ 'filter-pill-active': selectedFilter === category }"
                                 @click="selectedFilter = category"
                             >
@@ -293,16 +244,9 @@ onBeforeUnmount(() => {
                         ></div>
                     </div>
 
-                    <div
-                        class="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
-                    >
-                        <span>
-                            {{ String(filteredNotes.length).padStart(2, '0') }} /
-                            {{ String(notes.length).padStart(2, '0') }} entries
-                        </span>
-                        <span v-if="selectedFilter !== 'All'" class="hidden sm:inline">
-                            filed under {{ selectedFilter }}
-                        </span>
+                    <div class="mt-3 flex items-center justify-between font-mono text-[10px] tracking-[0.22em] text-muted-foreground uppercase">
+                        <span> {{ String(filteredNotes.length).padStart(2, '0') }} / {{ String(notes.length).padStart(2, '0') }} entries </span>
+                        <span v-if="selectedFilter !== 'All'" class="hidden sm:inline"> filed under {{ selectedFilter }} </span>
                     </div>
                 </div>
             </div>
@@ -311,33 +255,24 @@ onBeforeUnmount(() => {
             <div class="mt-4 sm:mt-5">
                 <div
                     v-if="filteredNotes.length === 0"
-                    class="reveal rounded-[1.25rem] border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center backdrop-blur-xl sm:rounded-3xl sm:py-24"
+                    class="card-3d reveal rounded-[1.25rem] border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center backdrop-blur-xl sm:rounded-[1.5rem] sm:py-24"
                     style="--d: 240ms"
                 >
-                    <div
-                        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-muted/40"
-                    >
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-muted/40">
                         <Search class="h-5 w-5 text-muted-foreground/60" />
                     </div>
-                    <h3 class="mt-5 font-serif text-2xl text-foreground sm:text-3xl">
-                        Nothing on file.
-                    </h3>
+                    <h3 class="mt-5 font-serif text-2xl text-foreground sm:text-3xl">Nothing on file.</h3>
                     <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-                        <template v-if="searchQuery || selectedFilter !== 'All'">
-                            Try a different search term or filter.
-                        </template>
+                        <template v-if="searchQuery || selectedFilter !== 'All'"> Try a different search term or filter. </template>
                         <template v-else>The notebook is empty for now.</template>
                     </p>
                 </div>
 
-                <div
-                    v-else
-                    class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3"
-                >
+                <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
                     <article
                         v-for="(note, i) in filteredNotes"
                         :key="note.id"
-                        class="note-card reveal group relative cursor-pointer overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:p-6"
+                        class="card-3d note-card reveal group relative cursor-pointer overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:p-6"
                         :style="{ '--d': 240 + i * 60 + 'ms' }"
                         tabindex="0"
                         role="button"
@@ -355,53 +290,34 @@ onBeforeUnmount(() => {
                                 <span
                                     class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-foreground transition-all duration-300 group-hover:border-foreground/40 group-hover:bg-foreground group-hover:text-background"
                                 >
-                                    <component
-                                        :is="getCategoryIcon(note.category)"
-                                        class="h-4 w-4"
-                                    />
+                                    <component :is="getCategoryIcon(note.category)" class="h-4 w-4" />
                                 </span>
                                 <span class="category-chip">{{ note.category }}</span>
                             </div>
 
-                            <h3
-                                class="mt-5 font-serif text-2xl leading-tight tracking-tight text-foreground sm:text-[26px]"
-                            >
+                            <h3 class="mt-5 font-serif text-2xl leading-tight tracking-tight text-foreground sm:text-[26px]">
                                 {{ note.title }}
                             </h3>
 
-                            <p
-                                class="mt-3 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground"
-                            >
+                            <p class="mt-3 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground">
                                 {{ note.description }}
                             </p>
 
-                            <div
-                                v-if="note.tags && note.tags.length"
-                                class="mt-4 flex flex-wrap gap-1.5"
-                            >
-                                <span
-                                    v-for="tag in note.tags.slice(0, 4)"
-                                    :key="tag"
-                                    class="tag-chip"
-                                >
+                            <div v-if="note.tags && note.tags.length" class="mt-4 flex flex-wrap gap-1.5">
+                                <span v-for="tag in note.tags.slice(0, 4)" :key="tag" class="tag-chip">
                                     {{ tag }}
                                 </span>
-                                <span
-                                    v-if="note.tags.length > 4"
-                                    class="tag-chip tag-chip-more"
-                                >
-                                    +{{ note.tags.length - 4 }}
-                                </span>
+                                <span v-if="note.tags.length > 4" class="tag-chip tag-chip-more"> +{{ note.tags.length - 4 }} </span>
                             </div>
 
                             <div
-                                class="mt-5 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70"
+                                class="mt-5 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px] tracking-[0.22em] text-muted-foreground/70 uppercase"
                             >
                                 <span>{{ formatDate(note.created_at) }}</span>
                                 <span class="inline-flex items-center gap-1.5">
                                     Read entry
                                     <ArrowUpRight
-                                        class="h-3 w-3 opacity-60 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                                        class="h-3 w-3 opacity-60 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
                                     />
                                 </span>
                             </div>
@@ -412,7 +328,7 @@ onBeforeUnmount(() => {
 
             <!-- Footer -->
             <div
-                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 800ms"
             >
                 <span>© {{ currentYear }} · Notebook</span>
@@ -428,20 +344,14 @@ onBeforeUnmount(() => {
             :key="selectedNote.id"
         >
             <!-- Ambient + grain -->
-            <div
-                class="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-                aria-hidden="true"
-            >
-                <div
-                    class="ambient-blob"
-                    :style="{ left: pointer.x + '%', top: pointer.y + '%' }"
-                ></div>
+            <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+                <div class="ambient-blob" :style="{ left: pointer.x + '%', top: pointer.y + '%' }"></div>
                 <div class="grain-overlay"></div>
             </div>
 
             <!-- Top meta strip -->
             <div
-                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 sm:mb-5 sm:text-[10px] md:text-xs"
+                class="reveal mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 font-mono text-[9px] tracking-[0.22em] text-muted-foreground/70 uppercase sm:mb-5 sm:text-[10px] md:text-xs"
                 style="--d: 0ms"
             >
                 <span class="flex items-center gap-2">
@@ -454,13 +364,10 @@ onBeforeUnmount(() => {
 
             <!-- Breadcrumb -->
             <nav
-                class="reveal mb-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:mb-6 sm:text-[11px]"
+                class="reveal mb-5 flex items-center gap-2 font-mono text-[10px] tracking-[0.22em] text-muted-foreground uppercase sm:mb-6 sm:text-[11px]"
                 style="--d: 60ms"
             >
-                <button
-                    @click="closeNote"
-                    class="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                >
+                <button @click="closeNote" class="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
                     <ArrowLeft class="h-3 w-3" />
                     <span>Notebook</span>
                 </button>
@@ -470,16 +377,16 @@ onBeforeUnmount(() => {
 
             <!-- HERO -->
             <article
-                class="reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10"
+                class="card-3d reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:p-10"
                 style="--d: 140ms"
             >
                 <div
-                    class="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
+                    class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rotate-45 bg-gradient-to-br from-foreground/[0.04] to-transparent"
                     aria-hidden="true"
                 ></div>
 
                 <div
-                    class="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground sm:text-[10px] md:text-xs"
+                    class="flex items-center justify-between font-mono text-[9px] tracking-[0.25em] text-muted-foreground uppercase sm:text-[10px] md:text-xs"
                 >
                     <span class="inline-flex items-center gap-2">
                         <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
@@ -488,22 +395,15 @@ onBeforeUnmount(() => {
                     <span class="tabular-nums">{{ formatDate(selectedNote.created_at) }}</span>
                 </div>
 
-                <h1
-                    class="mt-5 font-serif text-[clamp(2rem,6vw,4.25rem)] font-normal leading-[0.95] tracking-tight text-foreground sm:mt-6"
-                >
+                <h1 class="mt-5 font-serif text-[clamp(2rem,6vw,4.25rem)] leading-[0.95] font-normal tracking-tight text-foreground sm:mt-6">
                     {{ selectedNote.title }}
                 </h1>
 
-                <p
-                    class="mt-5 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-[15px] md:text-base"
-                >
+                <p class="mt-5 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-[15px] md:text-base">
                     {{ selectedNote.description }}
                 </p>
 
-                <div
-                    v-if="selectedNote.tags && selectedNote.tags.length"
-                    class="mt-6 flex flex-wrap gap-1.5"
-                >
+                <div v-if="selectedNote.tags && selectedNote.tags.length" class="mt-6 flex flex-wrap gap-1.5">
                     <span v-for="tag in selectedNote.tags" :key="tag" class="tag-chip">
                         {{ tag }}
                     </span>
@@ -515,13 +415,11 @@ onBeforeUnmount(() => {
                 <!-- Overview -->
                 <article
                     v-if="selectedNote.content.overview"
-                    class="reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+                    class="card-3d reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8"
                     style="--d: 220ms"
                 >
                     <span class="section-eyebrow">— Overview</span>
-                    <p
-                        class="mt-4 text-sm leading-[1.8] text-muted-foreground sm:text-[15px] md:text-base"
-                    >
+                    <p class="mt-4 text-sm leading-[1.8] text-muted-foreground sm:text-[15px] md:text-base">
                         {{ selectedNote.content.overview }}
                     </p>
                 </article>
@@ -529,7 +427,7 @@ onBeforeUnmount(() => {
                 <!-- Requirements -->
                 <article
                     v-if="selectedNote.content.requirements && selectedNote.content.requirements.length"
-                    class="reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+                    class="card-3d reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8"
                     style="--d: 280ms"
                 >
                     <span class="section-eyebrow">— Requirements</span>
@@ -548,7 +446,7 @@ onBeforeUnmount(() => {
                 <!-- Steps -->
                 <article
                     v-if="selectedNote.content.steps && selectedNote.content.steps.length"
-                    class="reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8"
+                    class="card-3d reveal overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8"
                     style="--d: 340ms"
                 >
                     <span class="section-eyebrow">— Steps</span>
@@ -566,39 +464,22 @@ onBeforeUnmount(() => {
                                 </div>
                                 <div class="min-w-0">
                                     <h3 class="step-row-title">{{ step.title }}</h3>
-                                    <p
-                                        v-if="step.description"
-                                        class="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[15px]"
-                                    >
+                                    <p v-if="step.description" class="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
                                         {{ step.description }}
                                     </p>
                                 </div>
                             </div>
 
-                            <div
-                                v-if="step.commands && step.commands.length"
-                                class="mt-4 space-y-2 sm:ml-12"
-                            >
-                                <div
-                                    v-for="(command, commandIndex) in step.commands"
-                                    :key="commandIndex"
-                                    class="code-block group/code"
-                                >
+                            <div v-if="step.commands && step.commands.length" class="mt-4 space-y-2 sm:ml-12">
+                                <div v-for="(command, commandIndex) in step.commands" :key="commandIndex" class="code-block group/code">
                                     <div class="code-prompt" aria-hidden="true">$</div>
                                     <code class="code-content">{{ command }}</code>
                                     <button
                                         @click.stop="copyCommand(command, stepIndex, commandIndex)"
                                         class="code-copy"
-                                        :aria-label="
-                                            isCopied(stepIndex, commandIndex)
-                                                ? 'Copied'
-                                                : 'Copy command'
-                                        "
+                                        :aria-label="isCopied(stepIndex, commandIndex) ? 'Copied' : 'Copy command'"
                                     >
-                                        <Check
-                                            v-if="isCopied(stepIndex, commandIndex)"
-                                            class="h-3.5 w-3.5 text-emerald-500"
-                                        />
+                                        <Check v-if="isCopied(stepIndex, commandIndex)" class="h-3.5 w-3.5 text-emerald-500" />
                                         <Copy v-else class="h-3.5 w-3.5" />
                                     </button>
                                 </div>
@@ -609,13 +490,10 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Bottom nav -->
-            <nav
-                class="reveal mt-8 border-t border-border/50 pt-6 sm:mt-10 sm:pt-8"
-                style="--d: 500ms"
-            >
+            <nav class="reveal mt-8 border-t border-border/50 pt-6 sm:mt-10 sm:pt-8" style="--d: 500ms">
                 <button
                     @click="closeNote"
-                    class="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60"
+                    class="btn-3d inline-flex items-center gap-2 rounded-full bg-background/40 px-5 py-3 font-mono text-[10px] tracking-[0.22em] text-foreground uppercase backdrop-blur-sm"
                 >
                     <ArrowLeft class="h-3.5 w-3.5 opacity-60" />
                     All entries
@@ -624,7 +502,7 @@ onBeforeUnmount(() => {
 
             <!-- Footer -->
             <div
-                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
+                class="reveal mt-10 flex flex-col items-start justify-between gap-1.5 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/60 uppercase sm:mt-14 sm:flex-row sm:items-center sm:gap-2 sm:text-[10px] sm:tracking-[0.22em] md:text-xs"
                 style="--d: 600ms"
             >
                 <span>© {{ currentYear }} · Entry · {{ selectedNote.category }}</span>
@@ -637,7 +515,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 .is-visible .reveal {
     animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -646,11 +524,11 @@ onBeforeUnmount(() => {
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -672,11 +550,7 @@ h3,
     height: 40rem;
     border-radius: 9999px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(
-        closest-side,
-        color-mix(in oklab, var(--color-foreground) 7%, transparent),
-        transparent 70%
-    );
+    background: radial-gradient(closest-side, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 70%);
     filter: blur(60px);
     transition:
         left 600ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -743,14 +617,8 @@ h3,
     color: var(--color-foreground);
     white-space: nowrap;
     cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        background-color 0.2s ease,
-        color 0.2s ease;
 }
 .filter-pill:hover {
-    transform: translateY(-1.5px);
     border-color: color-mix(in oklab, var(--color-foreground) 35%, var(--color-border));
 }
 .filter-pill-active {
@@ -808,7 +676,9 @@ h3,
     font-size: 10px;
     letter-spacing: 0.04em;
     color: var(--color-foreground);
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
 }
 .tag-chip:hover {
     transform: translateY(-1px);
@@ -820,23 +690,12 @@ h3,
 
 /* Note cards */
 .note-card {
-    transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.4s ease,
-        box-shadow 0.4s ease;
     min-height: 16rem;
     outline: none;
 }
-@media (hover: hover) and (pointer: fine) {
-    .note-card:hover {
-        transform: translateY(-4px);
-        border-color: color-mix(in oklab, var(--color-foreground) 25%, var(--color-border));
-        box-shadow: 0 22px 45px -28px rgba(0, 0, 0, 0.4);
-    }
-}
 .note-card:focus-visible {
-    border-color: color-mix(in oklab, var(--color-foreground) 40%, var(--color-border));
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-foreground) 20%, transparent);
+    outline: 2px solid var(--card-ink);
+    outline-offset: 3px;
 }
 
 /* Italic serif index watermark */
@@ -853,7 +712,9 @@ h3,
     pointer-events: none;
     user-select: none;
     z-index: 0;
-    transition: color 0.5s ease, transform 0.5s ease;
+    transition:
+        color 0.5s ease,
+        transform 0.5s ease;
 }
 @media (hover: hover) and (pointer: fine) {
     .note-card:hover .index-watermark {
@@ -967,7 +828,7 @@ h3,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .ambient-blob {

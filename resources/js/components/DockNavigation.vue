@@ -6,7 +6,7 @@ interface Props {
     currentRoute?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     currentRoute: '/',
 });
 
@@ -59,15 +59,17 @@ const links = [
 
 <template>
     <div
-        class="fixed inset-x-0 bottom-0 z-50 flex w-full items-center justify-center px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:sticky md:top-0 md:bottom-auto md:border-b md:border-border/20 md:bg-background/80 md:px-4 md:py-4 md:backdrop-blur-md"
+        class="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex w-full items-center justify-center px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:sticky md:top-0 md:bottom-auto md:px-4 md:py-4"
     >
+        <!-- Only the pill is a surface; the strip around it is transparent and lets clicks through -->
         <FloatingDock
+            class="pointer-events-auto"
             :items="links"
             :current-route="currentRoute"
             direction="middle"
             :show-theme-toggle="false"
-            className="shadow-xl"
-            mobileClassName="max-w-full overflow-x-auto backdrop-blur-xl"
+            className="card-3d dock-3d bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 dark:bg-background/80 supports-[backdrop-filter]:dark:bg-background/70"
+            mobileClassName="card-3d dock-3d max-w-full overflow-x-auto backdrop-blur-xl"
         />
     </div>
 </template>

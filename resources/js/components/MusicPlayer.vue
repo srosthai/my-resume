@@ -313,7 +313,7 @@ watch(currentSongIndex, () => {
                     <Button
                         @click="handleMusicButtonClick"
                         size="lg"
-                        class="h-14 w-14 rounded-full bg-primary/90 text-primary-foreground shadow-xl transition-all duration-300 hover:scale-110 hover:bg-primary hover:shadow-2xl active:scale-105 active:bg-primary/80"
+                        class="btn-3d h-14 w-14 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary active:bg-primary/80"
                         :class="{
                             'animate-pulse': isPlaying && !isExpanded,
                             'bg-primary': isExpanded,

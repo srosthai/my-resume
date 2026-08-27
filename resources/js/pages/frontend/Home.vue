@@ -123,7 +123,7 @@ const doubledStacks = computed(() => {
             <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <!-- Hero card (name + meta) -->
                 <article
-                    class="mobile-hero-card bento-card reveal relative col-span-2 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_20px_60px_-30px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8 md:p-10"
+                    class="card-3d mobile-hero-card bento-card reveal relative col-span-2 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:col-span-8 md:p-10"
                     style="--d: 80ms"
                 >
                     <!-- Diagonal stripe decoration -->
@@ -184,7 +184,7 @@ const doubledStacks = computed(() => {
                     <div class="mt-6 flex flex-wrap items-center gap-2.5 sm:mt-8 sm:gap-3">
                         <Link
                             href="/portfolio"
-                            class="mobile-action mobile-action-solid group inline-flex items-center gap-2 rounded-full border border-foreground bg-foreground px-4 py-2.5 text-xs font-medium text-background shadow-[0_14px_34px_-22px_rgba(0,0,0,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/85 hover:bg-foreground/85 hover:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)] sm:px-5 sm:py-3 sm:text-sm dark:shadow-[0_14px_34px_-20px_rgba(255,255,255,0.55)] dark:hover:shadow-[0_18px_40px_-18px_rgba(255,255,255,0.7)]"
+                            class="btn-3d mobile-action mobile-action-solid group inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-medium text-background hover:bg-foreground/85 sm:px-5 sm:py-3 sm:text-sm"
                         >
                             <span>See projects</span>
                             <ArrowUpRight
@@ -193,7 +193,7 @@ const doubledStacks = computed(() => {
                         </Link>
                         <Link
                             href="/feeds"
-                            class="mobile-action group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"
+                            class="btn-3d mobile-action group inline-flex items-center gap-2 rounded-full bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm sm:px-5 sm:py-3 sm:text-sm"
                         >
                             <Rss class="h-3 w-3 opacity-70 sm:h-3.5 sm:w-3.5" />
                             <span>My feeds</span>
@@ -212,7 +212,7 @@ const doubledStacks = computed(() => {
 
                 <!-- Portrait card (hidden on mobile; chip lives inside hero card) -->
                 <article
-                    class="bento-card reveal relative col-span-2 hidden overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
+                    class="card-3d bento-card reveal relative col-span-2 hidden overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
                     style="--d: 160ms"
                 >
                     <div class="flex items-center justify-between">
@@ -246,7 +246,7 @@ const doubledStacks = computed(() => {
 
                 <!-- Clock / location card -->
                 <article
-                    class="mobile-metric-card bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    class="card-3d mobile-metric-card bento-card reveal col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 md:col-span-4"
                     style="--d: 240ms"
                 >
                     <div class="flex items-center justify-between gap-2">
@@ -272,7 +272,7 @@ const doubledStacks = computed(() => {
 
                 <!-- Stats card -->
                 <article
-                    class="mobile-metric-card bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    class="card-3d mobile-metric-card bento-card reveal col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 md:col-span-4"
                     style="--d: 320ms"
                 >
                     <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
@@ -300,7 +300,7 @@ const doubledStacks = computed(() => {
 
                 <!-- Social / links card -->
                 <article
-                    class="bento-card reveal col-span-2 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    class="card-3d bento-card reveal col-span-2 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 md:col-span-4"
                     style="--d: 400ms"
                 >
                     <span class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px] sm:tracking-[0.25em]">
@@ -362,7 +362,7 @@ const doubledStacks = computed(() => {
                 <!-- Tech stack marquee -->
                 <article
                     v-if="techStacks.length"
-                    class="bento-card reveal col-span-2 overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl sm:rounded-3xl md:col-span-12"
+                    class="card-3d bento-card reveal col-span-2 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 backdrop-blur-xl sm:rounded-[1.5rem] md:col-span-12"
                     style="--d: 480ms"
                 >
                     <div
@@ -409,7 +409,7 @@ const doubledStacks = computed(() => {
 
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 
 .is-visible .reveal {
@@ -420,11 +420,11 @@ const doubledStacks = computed(() => {
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -462,20 +462,6 @@ h1,
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
     pointer-events: none;
-}
-
-/* Bento cards — lift on hover for desktop only */
-.bento-card {
-    transition:
-        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.35s ease,
-        box-shadow 0.35s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-    .bento-card:hover {
-        transform: translateY(-3px);
-        border-color: color-mix(in oklab, var(--color-foreground) 20%, var(--color-border));
-    }
 }
 
 /* Stat grid */
@@ -673,7 +659,7 @@ h1,
 
     .mobile-hero-card {
         min-height: 25rem;
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         padding: 1.25rem;
         background:
             linear-gradient(
@@ -682,9 +668,6 @@ h1,
                 color-mix(in oklab, var(--color-muted) 72%, transparent)
             ),
             radial-gradient(circle at 90% 8%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 32%);
-        box-shadow:
-            0 1px 0 color-mix(in oklab, white 55%, transparent) inset,
-            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .mobile-hero-card p {
@@ -724,7 +707,7 @@ h1,
 
     .mobile-metric-card {
         min-height: 9.8rem;
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
     }
 
@@ -791,7 +774,7 @@ h1,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .marquee-track {

@@ -1,9 +1,9 @@
 <script setup>
 import { Skeleton } from '@/components/ui/skeleton';
-import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
+import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Briefcase, Code2, GraduationCap, MapPin, Target } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -73,7 +73,6 @@ const stats = computed(() => [
         value: props.aboutMe?.fucus_on || 'Web Development',
     },
 ]);
-
 </script>
 
 <template>
@@ -132,7 +131,7 @@ const stats = computed(() => [
             <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <!-- Big intro card -->
                 <article
-                    class="mobile-profile-card bento-card reveal relative col-span-2 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:col-span-8 md:p-10"
+                    class="card-3d mobile-profile-card bento-card reveal relative col-span-2 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:col-span-8 md:p-10"
                     style="--d: 80ms"
                 >
                     <div
@@ -191,7 +190,7 @@ const stats = computed(() => [
                     <div class="mobile-action-row mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3">
                         <Link
                             href="/portfolio"
-                            class="mobile-action-primary cta-primary group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-medium text-background transition-all duration-300 hover:-translate-y-0.5 sm:gap-3 sm:px-6 sm:py-3 sm:text-sm"
+                            class="btn-3d mobile-action-primary cta-primary group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-xs font-medium text-background sm:gap-3 sm:px-6 sm:py-3 sm:text-sm"
                         >
                             <span>View projects</span>
                             <span
@@ -202,7 +201,7 @@ const stats = computed(() => [
                         </Link>
                         <Link
                             href="/contact"
-                            class="mobile-action group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"
+                            class="btn-3d mobile-action group inline-flex items-center gap-2 rounded-full bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm sm:px-5 sm:py-3 sm:text-sm"
                         >
                             <span>Get in touch</span>
                             <ArrowUpRight
@@ -214,7 +213,7 @@ const stats = computed(() => [
 
                 <!-- Portrait card -->
                 <article
-                    class="bento-card reveal relative col-span-2 hidden overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
+                    class="card-3d bento-card reveal relative col-span-2 hidden overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
                     style="--d: 160ms"
                 >
                     <div class="flex items-center justify-between">
@@ -250,7 +249,7 @@ const stats = computed(() => [
                 <article
                     v-for="(stat, i) in stats"
                     :key="stat.label + '-' + i"
-                    class="mobile-stat-card bento-card reveal col-span-1 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-4"
+                    class="card-3d mobile-stat-card bento-card reveal col-span-1 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 md:col-span-4"
                     :class="{ 'col-span-2': i === 2 }"
                     :style="{ '--d': 240 + i * 80 + 'ms' }"
                 >
@@ -413,7 +412,7 @@ const stats = computed(() => [
                     <article
                         v-for="(group, gi) in groupedTechStacks"
                         :key="group.type"
-                        class="bento-card reveal col-span-2 overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-3xl sm:p-6 md:col-span-6"
+                        class="card-3d bento-card reveal col-span-2 overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-4 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 md:col-span-6"
                         :style="{ '--d': 120 + gi * 100 + 'ms' }"
                     >
                         <div class="flex items-center justify-between">
@@ -456,7 +455,7 @@ const stats = computed(() => [
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 
 .is-visible .reveal {
@@ -467,11 +466,11 @@ const stats = computed(() => [
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -510,20 +509,6 @@ h3,
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
     pointer-events: none;
-}
-
-/* Bento cards */
-.bento-card {
-    transition:
-        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.35s ease,
-        box-shadow 0.35s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-    .bento-card:hover {
-        transform: translateY(-3px);
-        border-color: color-mix(in oklab, var(--color-foreground) 20%, var(--color-border));
-    }
 }
 
 /* Timeline row hover accent */
@@ -570,12 +555,6 @@ h3,
 }
 
 /* CTA */
-.cta-primary {
-    box-shadow: 0 10px 30px -10px color-mix(in oklab, var(--color-foreground) 40%, transparent);
-}
-.cta-primary:hover {
-    box-shadow: 0 14px 40px -12px color-mix(in oklab, var(--color-foreground) 55%, transparent);
-}
 
 /* Tech chips */
 .tech-chip {
@@ -647,7 +626,7 @@ h3,
 
     .mobile-profile-card {
         min-height: 25rem;
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         padding: 1.25rem;
         background:
             linear-gradient(
@@ -656,9 +635,6 @@ h3,
                 color-mix(in oklab, var(--color-muted) 72%, transparent)
             ),
             radial-gradient(circle at 90% 8%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 32%);
-        box-shadow:
-            0 1px 0 color-mix(in oklab, white 55%, transparent) inset,
-            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .mobile-profile-kicker {
@@ -715,7 +691,7 @@ h3,
 
     .mobile-stat-card {
         min-height: 5.35rem;
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
     }
 
@@ -733,13 +709,22 @@ h3,
         margin-top: 2rem;
     }
 
+    /* Section heads and timeline rows only become cards at this width,
+       so they pick up the .card-3d treatment here rather than in markup. */
+    .mobile-section-head,
+    .timeline-row {
+        border: 1.5px solid color-mix(in oklab, var(--card-ink) 78%, transparent);
+        box-shadow:
+            var(--card-lift) var(--card-lift) 0 0 var(--card-ink),
+            0 16px 34px -26px color-mix(in oklab, var(--card-ink) 70%, transparent);
+    }
+
     .mobile-section-head {
         position: sticky;
         top: 4.55rem;
         z-index: 10;
         margin-bottom: 0.75rem;
-        border: 1px solid color-mix(in oklab, var(--color-border) 65%, transparent);
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-background) 88%, transparent);
         padding: 0.9rem 1rem;
         backdrop-filter: blur(18px);
@@ -751,15 +736,22 @@ h3,
 
     .timeline-row {
         margin-bottom: 0.75rem;
-        border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 72%, transparent);
         padding: 1rem;
-        box-shadow: 0 18px 46px -38px color-mix(in oklab, var(--color-foreground) 65%, transparent);
+        transition:
+            transform 0.3s var(--card-ease),
+            box-shadow 0.3s var(--card-ease);
     }
 
     .timeline-row:first-child {
-        border-top: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+        border-top-width: 1.5px;
+    }
+
+    .timeline-row:active {
+        transform: translate(var(--card-lift), var(--card-lift));
+        box-shadow: 0 0 0 0 var(--card-ink);
+        transition-duration: 0.08s;
     }
 
     .timeline-row h3 {
@@ -782,10 +774,13 @@ h3,
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .timeline-row:active {
+        transform: none;
+    }
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .ambient-blob {

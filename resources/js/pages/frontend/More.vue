@@ -354,15 +354,15 @@ onUnmounted(() => {
 
                 <!-- Tab Navigation -->
                 <div class="flex justify-center" :class="{ 'fade-in-up': isVisible }">
-                    <div class="flex bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-1.5 shadow-lg">
+                    <div class="card-3d flex bg-card/80 backdrop-blur-xl border border-border/60 rounded-[1.25rem] p-1.5">
                         <Link
                             v-for="tab in tabs" 
                             :key="tab.id"
                             :href="tab.route"
                             :class="[
-                                'flex items-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md',
+                                'btn-3d flex items-center gap-3 px-6 py-4 rounded-xl font-semibold',
                                 activeTab === tab.id 
-                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' 
+                                    ? 'bg-primary text-primary-foreground' 
                                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
                             ]"
                         >
@@ -649,14 +649,14 @@ onUnmounted(() => {
                                             
                                             <button 
                                                 @click="previousTrack"
-                                                class="p-3 rounded-full text-foreground hover:bg-muted transition-colors duration-200"
+                                                class="btn-3d p-3 rounded-full bg-card text-foreground hover:bg-muted"
                                             >
                                                 <SkipBack class="w-5 h-5" />
                                             </button>
                                             
                                             <button 
                                                 @click="togglePlay"
-                                                class="p-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+                                                class="btn-3d p-4 bg-primary text-primary-foreground rounded-full hover:bg-primary/90"
                                             >
                                                 <Play v-if="!isPlaying" class="w-6 h-6 ml-0.5" />
                                                 <Pause v-else class="w-6 h-6" />
@@ -664,7 +664,7 @@ onUnmounted(() => {
                                             
                                             <button 
                                                 @click="nextTrack"
-                                                class="p-3 rounded-full text-foreground hover:bg-muted transition-colors duration-200"
+                                                class="btn-3d p-3 rounded-full bg-card text-foreground hover:bg-muted"
                                             >
                                                 <SkipForward class="w-5 h-5" />
                                             </button>
@@ -698,7 +698,7 @@ onUnmounted(() => {
                                             <a 
                                                 :href="playlist[currentTrack].youtubeUrl" 
                                                 target="_blank"
-                                                class="px-3 py-1 text-xs bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                                                class="btn-3d px-3 py-1 text-xs bg-red-500 text-white rounded-full hover:bg-red-600"
                                             >
                                                 YouTube
                                             </a>
@@ -709,7 +709,7 @@ onUnmounted(() => {
                         </Card>
 
                         <!-- Playlist -->
-                        <Card class="bg-card/60 backdrop-blur-xl border border-border/60 rounded-3xl shadow-xl">
+                        <Card class="card-3d bg-card/60 backdrop-blur-xl border border-border/60 rounded-[1.5rem]">
                             <CardHeader class="pb-4">
                                 <CardTitle class="flex items-center gap-3 text-xl">
                                     <Music class="w-6 h-6" />
@@ -838,13 +838,6 @@ button {
     transition: all 0.2s ease;
 }
 
-button:hover {
-    transform: translateY(-1px);
-}
-
-button:active {
-    transform: translateY(0);
-}
 
 /* Glass morphism effect for cards */
 .backdrop-blur-xl {

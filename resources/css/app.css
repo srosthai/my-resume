@@ -341,3 +341,184 @@
         }
     }
 }
+
+/* ============================================================
+   3D card system
+   ------------------------------------------------------------
+   One depth treatment shared by every card on the public site.
+   A hard, unblurred offset reads as a physical sheet stacked
+   above the page; a faint ambient blur underneath keeps it from
+   looking like a flat duplicate. Hover presses the card toward
+   the paper rather than floating it away, so the shadow the eye
+   is tracking always matches the card's distance from the page.
+   ============================================================ */
+:root {
+    --card-ink: hsl(0 0% 9%);
+    --card-lift: 6px;
+    --card-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark {
+    /* Full-strength white at this offset reads as glare, not depth. */
+    --card-ink: hsl(0 0% 58%);
+}
+
+.card-3d {
+    border-width: 1.5px;
+    border-color: color-mix(in oklab, var(--card-ink) 78%, transparent);
+    box-shadow:
+        var(--card-lift) var(--card-lift) 0 0 var(--card-ink),
+        0 16px 34px -26px color-mix(in oklab, var(--card-ink) 70%, transparent);
+    transition:
+        transform 0.3s var(--card-ease),
+        box-shadow 0.3s var(--card-ease),
+        border-color 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .card-3d:hover {
+        transform: translate(2px, 2px);
+        border-color: var(--card-ink);
+        box-shadow:
+            calc(var(--card-lift) - 3px) calc(var(--card-lift) - 3px) 0 0 var(--card-ink),
+            0 10px 22px -20px color-mix(in oklab, var(--card-ink) 70%, transparent);
+    }
+}
+
+/* Cards that are themselves links get a full press on click. */
+.card-3d:active {
+    transform: translate(var(--card-lift), var(--card-lift));
+    box-shadow:
+        0 0 0 0 var(--card-ink),
+        0 4px 10px -8px color-mix(in oklab, var(--card-ink) 70%, transparent);
+    transition-duration: 0.08s;
+}
+
+/* Narrow viewports: a 6px offset on a full-bleed card pushes the
+   document wider than the screen and creates horizontal scroll. */
+@media (max-width: 640px) {
+    :root {
+        --card-lift: 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-3d,
+    .card-3d:hover,
+    .card-3d:active {
+        transform: none;
+        transition:
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+    }
+}
+
+/* The dock wears the card treatment but never moves: a nav bar that
+   shifts under the pointer on click reads as a glitch, not as depth. */
+.dock-3d,
+.dock-3d:hover,
+.dock-3d:active {
+    transform: none;
+    border-color: color-mix(in oklab, var(--card-ink) 78%, transparent);
+    box-shadow:
+        var(--card-lift) var(--card-lift) 0 0 var(--card-ink),
+        0 16px 34px -26px color-mix(in oklab, var(--card-ink) 70%, transparent);
+}
+
+/* Buttons borrow the card's ink and easing at a smaller offset, so a
+   pill reads as a stamp on the same sheet rather than a second card. */
+:root {
+    --btn-lift: 3px;
+}
+
+.btn-3d {
+    border-width: 1.5px;
+    border-style: solid;
+    border-color: color-mix(in oklab, var(--card-ink) 78%, transparent);
+    box-shadow: var(--btn-lift) var(--btn-lift) 0 0 var(--card-ink);
+    transition:
+        transform 0.25s var(--card-ease),
+        box-shadow 0.25s var(--card-ease),
+        border-color 0.25s ease,
+        background-color 0.25s ease,
+        color 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-3d:hover {
+        transform: translate(1px, 1px);
+        border-color: var(--card-ink);
+        box-shadow: calc(var(--btn-lift) - 1px) calc(var(--btn-lift) - 1px) 0 0 var(--card-ink);
+    }
+}
+
+.btn-3d:active {
+    transform: translate(var(--btn-lift), var(--btn-lift));
+    box-shadow: 0 0 0 0 var(--card-ink);
+    transition-duration: 0.08s;
+}
+
+.btn-3d:focus-visible {
+    outline: 2px solid var(--card-ink);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-3d,
+    .btn-3d:hover,
+    .btn-3d:active {
+        transform: none;
+        transition:
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+    }
+}
+
+/* Backdrop grid — tuned per theme. Dark needs a lighter hand: the same
+   alpha that reads as a faint pencil line on white glares on near-black. */
+:root {
+    --grid-line: hsl(0 0% 9% / 0.1);
+    --grid-cell: hsl(0 0% 9% / 0.05);
+}
+
+.dark {
+    --grid-line: hsl(0 0% 98% / 0.075);
+    --grid-cell: hsl(0 0% 98% / 0.04);
+}
+
+/* Meteors — ink streaks over the graph paper. Light mode draws them in
+   pencil, dark mode in chalk; both fade to nothing along the tail. */
+:root {
+    --meteor-ink: hsl(0 0% 9% / 0.55);
+    --meteor-glow: hsl(0 0% 9% / 0.08);
+}
+
+.dark {
+    --meteor-ink: hsl(0 0% 98% / 0.75);
+    --meteor-glow: hsl(0 0% 98% / 0.1);
+}
+
+@keyframes meteor {
+    0% {
+        transform: rotate(var(--angle)) translateX(0);
+        opacity: 1;
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(var(--angle)) translateX(var(--travel));
+        opacity: 0;
+    }
+}
+
+.animate-meteor {
+    animation: meteor var(--duration, 5s) linear infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-meteor {
+        display: none;
+    }
+}

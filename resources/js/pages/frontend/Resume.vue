@@ -88,7 +88,7 @@ const printResume = () => {
         <div class="resume-print-action fixed top-24 right-4 z-40 sm:top-28 sm:right-6 print:hidden">
             <button
                 @click="printResume"
-                class="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-4 py-2 font-mono text-[10px] tracking-[0.22em] text-foreground uppercase backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:text-[11px]"
+                class="btn-3d group inline-flex items-center gap-2 rounded-full bg-background/70 px-4 py-2 font-mono text-[10px] tracking-[0.22em] text-foreground uppercase backdrop-blur-xl sm:text-[11px]"
                 aria-label="Print résumé"
             >
                 <Printer class="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-hover:scale-110" />
@@ -131,7 +131,7 @@ const printResume = () => {
 
             <!-- MASTHEAD -->
             <article
-                class="masthead reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-8 md:p-10 print:rounded-none print:border-0 print:border-b print:border-gray-300 print:bg-white print:p-0 print:pb-5"
+                class="card-3d masthead reveal relative overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-8 md:p-10 print:rounded-none print:border-0 print:border-b print:border-gray-300 print:bg-white print:p-0 print:pb-5"
                 style="--d: 80ms"
             >
                 <div
@@ -209,7 +209,7 @@ const printResume = () => {
                 <aside class="space-y-4 sm:space-y-5 print:space-y-5">
                     <!-- Profile -->
                     <section
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0"
+                        class="card-3d reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 160ms"
                     >
                         <span class="section-eyebrow">/ Profile</span>
@@ -223,7 +223,7 @@ const printResume = () => {
                     <!-- Skills -->
                     <section
                         v-if="groupedSkills.length"
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0"
+                        class="card-3d reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-6 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 240ms"
                     >
                         <span class="section-eyebrow">/ Skills</span>
@@ -247,7 +247,7 @@ const printResume = () => {
                     <!-- Experience -->
                     <section
                         v-if="workExperience?.length"
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-7 print:rounded-none print:border-0 print:bg-transparent print:p-0"
+                        class="card-3d reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-7 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 320ms"
                     >
                         <span class="section-eyebrow">/ Experience</span>
@@ -285,7 +285,7 @@ const printResume = () => {
                     <!-- Education -->
                     <section
                         v-if="education?.length"
-                        class="reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-3xl sm:p-7 print:rounded-none print:border-0 print:bg-transparent print:p-0"
+                        class="card-3d reveal resume-card overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:rounded-[1.5rem] sm:p-7 print:rounded-none print:border-0 print:bg-transparent print:p-0"
                         style="--d: 400ms"
                     >
                         <span class="section-eyebrow">/ Education</span>
@@ -344,7 +344,7 @@ const printResume = () => {
 <style scoped>
 .reveal {
     opacity: 0;
-    transform: translateY(18px);
+    translate: 0 18px;
 }
 .is-visible .reveal {
     animation: revealUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -353,11 +353,11 @@ const printResume = () => {
 @keyframes revealUp {
     from {
         opacity: 0;
-        transform: translateY(18px);
+        translate: 0 18px;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        translate: 0 0;
     }
 }
 
@@ -405,18 +405,6 @@ h3,
 }
 
 /* Resume cards on screen */
-.resume-card {
-    transition:
-        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.35s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-    .resume-card:hover {
-        transform: translateY(-2px);
-        border-color: color-mix(in oklab, var(--color-foreground) 18%, var(--color-border));
-    }
-}
-
 /* Resume row (shared by experience + education) */
 .resume-row {
     padding: 1rem 0;
@@ -578,7 +566,7 @@ h3,
     }
 
     .masthead {
-        border-radius: 2rem;
+        border-radius: 1.5rem;
         padding: 1.25rem;
         background:
             linear-gradient(
@@ -587,9 +575,6 @@ h3,
                 color-mix(in oklab, var(--color-muted) 62%, transparent)
             ),
             radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-foreground) 7%, transparent), transparent 34%);
-        box-shadow:
-            0 1px 0 color-mix(in oklab, white 16%, transparent) inset,
-            0 24px 70px -42px color-mix(in oklab, var(--color-foreground) 70%, transparent);
     }
 
     .resume-name-row {
@@ -635,7 +620,7 @@ h3,
     }
 
     .resume-card {
-        border-radius: 1.35rem;
+        border-radius: 1.25rem;
         background: color-mix(in oklab, var(--color-card) 78%, transparent);
         padding: 1rem;
     }
@@ -681,7 +666,7 @@ h3,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
     .ambient-blob {
@@ -707,7 +692,7 @@ h3,
     .reveal,
     .is-visible .reveal {
         opacity: 1 !important;
-        transform: none !important;
+        translate: none !important;
         animation: none !important;
     }
 
