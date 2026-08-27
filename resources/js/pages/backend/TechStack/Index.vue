@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
+defineProps({
     techStacks: {
         type: Array,
         required: true,
@@ -31,7 +31,7 @@ const confirmDelete = (item) => {
 
 const deleteItem = () => {
     if (!itemToDelete.value) return;
-    router.delete(route('backend.tech-stack.destroy', itemToDelete.value.id), {
+    router.delete(route('backend.tech-stacks.destroy', itemToDelete.value.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
             deleting.value = false;
@@ -60,7 +60,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                         <p class="text-sm text-muted-foreground">View and manage your technology stack</p>
                     </div>
                 </div>
-                <Link href="backend/tech-stacks/create">
+                <Link href="/backend/tech-stacks/create">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Technology
@@ -138,7 +138,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                                             <Icon name="layers" class="size-6" />
                                         </div>
                                         <p class="text-sm">No tech stack records found</p>
-                                        <Link href="backend/tech-stacks/create">
+                                        <Link href="/backend/tech-stacks/create">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first technology

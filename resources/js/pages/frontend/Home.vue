@@ -1,10 +1,9 @@
 <script setup>
-import LanyardCard from '@/components/LanyardCard.vue';
 import { Skeleton } from '@/components/ui/skeleton';
-import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
+import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Book, Github, Linkedin, Mail, MapPin, Rss } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -44,6 +43,12 @@ const firstName = computed(() => {
 const lastName = computed(() => {
     const parts = (props.users?.name || '').trim().split(/\s+/);
     return parts.slice(1).join(' ');
+});
+
+const imageSrc = computed(() => {
+    const img = props.users?.image;
+    if (!img) return '';
+    return img.startsWith('http') ? img : `/${img}`;
 });
 
 const doubledStacks = computed(() => {
@@ -179,11 +184,11 @@ const doubledStacks = computed(() => {
                     <div class="mt-6 flex flex-wrap items-center gap-2.5 sm:mt-8 sm:gap-3">
                         <Link
                             href="/portfolio"
-                            class="mobile-action group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-4 py-2.5 text-xs font-medium text-foreground backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/60 sm:px-5 sm:py-3 sm:text-sm"
+                            class="mobile-action mobile-action-accent group inline-flex items-center gap-2 rounded-full border border-emerald-700 bg-emerald-700 px-4 py-2.5 text-xs font-medium text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-600 hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-600/25 sm:px-5 sm:py-3 sm:text-sm dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:border-emerald-400 dark:hover:bg-emerald-400 dark:hover:shadow-emerald-400/25"
                         >
                             <span>See projects</span>
                             <ArrowUpRight
-                                class="h-3 w-3 opacity-60 transition-all duration-300 group-hover:rotate-45 group-hover:opacity-100 sm:h-3.5 sm:w-3.5"
+                                class="h-3 w-3 opacity-80 transition-all duration-300 group-hover:rotate-45 group-hover:opacity-100 sm:h-3.5 sm:w-3.5"
                             />
                         </Link>
                         <Link
@@ -205,25 +210,38 @@ const doubledStacks = computed(() => {
                     </div>
                 </article>
 
-                <!-- Lanyard card (hidden on mobile; chip lives inside hero card) -->
+                <!-- Portrait card (hidden on mobile; chip lives inside hero card) -->
                 <article
                     class="bento-card reveal relative col-span-2 hidden overflow-hidden rounded-3xl border border-border/60 bg-card/60 p-5 backdrop-blur-xl md:col-span-4 md:block"
                     style="--d: 160ms"
                 >
                     <div class="flex items-center justify-between">
-                        <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"> / credentials </span>
-                        <span
-                            class="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 py-1 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/80 uppercase"
-                        >
-                            <span class="relative flex h-1.5 w-1.5">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60"></span>
-                                <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            </span>
-                            drag me
+                        <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"> / id card </span>
+                        <span class="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            verified
                         </span>
                     </div>
 
-                    <LanyardCard :name="users.name" :position="users.position" :image="users.image" badge="DEV" label="ID · 2026" />
+                    <div class="relative mx-auto mt-5 aspect-[3/4] overflow-hidden rounded-2xl border border-border/50">
+                        <img v-if="imageSrc" :src="imageSrc" :alt="users?.name" class="h-full w-full object-cover object-[center_25%]" />
+                        <div v-else class="flex h-full w-full items-center justify-center bg-muted font-serif text-6xl text-muted-foreground italic">
+                            {{ firstName.charAt(0) }}
+                        </div>
+
+                        <!-- corners -->
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
+
+                        <div
+                            class="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-xl border border-white/10 bg-black/40 px-3 py-2 font-mono text-[10px] tracking-[0.2em] text-white/90 uppercase backdrop-blur-md"
+                        >
+                            <span>{{ firstName }} {{ lastName }}</span>
+                            <span>'26</span>
+                        </div>
+                    </div>
                 </article>
 
                 <!-- Clock / location card -->
@@ -700,6 +718,10 @@ h1,
         background: color-mix(in oklab, var(--color-background) 74%, transparent);
     }
 
+    .mobile-action-accent {
+        background: none;
+    }
+
     .mobile-metric-card {
         min-height: 9.8rem;
         border-radius: 1.35rem;
@@ -729,6 +751,39 @@ h1,
     .fade-edge {
         width: 2.25rem;
     }
+}
+
+/* Portrait corner ticks */
+.corner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-color: rgba(255, 255, 255, 0.75);
+    pointer-events: none;
+}
+.corner-tl {
+    top: 10px;
+    left: 10px;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+}
+.corner-tr {
+    top: 10px;
+    right: 10px;
+    border-top: 1.5px solid;
+    border-right: 1.5px solid;
+}
+.corner-bl {
+    bottom: 10px;
+    left: 10px;
+    border-bottom: 1.5px solid;
+    border-left: 1.5px solid;
+}
+.corner-br {
+    bottom: 10px;
+    right: 10px;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
 }
 
 /* Reduced motion */

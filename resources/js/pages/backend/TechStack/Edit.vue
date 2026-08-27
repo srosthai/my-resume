@@ -18,7 +18,7 @@ const props = defineProps({
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Tech Stack', href: '/tech-stacks' },
-    { title: 'Edit', href: `/backend/tech-stack/${props.techStack.id}/edit` },
+    { title: 'Edit', href: `/backend/tech-stacks/${props.techStack.id}/edit` },
 ];
 
 const form = useForm({
@@ -29,7 +29,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('backend.tech-stack.update', props.techStack.id));
+    form.put(route('backend.tech-stacks.update', props.techStack.id));
 };
 </script>
 
