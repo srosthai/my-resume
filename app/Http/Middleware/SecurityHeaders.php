@@ -52,8 +52,8 @@ class SecurityHeaders
             // Inline scripts (Ziggy routes, Vite tags) carry the request nonce.
             "script-src 'self' 'nonce-{$nonce}' https://www.youtube.com https://s.ytimg.com",
             // Vue/Reka set inline styles; the theme bootstrap style is inline too.
-            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
-            "font-src 'self' https://fonts.bunny.net data:",
+            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.bunny.net https://fonts.gstatic.com data:",
             // Tech-stack logos and YouTube thumbnails are external images.
             "img-src 'self' data: blob: https:",
             "media-src 'self' https:",
