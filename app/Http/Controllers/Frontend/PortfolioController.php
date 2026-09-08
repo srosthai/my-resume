@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Enums\FeedVisibility;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\ContactMessageRequest;
 use App\Mail\ContactMessage;
@@ -226,7 +227,7 @@ class PortfolioController extends Controller
     public function feeds()
     {
         $feeds = Feed::published()
-            ->where('visibility', 'public')
+            ->where('visibility', FeedVisibility::Public)
             ->with('user:id,name,image')
             ->orderBy('is_pinned', 'desc')
             ->orderBy('published_at', 'desc')

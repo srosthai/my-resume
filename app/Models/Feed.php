@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\FeedVisibility;
+use App\Enums\PublishStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -32,6 +34,8 @@ class Feed extends Model
         'images' => 'array',
         'tags' => 'array',
         'is_pinned' => 'boolean',
+        'status' => PublishStatus::class,
+        'visibility' => FeedVisibility::class,
         'published_at' => 'datetime',
     ];
 
@@ -73,7 +77,7 @@ class Feed extends Model
 
     public function scopePublished($query)
     {
-        return $query->where('status', 'published')
+        return $query->where('status', PublishStatus::Published)
             ->whereNotNull('published_at');
     }
 

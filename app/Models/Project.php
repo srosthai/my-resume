@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProjectStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,7 @@ class Project extends Model
         'technologies' => 'array',
         'links' => 'array',
         'created_date' => 'date',
+        'status' => ProjectStatus::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

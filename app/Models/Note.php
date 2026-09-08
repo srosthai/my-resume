@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PublishStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -28,6 +29,7 @@ class Note extends Model
         'tags' => 'array',
         'content' => 'array',
         'is_featured' => 'boolean',
+        'status' => PublishStatus::class,
         'published_at' => 'datetime',
     ];
 
@@ -73,7 +75,7 @@ class Note extends Model
      */
     public function scopePublished($query)
     {
-        return $query->where('status', 'published')
+        return $query->where('status', PublishStatus::Published)
             ->whereNotNull('published_at');
     }
 

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Enums\FeedVisibility;
+use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -61,8 +64,8 @@ class FeedController extends Controller
             'activity_type' => 'nullable|string|max:100',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
-            'visibility' => 'required|in:public,private',
-            'status' => 'required|in:draft,published,archived',
+            'visibility' => ['required', Rule::enum(FeedVisibility::class)],
+            'status' => ['required', Rule::enum(PublishStatus::class)],
             'is_pinned' => 'boolean',
             'likes_count' => 'nullable|integer|min:0',
             'published_at' => 'nullable|date',
@@ -126,8 +129,8 @@ class FeedController extends Controller
             'activity_type' => 'nullable|string|max:100',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
-            'visibility' => 'required|in:public,private',
-            'status' => 'required|in:draft,published,archived',
+            'visibility' => ['required', Rule::enum(FeedVisibility::class)],
+            'status' => ['required', Rule::enum(PublishStatus::class)],
             'is_pinned' => 'boolean',
             'likes_count' => 'nullable|integer|min:0',
             'published_at' => 'nullable|date',
@@ -159,7 +162,7 @@ class FeedController extends Controller
             });
         }
 
-        if ($validated['status'] === 'published' && empty($validated['published_at']) && $feed->status !== 'published') {
+        if ($validated['status'] === 'published' && empty($validated['published_at']) && $feed->status !== PublishStatus::Published) {
             $validated['published_at'] = now();
         }
 

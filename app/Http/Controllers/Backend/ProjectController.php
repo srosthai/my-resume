@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Enums\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectType;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -60,7 +62,7 @@ class ProjectController extends Controller
             'project_type_id' => 'nullable|exists:project_types,id',
             'technologies' => 'nullable|array',
             'created_date' => 'nullable|date',
-            'status' => 'required|in:processing,completed',
+            'status' => ['required', Rule::enum(ProjectStatus::class)],
             'links' => 'nullable|array',
         ]);
 
@@ -105,7 +107,7 @@ class ProjectController extends Controller
             'project_type_id' => 'nullable|exists:project_types,id',
             'technologies' => 'nullable|array',
             'created_date' => 'nullable|date',
-            'status' => 'required|in:processing,completed',
+            'status' => ['required', Rule::enum(ProjectStatus::class)],
             'links' => 'nullable|array',
         ]);
 

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Note;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -65,7 +67,7 @@ class NoteController extends Controller
             'content.steps.*.description' => 'required|string|max:500',
             'content.steps.*.commands' => 'required|array|min:1',
             'content.steps.*.commands.*' => 'string|max:500',
-            'status' => 'required|in:draft,published,archived',
+            'status' => ['required', Rule::enum(PublishStatus::class)],
             'is_featured' => 'boolean',
             'published_at' => 'nullable|date',
         ]);
@@ -139,7 +141,7 @@ class NoteController extends Controller
             'content.steps.*.description' => 'required|string|max:500',
             'content.steps.*.commands' => 'required|array|min:1',
             'content.steps.*.commands.*' => 'string|max:500',
-            'status' => 'required|in:draft,published,archived',
+            'status' => ['required', Rule::enum(PublishStatus::class)],
             'is_featured' => 'boolean',
             'published_at' => 'nullable|date',
         ]);
@@ -150,7 +152,7 @@ class NoteController extends Controller
             });
         }
 
-        if ($validated['status'] === 'published' && empty($validated['published_at']) && $note->status !== 'published') {
+        if ($validated['status'] === 'published' && empty($validated['published_at']) && $note->status !== PublishStatus::Published) {
             $validated['published_at'] = now();
         }
 
@@ -196,7 +198,7 @@ class NoteController extends Controller
         $duplicated = $note->replicate();
         $duplicated->title = $note->title.' (Copy)';
         $duplicated->slug = null;
-        $duplicated->status = 'draft';
+        $duplicated->status = PublishStatus::Draft;
         $duplicated->published_at = null;
         $duplicated->views = 0;
         $duplicated->is_featured = false;
