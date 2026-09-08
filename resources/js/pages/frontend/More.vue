@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import MusicPlayer from '@/components/MusicPlayer.vue';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { extractYouTubeId, formatTime, useYouTubePlayer } from '@/composables/useYouTubePlayer';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { Award, Camera, FileText, Heart, ImageIcon, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume2 } from 'lucide-vue-next';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 defineProps<{
     title: string;
@@ -15,34 +15,29 @@ defineProps<{
 const isVisible = ref(false);
 const activeTab = ref('certificate');
 
-// Music player state
-const currentTrack = ref(0);
-const isPlaying = ref(false);
-const currentTime = ref(0);
-const duration = ref(0);
-const volume = ref(70);
-const isLiked = ref(false);
-const isShuffled = ref(false);
-const repeatMode = ref(0); // 0: no repeat, 1: repeat all, 2: repeat one
-const player = ref<YT.Player | null>(null);
-const playerReady = ref(false);
+interface PlaylistSource {
+    id: number;
+    title: string;
+    artist: string;
+    youtubeUrl: string;
+    duration: string;
+    genre: string;
+}
 
-// Extract YouTube video ID from URL
-const extractYouTubeId = (url: string) => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
-};
+interface PlaylistTrack extends PlaylistSource {
+    videoId: string;
+    albumArt: string;
+}
 
-// Music playlist with YouTube URLs
-const playlist = ref([
+const PLAYER_ELEMENT_ID = 'youtube-player-music';
+
+// Music playlist; the video id and thumbnail are derived from the URL.
+const playlistSource: PlaylistSource[] = [
     {
         id: 1,
         title: 'បងក្រ',
         artist: 'Tena - បងក្រ Feat. YCN Rakhie',
-        albumArt: 'https://img.youtube.com/vi/-IQcA1jmb3I/hqdefault.jpg',
         youtubeUrl: 'https://www.youtube.com/watch?v=-IQcA1jmb3I&list=RD-IQcA1jmb3I&start_radio=1',
-        youtubeId: '-IQcA1jmb3I&list',
         duration: '0:04:10',
         genre: 'Song',
     },
@@ -50,9 +45,7 @@ const playlist = ref([
         id: 2,
         title: '360',
         artist: 'Vannda',
-        albumArt: 'https://img.youtube.com/vi/VangtodgL0Y/hqdefault.jpg',
         youtubeUrl: 'https://www.youtube.com/watch?v=VangtodgL0Y&list=RDVangtodgL0Y&start_radio=1',
-        youtubeId: 'VangtodgL0Y',
         duration: '0:03:41',
         genre: 'Song',
     },
@@ -60,9 +53,7 @@ const playlist = ref([
         id: 3,
         title: 'យប់ស្ងាត់/QUIET NIGHT',
         artist: 'TEPPISETH',
-        albumArt: 'https://img.youtube.com/vi/JLevKPoa6BI/hqdefault.jpg',
         youtubeUrl: 'https://www.youtube.com/watch?v=JLevKPoa6BI&list=RD8oLi5b4w4PQ&index=2',
-        youtubeId: 'JLevKPoa6BI',
         duration: '0:02:26',
         genre: 'Song',
     },
@@ -70,166 +61,85 @@ const playlist = ref([
         id: 4,
         title: 'រៀនចប់',
         artist: 'All3rgy & Chan Sreykhouch',
-        albumArt: 'https://img.youtube.com/vi/8oLi5b4w4PQ/hqdefault.jpg',
         youtubeUrl: 'https://www.youtube.com/watch?v=8oLi5b4w4PQ&list=RD8oLi5b4w4PQ&start_radio=1&rv=-IQcA1jmb3I',
-        youtubeId: '8oLi5b4w4PQ',
         duration: '0:03:47',
         genre: 'Song',
     },
-]);
+];
 
-// Format time (same as working MusicPlayer)
-const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
+const playlist: PlaylistTrack[] = playlistSource.flatMap((track) => {
+    const videoId = extractYouTubeId(track.youtubeUrl);
 
-// YouTube Player API functions (adapted from working MusicPlayer)
-const initYouTubePlayer = () => {
-    if (!window.YT) {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    return videoId ? [{ ...track, videoId, albumArt: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }] : [];
+});
 
-        window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-    } else {
-        onYouTubeIframeAPIReady();
-    }
-};
+// Music player state
+const currentTrack = ref(0);
+const volume = ref(70);
+const isLiked = ref(false);
+const isShuffled = ref(false);
+const repeatMode = ref(0); // 0: no repeat, 1: repeat all, 2: repeat one
 
-const onYouTubeIframeAPIReady = () => {
-    if (!playlist.value[currentTrack.value] || !playlist.value[currentTrack.value].youtubeUrl) {
-        console.error('No current song or src available for YouTube player');
-        return;
-    }
+const track = computed(() => playlist[currentTrack.value]);
 
-    const videoId = extractYouTubeId(playlist.value[currentTrack.value].youtubeUrl);
-    if (!videoId) {
-        console.error('Cannot extract YouTube video ID from:', playlist.value[currentTrack.value].youtubeUrl);
-        return;
-    }
+const { ready, isPlaying, currentTime, duration, error, play, pause, seekTo, loadVideoById } = useYouTubePlayer({
+    elementId: PLAYER_ELEMENT_ID,
+    onEnded: () => handleEnded(),
+});
 
-    try {
-        player.value = new window.YT.Player('youtube-player-music', {
-            height: '0',
-            width: '0',
-            videoId: videoId,
-            playerVars: {
-                autoplay: 0,
-                controls: 0,
-                disablekb: 1,
-                fs: 0,
-                iv_load_policy: 3,
-                modestbranding: 1,
-                rel: 0,
-                showinfo: 0,
-            },
-            events: {
-                onReady: onPlayerReady,
-                onStateChange: onPlayerStateChange,
-            },
-        });
-    } catch (error) {
-        console.error('Error creating YouTube player:', error);
-    }
-};
-
-const onPlayerReady = () => {
-    playerReady.value = true;
-};
-
-const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
-    if (event.data === window.YT.PlayerState.PLAYING) {
-        isPlaying.value = true;
-        startTimeUpdate();
-    } else if (event.data === window.YT.PlayerState.PAUSED) {
-        isPlaying.value = false;
-    } else if (event.data === window.YT.PlayerState.ENDED) {
-        isPlaying.value = false;
-        if (repeatMode.value === 2) {
-            // Repeat current track
-            player.value?.seekTo(0);
-            player.value?.playVideo();
-        } else if (repeatMode.value === 1 || currentTrack.value < playlist.value.length - 1) {
-            nextTrack();
-        }
-    }
-};
-
-let timeUpdateInterval: ReturnType<typeof setInterval> | null = null;
-
-const startTimeUpdate = () => {
-    if (timeUpdateInterval) clearInterval(timeUpdateInterval);
-
-    timeUpdateInterval = setInterval(() => {
-        if (player.value && isPlaying.value) {
-            currentTime.value = Math.floor(player.value.getCurrentTime());
-            if (player.value.getDuration() > 0) {
-                duration.value = Math.floor(player.value.getDuration());
-            }
-        }
-    }, 1000);
-};
-
-// Music player functions (adapted from working MusicPlayer)
-const togglePlay = () => {
-    if (!playerReady.value || !player.value) return;
-
+const togglePlay = async () => {
     if (isPlaying.value) {
-        player.value.pauseVideo();
-    } else {
-        player.value.playVideo();
+        pause();
+        return;
+    }
+
+    if (track.value) {
+        await play(track.value.videoId);
     }
 };
 
-const previousTrack = () => {
-    if (currentTrack.value > 0) {
-        currentTrack.value--;
-    } else {
-        currentTrack.value = playlist.value.length - 1;
+/** Switch tracks; only talks to YouTube once the player exists (i.e. after the first play). */
+const selectTrack = (index: number) => {
+    if (playlist.length === 0) {
+        return;
     }
-    loadCurrentTrack();
+
+    currentTrack.value = ((index % playlist.length) + playlist.length) % playlist.length;
+
+    if (ready.value && track.value) {
+        void loadVideoById(track.value.videoId);
+    }
 };
+
+const previousTrack = () => selectTrack(currentTrack.value - 1);
 
 const nextTrack = () => {
-    if (currentTrack.value < playlist.value.length - 1) {
-        currentTrack.value++;
-    } else {
-        currentTrack.value = 0;
-    }
-    loadCurrentTrack();
-};
+    if (isShuffled.value && playlist.length > 1) {
+        let next = currentTrack.value;
 
-const selectTrack = (index: number) => {
-    currentTrack.value = index;
-    loadCurrentTrack();
-};
-
-const loadCurrentTrack = () => {
-    if (!playerReady.value || !player.value) return;
-
-    const track = playlist.value[currentTrack.value];
-    const videoId = extractYouTubeId(track.youtubeUrl);
-    if (videoId) {
-        try {
-            player.value.loadVideoById(videoId);
-        } catch (error) {
-            console.error('Error loading video:', error);
+        while (next === currentTrack.value) {
+            next = Math.floor(Math.random() * playlist.length);
         }
-    } else {
-        console.error('Cannot extract video ID from:', track.youtubeUrl);
+
+        selectTrack(next);
+        return;
+    }
+
+    selectTrack(currentTrack.value + 1);
+};
+
+const handleEnded = () => {
+    if (repeatMode.value === 2) {
+        seekTo(0);
+        void play();
+    } else if (repeatMode.value === 1 || isShuffled.value || currentTrack.value < playlist.length - 1) {
+        nextTrack();
     }
 };
 
 const updateProgress = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    const newTime = parseFloat(target.value);
-    currentTime.value = newTime;
-    if (player.value && playerReady.value) {
-        player.value.seekTo(newTime);
-    }
+    seekTo(parseFloat(target.value));
 };
 
 const toggleLike = () => {
@@ -261,34 +171,6 @@ onMounted(() => {
     setTimeout(() => {
         isVisible.value = true;
     }, 100);
-
-    // Initialize YouTube player when music tab is active
-    if (activeTab.value === 'music') {
-        initYouTubePlayer();
-    }
-});
-
-// Watch for tab changes to initialize player
-watch(activeTab, (newTab) => {
-    if (newTab === 'music' && !playerReady.value) {
-        setTimeout(() => {
-            initYouTubePlayer();
-        }, 100);
-    }
-});
-
-// Watch currentTrack changes to load new song
-watch(currentTrack, () => {
-    loadCurrentTrack();
-});
-
-onUnmounted(() => {
-    if (timeUpdateInterval) {
-        clearInterval(timeUpdateInterval);
-    }
-    if (player.value) {
-        player.value.destroy();
-    }
 });
 </script>
 
@@ -320,9 +202,6 @@ onUnmounted(() => {
     </Head>
 
     <FrontendLayout currentRoute="/more">
-        <!-- Music Player -->
-        <MusicPlayer />
-
         <div
             class="min-h-screen overflow-x-hidden bg-gradient-to-br from-background via-slate-50/5 to-background pt-16 font-sans text-foreground transition-all duration-300"
         >
@@ -692,9 +571,9 @@ onUnmounted(() => {
                         </div>
 
                         <!-- My Music Tab -->
-                        <div v-if="activeTab === 'music'" class="space-y-8">
-                            <!-- Hidden YouTube Player -->
-                            <div id="youtube-player-music" style="display: none"></div>
+                        <div v-if="activeTab === 'music' && track" class="space-y-8">
+                            <!-- Hidden YouTube Player (only created once playback starts) -->
+                            <div :id="PLAYER_ELEMENT_ID" class="hidden"></div>
                             <!-- Current Playing Card -->
                             <Card
                                 class="overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-purple-500/15 via-pink-500/15 to-indigo-500/15 shadow-2xl backdrop-blur-xl"
@@ -708,8 +587,8 @@ onUnmounted(() => {
                                                     class="h-28 w-28 overflow-hidden rounded-3xl shadow-2xl ring-2 ring-white/20 sm:h-36 sm:w-36 lg:h-44 lg:w-44 xl:h-36 xl:w-36"
                                                 >
                                                     <img
-                                                        :src="playlist[currentTrack].albumArt"
-                                                        :alt="playlist[currentTrack].title"
+                                                        :src="track.albumArt"
+                                                        :alt="track.title"
                                                         class="h-full w-full object-cover transition-transform duration-500"
                                                         :class="{ 'scale-110': isPlaying }"
                                                     />
@@ -734,20 +613,20 @@ onUnmounted(() => {
 
                                             <div class="min-w-0 flex-1">
                                                 <h3 class="mb-3 truncate text-2xl font-bold text-foreground">
-                                                    {{ playlist[currentTrack].title }}
+                                                    {{ track.title }}
                                                 </h3>
                                                 <p class="mb-3 truncate text-lg text-muted-foreground">
-                                                    {{ playlist[currentTrack].artist }}
+                                                    {{ track.artist }}
                                                 </p>
                                                 <div class="mb-6 flex items-center gap-3">
                                                     <Badge
                                                         variant="secondary"
                                                         class="border-purple-200 bg-purple-100 px-3 py-1 text-sm text-purple-700"
                                                     >
-                                                        {{ playlist[currentTrack].genre }}
+                                                        {{ track.genre }}
                                                     </Badge>
                                                     <span class="text-sm text-muted-foreground">
-                                                        {{ playlist[currentTrack].duration }}
+                                                        {{ track.duration }}
                                                     </span>
                                                 </div>
 
@@ -763,10 +642,9 @@ onUnmounted(() => {
                                                             @input="updateProgress"
                                                             class="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-accent"
                                                         />
-                                                        <span class="w-10">{{
-                                                            duration > 0 ? formatTime(duration) : playlist[currentTrack].duration
-                                                        }}</span>
+                                                        <span class="w-10">{{ duration > 0 ? formatTime(duration) : track.duration }}</span>
                                                     </div>
+                                                    <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -839,8 +717,9 @@ onUnmounted(() => {
                                                 </div>
 
                                                 <a
-                                                    :href="playlist[currentTrack].youtubeUrl"
+                                                    :href="track.youtubeUrl"
                                                     target="_blank"
+                                                    rel="noopener noreferrer"
                                                     class="btn-3d rounded-full bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600"
                                                 >
                                                     YouTube
@@ -863,15 +742,15 @@ onUnmounted(() => {
                                 <CardContent class="p-0">
                                     <div class="space-y-1">
                                         <div
-                                            v-for="(track, index) in playlist"
-                                            :key="track.id"
+                                            v-for="(item, index) in playlist"
+                                            :key="item.id"
                                             @click="selectTrack(index)"
                                             class="group flex cursor-pointer items-center gap-4 p-4 transition-colors duration-200 hover:bg-muted/50"
                                             :class="{ 'bg-primary/10': currentTrack === index }"
                                         >
                                             <div class="relative">
                                                 <div class="h-12 w-12 overflow-hidden rounded-lg">
-                                                    <img :src="track.albumArt" :alt="track.title" class="h-full w-full object-cover" />
+                                                    <img :src="item.albumArt" :alt="item.title" class="h-full w-full object-cover" />
                                                 </div>
                                                 <div
                                                     v-if="currentTrack === index && isPlaying"
@@ -896,22 +775,22 @@ onUnmounted(() => {
                                                     class="mb-1 truncate font-medium text-foreground"
                                                     :class="{ 'text-primary': currentTrack === index }"
                                                 >
-                                                    {{ track.title }}
+                                                    {{ item.title }}
                                                 </h4>
                                                 <p class="truncate text-sm text-muted-foreground">
-                                                    {{ track.artist }}
+                                                    {{ item.artist }}
                                                 </p>
                                             </div>
 
                                             <div class="flex items-center gap-3">
                                                 <Badge variant="outline" class="text-xs">
-                                                    {{ track.genre }}
+                                                    {{ item.genre }}
                                                 </Badge>
                                                 <span class="text-sm text-muted-foreground">
-                                                    {{ track.duration }}
+                                                    {{ item.duration }}
                                                 </span>
                                                 <button
-                                                    @click.stop
+                                                    @click.stop="selectTrack(index)"
                                                     class="rounded-full p-1 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-muted"
                                                 >
                                                     <Play class="h-4 w-4" />

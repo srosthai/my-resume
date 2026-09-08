@@ -3,106 +3,91 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { extractYouTubeId, formatTime, useYouTubePlayer } from '@/composables/useYouTubePlayer';
 import type { PlayerSong, PopularSong } from '@/types';
 import { Maximize2, Minimize2, Music, Pause, Play, SkipBack, SkipForward, X } from 'lucide-vue-next';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
-
-type Song = PlayerSong;
+import { computed, onMounted, ref } from 'vue';
 
 /** Raw row from /api/popular-songs; tolerate either `url` or `src` for the YouTube link. */
 type ApiSong = Partial<PopularSong> & { src?: string };
 
-const musicLibrary = ref<Song[]>([
-    {
-        id: 1,
-        title: 'បងក្រ',
-        artist: 'Tena Feat. YCN Rakhie Original Version',
-        src: 'https://www.youtube.com/watch?v=-IQcA1jmb3I&list=RD-IQcA1jmb3I&start_radio=1',
-        duration: 250,
-    },
-]);
+const PLAYER_ELEMENT_ID = 'youtube-player';
 
-const isPlaying = ref(false);
+const musicLibrary = ref<PlayerSong[]>([]);
 const currentSongIndex = ref(0);
-const currentTime = ref(0);
 const isMinimized = ref(true);
 const isExpanded = ref(false);
-const youtubePlayer = ref<YT.Player | null>(null);
-const playerReady = ref(false);
+const libraryError = ref<string | null>(null);
 
-const currentSong = ref<Song>(musicLibrary.value[0]);
+const currentSong = computed<PlayerSong | null>(() => musicLibrary.value[currentSongIndex.value] ?? null);
+const hasSongs = computed(() => musicLibrary.value.length > 0);
+const canSkip = computed(() => musicLibrary.value.length > 1);
 
-const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
+const {
+    ready,
+    isPlaying,
+    currentTime,
+    duration,
+    error: playerError,
+    play,
+    pause,
+    seekTo,
+    loadVideoById,
+} = useYouTubePlayer({
+    elementId: PLAYER_ELEMENT_ID,
+    onEnded: () => nextSong(),
+});
 
-const togglePlay = () => {
-    if (!playerReady.value || !youtubePlayer.value) return;
+/** Prefer the duration reported by YouTube, fall back to the stored one. */
+const songDuration = computed(() => (duration.value > 0 ? duration.value : (currentSong.value?.duration ?? 0)));
+const statusMessage = computed(() => playerError.value ?? libraryError.value);
 
-    if (isPlaying.value) {
-        youtubePlayer.value.pauseVideo();
-    } else {
-        youtubePlayer.value.playVideo();
-    }
-};
+const togglePlay = async () => {
+    const song = currentSong.value;
 
-const previousSong = () => {
-    if (currentSongIndex.value > 0) {
-        currentSongIndex.value--;
-    } else {
-        currentSongIndex.value = musicLibrary.value.length - 1;
-    }
-    loadCurrentSong();
-};
-
-const nextSong = () => {
-    if (currentSongIndex.value < musicLibrary.value.length - 1) {
-        currentSongIndex.value++;
-    } else {
-        currentSongIndex.value = 0;
-    }
-    loadCurrentSong();
-};
-
-const loadCurrentSong = () => {
-    if (musicLibrary.value.length === 0) {
-        console.warn('No songs in music library');
+    if (!song) {
         return;
     }
 
-    if (currentSongIndex.value >= musicLibrary.value.length) {
-        console.warn('Invalid song index:', currentSongIndex.value);
-        currentSongIndex.value = 0;
+    if (isPlaying.value) {
+        pause();
+        return;
     }
 
-    currentSong.value = musicLibrary.value[currentSongIndex.value];
-    isPlaying.value = false;
-    currentTime.value = 0;
+    const videoId = extractYouTubeId(song.src);
 
-    console.log('Loading song:', currentSong.value);
+    if (!videoId) {
+        return;
+    }
 
-    if (playerReady.value && youtubePlayer.value && currentSong.value?.src) {
-        const videoId = extractYouTubeId(currentSong.value.src);
-        if (videoId) {
-            console.log('Loading YouTube video:', videoId);
-            try {
-                youtubePlayer.value.loadVideoById(videoId);
-            } catch (error) {
-                console.error('Error loading video:', error);
-            }
-        } else {
-            console.error('Cannot extract video ID from:', currentSong.value.src);
-        }
+    await play(videoId);
+};
+
+/** Switch to another song; only touches YouTube once the player already exists. */
+const selectSong = (index: number) => {
+    const total = musicLibrary.value.length;
+
+    if (total === 0) {
+        return;
+    }
+
+    currentSongIndex.value = ((index % total) + total) % total;
+
+    const videoId = extractYouTubeId(currentSong.value?.src);
+
+    if (ready.value && videoId) {
+        void loadVideoById(videoId);
     }
 };
 
+const previousSong = () => selectSong(currentSongIndex.value - 1);
+const nextSong = () => selectSong(currentSongIndex.value + 1);
+
 const openCurrentSongYouTube = () => {
-    if (currentSong.value?.src) {
-        window.open(currentSong.value.src, '_blank');
-    } else {
-        console.warn('No current song URL to open');
+    const src = currentSong.value?.src;
+
+    if (src) {
+        window.open(src, '_blank', 'noopener');
     }
 };
 
@@ -122,176 +107,47 @@ const handleMusicButtonClick = () => {
         isExpanded.value = true;
         isMinimized.value = false;
     } else {
-        togglePlay();
+        void togglePlay();
     }
-};
-
-// YouTube Player API functions
-const initYouTubePlayer = () => {
-    if (!window.YT) {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-        window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-    } else {
-        onYouTubeIframeAPIReady();
-    }
-};
-
-const onYouTubeIframeAPIReady = () => {
-    if (!currentSong.value || !currentSong.value.src) {
-        console.error('No current song or src available for YouTube player');
-        return;
-    }
-
-    const videoId = extractYouTubeId(currentSong.value.src);
-    if (!videoId) {
-        console.error('Cannot extract YouTube video ID from:', currentSong.value.src);
-        return;
-    }
-
-    console.log('Initializing YouTube player with video ID:', videoId);
-
-    try {
-        youtubePlayer.value = new window.YT.Player('youtube-player', {
-            height: '0',
-            width: '0',
-            videoId: videoId,
-            playerVars: {
-                autoplay: 0,
-                controls: 0,
-                disablekb: 1,
-                fs: 0,
-                iv_load_policy: 3,
-                modestbranding: 1,
-                rel: 0,
-                showinfo: 0,
-            },
-            events: {
-                onReady: onPlayerReady,
-                onStateChange: onPlayerStateChange,
-            },
-        });
-    } catch (error) {
-        console.error('Error creating YouTube player:', error);
-    }
-};
-
-const onPlayerReady = () => {
-    playerReady.value = true;
-};
-
-const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
-    if (event.data === window.YT.PlayerState.PLAYING) {
-        isPlaying.value = true;
-        startTimeUpdate();
-    } else if (event.data === window.YT.PlayerState.PAUSED) {
-        isPlaying.value = false;
-    } else if (event.data === window.YT.PlayerState.ENDED) {
-        isPlaying.value = false;
-        nextSong();
-    }
-};
-
-let timeUpdateInterval: number | null = null;
-
-const startTimeUpdate = () => {
-    if (timeUpdateInterval) clearInterval(timeUpdateInterval);
-
-    timeUpdateInterval = setInterval(() => {
-        if (youtubePlayer.value && isPlaying.value) {
-            currentTime.value = Math.floor(youtubePlayer.value.getCurrentTime());
-        }
-    }, 1000);
 };
 
 const updateProgress = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    const newTime = parseFloat(target.value);
-    currentTime.value = newTime;
-    if (youtubePlayer.value && playerReady.value) {
-        youtubePlayer.value.seekTo(newTime);
-    }
-};
-
-const extractYouTubeId = (url: string | undefined): string | null => {
-    if (!url || typeof url !== 'string') {
-        console.warn('Invalid YouTube URL:', url);
-        return null;
-    }
-
-    try {
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-        return match ? match[1] : null;
-    } catch (error) {
-        console.error('Error extracting YouTube ID from URL:', url, error);
-        return null;
-    }
+    seekTo(parseFloat(target.value));
 };
 
 const loadSongs = async () => {
     try {
-        const response = await fetch('/api/popular-songs');
-        if (response.ok) {
-            const songs: ApiSong[] = await response.json();
-            if (songs && songs.length > 0) {
-                console.log('Loaded songs from API:', songs); // Debug log
+        const response = await fetch('/api/popular-songs', { headers: { Accept: 'application/json' } });
 
-                // Map API response to expected format with validation
-                musicLibrary.value = songs
-                    .map((song): Song => {
-                        const mappedSong: Song = {
-                            id: song.id || 0,
-                            title: song.title || 'Unknown Title',
-                            artist: song.artist || 'Unknown Artist',
-                            src: song.url || song.src || '', // Check both 'url' and 'src' fields
-                            duration: song.duration || 180,
-                        };
-
-                        // Validate YouTube URL
-                        if (!mappedSong.src || !extractYouTubeId(mappedSong.src)) {
-                            console.warn('Invalid YouTube URL for song:', mappedSong.title, mappedSong.src);
-                        }
-
-                        return mappedSong;
-                    })
-                    .filter((song) => extractYouTubeId(song.src)); // Only keep songs with valid YouTube URLs
-
-                if (musicLibrary.value.length > 0) {
-                    currentSong.value = musicLibrary.value[0];
-                    currentSongIndex.value = 0;
-                    console.log('Current song set to:', currentSong.value); // Debug log
-                } else {
-                    console.warn('No valid YouTube URLs found in songs');
-                }
-            }
+        if (!response.ok) {
+            libraryError.value = 'Playlist is unavailable right now';
+            return;
         }
-    } catch (error) {
-        console.warn('Failed to load songs from API:', error);
+
+        const payload: unknown = await response.json();
+        const rows: ApiSong[] = Array.isArray(payload) ? payload : [];
+
+        musicLibrary.value = rows
+            .map(
+                (song): PlayerSong => ({
+                    id: song.id ?? 0,
+                    title: song.title || 'Unknown Title',
+                    artist: song.artist || 'Unknown Artist',
+                    src: song.url || song.src || '',
+                    duration: song.duration ?? 0,
+                }),
+            )
+            .filter((song) => extractYouTubeId(song.src) !== null);
+
+        currentSongIndex.value = 0;
+    } catch {
+        libraryError.value = 'Playlist is unavailable right now';
     }
 };
 
-onMounted(async () => {
-    // Load songs from API first
-    await loadSongs();
-
-    // Initialize YouTube player
-    initYouTubePlayer();
-});
-
-onUnmounted(() => {
-    if (timeUpdateInterval) {
-        clearInterval(timeUpdateInterval);
-    }
-    if (youtubePlayer.value) {
-        youtubePlayer.value.destroy();
-    }
-});
-
-watch(currentSongIndex, () => {
-    loadCurrentSong();
+onMounted(() => {
+    void loadSongs();
 });
 </script>
 
@@ -331,7 +187,13 @@ watch(currentSongIndex, () => {
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                                     <Music class="h-4 w-4 text-primary" />
                                 </div>
-                                <Button @click="togglePlay" size="sm" variant="ghost" class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent">
+                                <Button
+                                    @click="togglePlay"
+                                    size="sm"
+                                    variant="ghost"
+                                    class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
+                                    :disabled="!hasSongs"
+                                >
                                     <component :is="isPlaying ? Pause : Play" class="h-4 w-4" />
                                 </Button>
                             </div>
@@ -381,10 +243,14 @@ watch(currentSongIndex, () => {
                                         <Music class="h-5 w-5 text-primary" />
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <h3 class="truncate font-medium text-foreground">{{ currentSong.title }}</h3>
-                                        <p class="truncate text-sm text-muted-foreground">{{ currentSong.artist }}</p>
+                                        <h3 class="truncate font-medium text-foreground">{{ currentSong?.title ?? 'No songs yet' }}</h3>
+                                        <p class="truncate text-sm text-muted-foreground">
+                                            {{ currentSong?.artist ?? 'Add songs in the admin panel to start listening' }}
+                                        </p>
                                     </div>
-                                    <Badge variant="secondary" class="hidden sm:flex"> {{ currentSongIndex + 1 }} / {{ musicLibrary.length }} </Badge>
+                                    <Badge variant="secondary" class="hidden sm:flex">
+                                        {{ hasSongs ? currentSongIndex + 1 : 0 }} / {{ musicLibrary.length }}
+                                    </Badge>
                                 </div>
 
                                 <div class="flex items-center gap-1">
@@ -428,13 +294,15 @@ watch(currentSongIndex, () => {
                                 <input
                                     type="range"
                                     :min="0"
-                                    :max="currentSong.duration"
+                                    :max="songDuration"
                                     :value="currentTime"
+                                    :disabled="!hasSongs"
                                     @input="updateProgress"
-                                    class="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-accent"
+                                    class="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                                 />
-                                <span class="w-10">{{ formatTime(currentSong.duration) }}</span>
+                                <span class="w-10">{{ formatTime(songDuration) }}</span>
                             </div>
+                            <p v-if="statusMessage" class="text-xs text-destructive">{{ statusMessage }}</p>
 
                             <!-- Control Buttons -->
                             <div class="flex items-center justify-between">
@@ -446,7 +314,7 @@ watch(currentSongIndex, () => {
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
-                                                :disabled="musicLibrary.length <= 1"
+                                                :disabled="!canSkip"
                                             >
                                                 <SkipBack class="h-4 w-4" />
                                             </Button>
@@ -462,6 +330,7 @@ watch(currentSongIndex, () => {
                                                 @click="togglePlay"
                                                 size="sm"
                                                 class="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80"
+                                                :disabled="!hasSongs"
                                             >
                                                 <component :is="isPlaying ? Pause : Play" class="h-4 w-4" />
                                             </Button>
@@ -478,7 +347,7 @@ watch(currentSongIndex, () => {
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
-                                                :disabled="musicLibrary.length <= 1"
+                                                :disabled="!canSkip"
                                             >
                                                 <SkipForward class="h-4 w-4" />
                                             </Button>
@@ -491,7 +360,9 @@ watch(currentSongIndex, () => {
 
                                 <!-- Song Info -->
                                 <div class="hidden items-center gap-2 sm:flex">
-                                    <Badge variant="secondary" class="text-xs"> {{ currentSongIndex + 1 }}/{{ musicLibrary.length }} </Badge>
+                                    <Badge variant="secondary" class="text-xs">
+                                        {{ hasSongs ? currentSongIndex + 1 : 0 }}/{{ musicLibrary.length }}
+                                    </Badge>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button
@@ -499,6 +370,7 @@ watch(currentSongIndex, () => {
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full text-red-600 hover:bg-accent active:bg-accent"
+                                                :disabled="!hasSongs"
                                             >
                                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                                                     <path
@@ -521,7 +393,7 @@ watch(currentSongIndex, () => {
     </div>
 
     <!-- Hidden YouTube Player -->
-    <div id="youtube-player" style="display: none"></div>
+    <div :id="PLAYER_ELEMENT_ID" class="hidden"></div>
 </template>
 
 <style scoped>
