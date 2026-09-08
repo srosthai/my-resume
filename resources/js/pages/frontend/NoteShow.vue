@@ -46,10 +46,6 @@ const publishedOn = formatDate(props.note.published_at ?? props.note.created_at)
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="article" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <section class="detail-screen is-visible relative mx-auto w-full max-w-4xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">

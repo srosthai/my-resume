@@ -113,10 +113,6 @@ const goToProject = (target: ProjectNeighbour) => {
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="article" />
             <meta name="robots" content="index, follow" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <section

@@ -49,7 +49,7 @@ const navLinkClasses = (href: string, mobile = false) => {
   if (mobile) {
     return cn(
       'group inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-300',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ink)]',
       active
         ? 'min-w-[7.25rem] bg-white/14 px-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_28px_-18px_rgba(255,255,255,0.75)]'
         : 'w-11 text-white/55 hover:bg-white/8 hover:text-white'

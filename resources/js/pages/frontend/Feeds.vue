@@ -282,10 +282,6 @@ onBeforeUnmount(() => {
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton -->
@@ -910,18 +906,15 @@ h3,
     gap: 0.3rem;
     padding: 0.2rem 0.55rem;
     border-radius: 9999px;
-    border: 1px solid color-mix(in oklab, #f59e0b 40%, var(--color-border));
-    background: color-mix(in oklab, #f59e0b 10%, transparent);
-    color: #b45309;
+    border: 1px solid color-mix(in oklab, var(--accent-ink) 45%, var(--color-border));
+    background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+    color: var(--accent-ink);
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     flex-shrink: 0;
-}
-:global(.dark) .pinned-chip {
-    color: #fbbf24;
 }
 
 /* Tag chips */
