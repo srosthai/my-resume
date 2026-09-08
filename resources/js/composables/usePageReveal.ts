@@ -1,31 +1,20 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 /**
- * Drives the shared page-load reveal: shows a skeleton (`isLoading`) for a short
- * beat, then flips `isVisible` on the next frame to trigger the entrance animation.
- * The timeout is cleared on unmount so it never fires after the component is gone.
+ * Page reveal state shared by the public pages.
  *
- * @param delayMs skeleton duration before reveal; default 450ms.
+ * Content is available the moment the component renders (Inertia props are
+ * already loaded and pages may be server-rendered), so there is no artificial
+ * skeleton delay: `isLoading` is always false and `isVisible` always true.
+ * The composable is kept so page templates keep one entry point for a future
+ * real loading state (for example, driven by Inertia's router events).
+ *
+ * @param _delayMs kept for call-site compatibility; no longer used.
  */
-export function usePageReveal(delayMs = 450) {
-    const isLoading = ref(true);
-    const isVisible = ref(false);
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let frame = 0;
-
-    onMounted(() => {
-        timer = setTimeout(() => {
-            isLoading.value = false;
-            frame = requestAnimationFrame(() => {
-                isVisible.value = true;
-            });
-        }, delayMs);
-    });
-
-    onBeforeUnmount(() => {
-        if (timer) clearTimeout(timer);
-        if (frame) cancelAnimationFrame(frame);
-    });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function usePageReveal(_delayMs = 0) {
+    const isLoading = ref(false);
+    const isVisible = ref(true);
 
     return { isLoading, isVisible };
 }

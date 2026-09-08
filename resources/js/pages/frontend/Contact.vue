@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
@@ -55,10 +55,16 @@ const socialLinks = [
 
 const currentYear = new Date().getFullYear();
 
-defineProps({
-    title: { type: String, default: 'Contact' },
-    description: { type: String, default: '' },
-});
+withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        title: 'Contact',
+        description: '',
+    },
+);
 
 const showSuccessMessage = ref(false);
 const showErrorMessage = ref(false);
@@ -90,8 +96,8 @@ const form = useForm({
     website: '',
 });
 
-let successTimer = null;
-let errorTimer = null;
+let successTimer: ReturnType<typeof setTimeout> | null = null;
+let errorTimer: ReturnType<typeof setTimeout> | null = null;
 
 const submitForm = () => {
     form.post(route('contact.send'), {
@@ -116,7 +122,7 @@ const submitForm = () => {
     });
 };
 
-const openLink = (url) => {
+const openLink = (url: string) => {
     if (typeof window !== 'undefined') {
         window.open(url, '_blank', 'noopener,noreferrer');
     }

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
@@ -8,10 +8,16 @@ import { Head } from '@inertiajs/vue3';
 import { ArrowUpRight, Book, Camera, Code2, Coffee, Dumbbell, Gamepad2, Heart, Music, Palette, Plane, Terminal } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-defineProps({
-    title: { type: String, default: 'Hobbies' },
-    description: { type: String, default: '' },
-});
+withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        title: 'Hobbies',
+        description: '',
+    },
+);
 
 const hobbies = [
     {
@@ -102,7 +108,7 @@ const dateString = computed(() => {
 const { pointer } = usePointerGlow();
 
 const countByCategory = computed(() => {
-    const map = { All: hobbies.length };
+    const map: Record<string, number> = { All: hobbies.length };
     for (const cat of categories) {
         if (cat === 'All') continue;
         map[cat] = hobbies.filter((h) => h.category === cat).length;

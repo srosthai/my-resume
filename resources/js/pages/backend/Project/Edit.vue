@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -7,19 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { Project, ProjectLink, ProjectStatus, ProjectType } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
-    project: {
-        type: Object,
-        required: true,
-    },
-    projectTypes: {
-        type: Array,
-        required: true,
-    },
-});
+const props = defineProps<{
+    project: Project;
+    projectTypes: ProjectType[];
+}>();
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -30,13 +25,13 @@ const breadcrumbs = [
 const form = useForm({
     title: props.project.title || '',
     description: props.project.description || '',
-    image: null,
+    image: null as File | null,
     remove_image: false,
-    project_type_id: props.project.project_type_id ? props.project.project_type_id.toString() : null,
-    technologies: props.project.technologies || [],
+    project_type_id: (props.project.project_type_id ? props.project.project_type_id.toString() : null) as string | null,
+    technologies: (props.project.technologies || []) as string[],
     created_date: props.project.created_date || '',
-    status: props.project.status || 'processing',
-    links: props.project.links || [],
+    status: (props.project.status || 'processing') as ProjectStatus,
+    links: (props.project.links || []) as ProjectLink[],
 });
 
 const technologiesString = ref(Array.isArray(props.project.technologies) ? props.project.technologies.join(', ') : '');
@@ -58,11 +53,16 @@ const initializeLinks = () => {
 
 const links = ref(initializeLinks());
 
+const handleImageChange = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    form.image = input.files?.[0] ?? null;
+};
+
 const addLink = () => {
     links.value.push({ label: '', url: '' });
 };
 
-const removeLink = (index) => {
+const removeLink = (index: number) => {
     if (links.value.length > 1) {
         links.value.splice(index, 1);
     }
@@ -73,16 +73,14 @@ const submit = () => {
     form.technologies = technologiesString.value ? technologiesString.value.split(',').map((tech) => tech.trim()) : [];
 
     // Convert links to the desired JSON structure
-    form.links = links.value
-        .filter((link) => link.label.trim() && link.url.trim())
-        .map((link) => ({ [link.label.trim()]: link.url.trim() }));
+    form.links = links.value.filter((link) => link.label.trim() && link.url.trim()).map((link) => ({ [link.label.trim()]: link.url.trim() }));
 
     if (form.project_type_id === null) {
         form.project_type_id = '';
     }
 
+    // The route accepts POST as well as PUT; the old `_method: 'PUT'` option was not a valid form option and was ignored.
     form.post(route('backend.projects.update', props.project.id), {
-        _method: 'PUT',
         forceFormData: true,
     });
 };
@@ -101,7 +99,9 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="folderKanban" class="size-6" />
                     </div>
                     <div>
@@ -117,13 +117,7 @@ const submit = () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="title">Title *</Label>
-                                <Input
-                                    id="title"
-                                    v-model="form.title"
-                                    type="text"
-                                    placeholder="Enter project title"
-                                    required
-                                />
+                                <Input id="title" v-model="form.title" type="text" placeholder="Enter project title" required />
                                 <InputError :message="form.errors.title" />
                             </div>
 
@@ -134,11 +128,7 @@ const submit = () => {
                                         <SelectValue placeholder="Select project type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem
-                                            v-for="type in projectTypes"
-                                            :key="type.id"
-                                            :value="type.id.toString()"
-                                        >
+                                        <SelectItem v-for="type in projectTypes" :key="type.id" :value="type.id.toString()">
                                             {{ type.name }}
                                         </SelectItem>
                                     </SelectContent>
@@ -164,11 +154,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="created_date">Created Date</Label>
-                                <Input
-                                    id="created_date"
-                                    v-model="form.created_date"
-                                    type="date"
-                                />
+                                <Input id="created_date" v-model="form.created_date" type="date" />
                                 <InputError :message="form.errors.created_date" />
                             </div>
                         </div>
@@ -179,7 +165,7 @@ const submit = () => {
                                 <p class="mb-2 text-sm text-muted-foreground">Current image:</p>
                                 <img
                                     :src="`/${project.image}`"
-                                    :alt="project.title"
+                                    :alt="project.title ?? undefined"
                                     class="size-32 rounded-xl border object-cover"
                                     :class="{ 'opacity-40 grayscale': form.remove_image }"
                                 />
@@ -188,40 +174,21 @@ const submit = () => {
                                     Remove current image
                                 </label>
                             </div>
-                            <Input
-                                id="image"
-                                type="file"
-                                accept="image/*"
-                                @change="form.image = $event.target.files[0]"
-                            />
-                            <p class="text-sm text-muted-foreground">
-                                Upload a new image to replace the current one (JPEG, PNG, JPG, GIF - max 2MB)
-                            </p>
+                            <Input id="image" type="file" accept="image/*" @change="handleImageChange" />
+                            <p class="text-sm text-muted-foreground">Upload a new image to replace the current one (JPEG, PNG, JPG, GIF - max 2MB)</p>
                             <InputError :message="form.errors.image" />
                         </div>
 
                         <div class="space-y-2">
                             <Label for="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                v-model="form.description"
-                                placeholder="Enter project description"
-                                :rows="4"
-                            />
+                            <Textarea id="description" v-model="form.description" placeholder="Enter project description" :rows="4" />
                             <InputError :message="form.errors.description" />
                         </div>
 
                         <div class="space-y-2">
                             <Label for="technologies">Technologies</Label>
-                            <Input
-                                id="technologies"
-                                v-model="technologiesString"
-                                type="text"
-                                placeholder="Enter technologies (comma-separated)"
-                            />
-                            <p class="text-sm text-muted-foreground">
-                                Enter technologies separated by commas (e.g., Vue.js, Laravel, MySQL)
-                            </p>
+                            <Input id="technologies" v-model="technologiesString" type="text" placeholder="Enter technologies (comma-separated)" />
+                            <p class="text-sm text-muted-foreground">Enter technologies separated by commas (e.g., Vue.js, Laravel, MySQL)</p>
                             <InputError :message="form.errors.technologies" />
                         </div>
 
@@ -234,28 +201,14 @@ const submit = () => {
                                 </Button>
                             </div>
                             <div class="space-y-3">
-                                <div
-                                    v-for="(link, index) in links"
-                                    :key="index"
-                                    class="flex items-end gap-3"
-                                >
+                                <div v-for="(link, index) in links" :key="index" class="flex items-end gap-3">
                                     <div class="flex-1 space-y-2">
                                         <Label :for="`link-label-${index}`">Label</Label>
-                                        <Input
-                                            :id="`link-label-${index}`"
-                                            v-model="link.label"
-                                            type="text"
-                                            placeholder="e.g., Github, View, Demo"
-                                        />
+                                        <Input :id="`link-label-${index}`" v-model="link.label" type="text" placeholder="e.g., Github, View, Demo" />
                                     </div>
                                     <div class="flex-[2] space-y-2">
                                         <Label :for="`link-url-${index}`">URL</Label>
-                                        <Input
-                                            :id="`link-url-${index}`"
-                                            v-model="link.url"
-                                            type="url"
-                                            placeholder="https://example.com"
-                                        />
+                                        <Input :id="`link-url-${index}`" v-model="link.url" type="url" placeholder="https://example.com" />
                                     </div>
                                     <Button
                                         type="button"
@@ -269,9 +222,7 @@ const submit = () => {
                                     </Button>
                                 </div>
                             </div>
-                            <p class="text-sm text-muted-foreground">
-                                Add project links like Github repository, live demo, etc.
-                            </p>
+                            <p class="text-sm text-muted-foreground">Add project links like Github repository, live demo, etc.</p>
                             <InputError :message="form.errors.links" />
                         </div>
                     </div>

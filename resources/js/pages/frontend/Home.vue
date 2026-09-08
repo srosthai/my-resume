@@ -1,35 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { PublicOwner, TechStack } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Book, Github, Linkedin, Mail, MapPin, Rss } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    users: {
-        type: Object,
-        required: true,
+interface HomeStats {
+    projects: number;
+    techStacks: number;
+    experience: number;
+    notes: number;
+}
+
+const props = withDefaults(
+    defineProps<{
+        users: PublicOwner;
+        techStacks?: TechStack[];
+        stats?: HomeStats;
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        techStacks: () => [],
+        stats: () => ({ projects: 0, techStacks: 0, experience: 0, notes: 0 }),
+        title: 'Home',
+        description: 'Welcome to my portfolio',
     },
-    techStacks: {
-        type: Array,
-        default: () => [],
-    },
-    stats: {
-        type: Object,
-        default: () => ({ projects: 0, techStacks: 0, experience: 0, notes: 0 }),
-    },
-    title: {
-        type: String,
-        default: 'Home',
-    },
-    description: {
-        type: String,
-        default: 'Welcome to my portfolio',
-    },
-});
+);
 
 const { isLoading, isVisible } = usePageReveal();
 const { time: timeInPhnomPenh, date: dateInPhnomPenh } = usePhnomPenhClock();
@@ -373,8 +374,8 @@ const doubledStacks = computed(() => {
                     </div>
                     <div class="marquee-viewport group relative py-4 sm:py-6">
                         <div class="marquee-track">
-                            <div v-for="(tech, i) in doubledStacks" :key="`${tech.id}-${i}`" class="marquee-item" :title="tech.name">
-                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name" class="marquee-logo" loading="lazy" />
+                            <div v-for="(tech, i) in doubledStacks" :key="`${tech.id}-${i}`" class="marquee-item" :title="tech.name ?? undefined">
+                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name ?? undefined" class="marquee-logo" loading="lazy" />
                                 <span
                                     v-else
                                     class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-muted font-mono text-[10px] font-semibold text-muted-foreground sm:h-7 sm:w-7 sm:text-xs"

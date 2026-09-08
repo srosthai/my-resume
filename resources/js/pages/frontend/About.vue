@@ -1,22 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { AboutMe, AboutMeProp, Education, PublicOwner, TechStack, WorkExperience } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Briefcase, Code2, GraduationCap, MapPin, Target } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    user: { type: Object, default: () => ({}) },
-    aboutMe: { type: Object, default: () => ({}) },
-    workExperience: { type: Array, default: () => [] },
-    education: { type: Array, default: () => [] },
-    techStacks: { type: Array, default: () => [] },
-    title: { type: String, default: 'About' },
-    description: { type: String, default: '' },
-});
+const props = withDefaults(
+    defineProps<{
+        user: PublicOwner;
+        aboutMe?: AboutMeProp;
+        workExperience?: WorkExperience[];
+        education?: Education[];
+        techStacks?: TechStack[];
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        aboutMe: () => [],
+        workExperience: () => [],
+        education: () => [],
+        techStacks: () => [],
+        title: 'About',
+        description: '',
+    },
+);
+
+// The backend sends `[]` when no AboutMe row exists; normalise to a nullable record.
+const about = computed<AboutMe | null>(() => (Array.isArray(props.aboutMe) ? null : props.aboutMe));
 
 const { isLoading, isVisible } = usePageReveal(400);
 
@@ -27,11 +41,11 @@ const { pointer } = usePointerGlow();
 const currentYear = new Date().getFullYear();
 
 const firstName = computed(() => {
-    const parts = (props.user?.name || props.aboutMe?.title || 'About').trim().split(/\s+/);
+    const parts = (props.user?.name || about.value?.title || 'About').trim().split(/\s+/);
     return parts[0] || 'About';
 });
 const lastName = computed(() => {
-    const parts = (props.user?.name || props.aboutMe?.title || '').trim().split(/\s+/);
+    const parts = (props.user?.name || about.value?.title || '').trim().split(/\s+/);
     return parts.slice(1).join(' ');
 });
 
@@ -43,8 +57,8 @@ const imageSrc = computed(() => {
 
 // Group tech stacks by type
 const groupedTechStacks = computed(() => {
-    const groups = {};
-    const order = [];
+    const groups: Record<string, TechStack[]> = {};
+    const order: string[] = [];
     (props.techStacks || []).forEach((tech) => {
         const type = tech.type || 'Other';
         if (!groups[type]) {
@@ -60,17 +74,17 @@ const stats = computed(() => [
     {
         icon: MapPin,
         label: 'Location',
-        value: props.aboutMe?.location || 'Phnom Penh, Cambodia',
+        value: about.value?.location || 'Phnom Penh, Cambodia',
     },
     {
         icon: Briefcase,
         label: 'Experience',
-        value: props.aboutMe?.year_experience || '5+ Years',
+        value: about.value?.year_experience || '5+ Years',
     },
     {
         icon: Target,
         label: 'Focus',
-        value: props.aboutMe?.fucus_on || 'Web Development',
+        value: about.value?.fucus_on || 'Web Development',
     },
 ]);
 </script>
@@ -183,7 +197,7 @@ const stats = computed(() => [
                             </span>
                         </div>
                         <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[15px] md:text-base">
-                            {{ aboutMe?.description || 'Passionate about building crafted, maintainable, and meaningful software.' }}
+                            {{ about?.description || 'Passionate about building crafted, maintainable, and meaningful software.' }}
                         </p>
                     </div>
 
@@ -425,13 +439,13 @@ const stats = computed(() => [
                         </div>
 
                         <ul class="mt-4 flex flex-wrap gap-2">
-                            <li v-for="tech in group.items" :key="tech.id" class="tech-chip" :title="tech.description">
-                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name" class="tech-chip-logo" loading="lazy" />
+                            <li v-for="tech in group.items" :key="tech.id" class="tech-chip" :title="tech.description ?? undefined">
+                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name ?? undefined" class="tech-chip-logo" loading="lazy" />
                                 <span
                                     v-else
                                     class="inline-flex h-4 w-4 items-center justify-center rounded-md bg-muted font-mono text-[9px] font-semibold text-muted-foreground"
                                 >
-                                    {{ tech.name.charAt(0) }}
+                                    {{ tech.name?.charAt(0) }}
                                 </span>
                                 <span class="tech-chip-name">{{ tech.name }}</span>
                             </li>

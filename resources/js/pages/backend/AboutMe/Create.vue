@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,9 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="user" class="size-6" />
                     </div>
                     <div>
@@ -81,7 +83,12 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <Label for="description">Description</Label>
-                            <Textarea id="description" v-model="form.description" placeholder="Tell visitors what you build and why it matters." :rows="6" />
+                            <Textarea
+                                id="description"
+                                v-model="form.description"
+                                placeholder="Tell visitors what you build and why it matters."
+                                :rows="6"
+                            />
                             <InputError :message="form.errors.description" />
                         </div>
                     </div>

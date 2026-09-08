@@ -3,16 +3,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { PlayerSong, PopularSong } from '@/types';
 import { Maximize2, Minimize2, Music, Pause, Play, SkipBack, SkipForward, X } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
-interface Song {
-    id: number;
-    title: string;
-    artist: string;
-    src: string;
-    duration: number;
-}
+type Song = PlayerSong;
+
+/** Raw row from /api/popular-songs; tolerate either `url` or `src` for the YouTube link. */
+type ApiSong = Partial<PopularSong> & { src?: string };
 
 const musicLibrary = ref<Song[]>([
     {
@@ -29,7 +27,7 @@ const currentSongIndex = ref(0);
 const currentTime = ref(0);
 const isMinimized = ref(true);
 const isExpanded = ref(false);
-const youtubePlayer = ref<any>(null);
+const youtubePlayer = ref<YT.Player | null>(null);
 const playerReady = ref(false);
 
 const currentSong = ref<Song>(musicLibrary.value[0]);
@@ -97,14 +95,6 @@ const loadCurrentSong = () => {
         } else {
             console.error('Cannot extract video ID from:', currentSong.value.src);
         }
-    }
-};
-
-const openYouTube = () => {
-    if (currentSong.value?.src) {
-        window.open(currentSong.value.src, '_blank');
-    } else {
-        console.warn('No current song URL to open');
     }
 };
 
@@ -193,7 +183,7 @@ const onPlayerReady = () => {
     playerReady.value = true;
 };
 
-const onPlayerStateChange = (event: any) => {
+const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
     if (event.data === window.YT.PlayerState.PLAYING) {
         isPlaying.value = true;
         startTimeUpdate();
@@ -245,14 +235,14 @@ const loadSongs = async () => {
     try {
         const response = await fetch('/api/popular-songs');
         if (response.ok) {
-            const songs = await response.json();
+            const songs: ApiSong[] = await response.json();
             if (songs && songs.length > 0) {
                 console.log('Loaded songs from API:', songs); // Debug log
 
                 // Map API response to expected format with validation
                 musicLibrary.value = songs
-                    .map((song: any) => {
-                        const mappedSong = {
+                    .map((song): Song => {
+                        const mappedSong: Song = {
                             id: song.id || 0,
                             title: song.title || 'Unknown Title',
                             artist: song.artist || 'Unknown Artist',

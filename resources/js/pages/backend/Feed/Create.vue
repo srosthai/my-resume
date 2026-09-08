@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -7,15 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { FeedVisibility, PublishStatus } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const props = defineProps({
-    activityTypes: {
-        type: Array,
-        default: () => [],
+const props = withDefaults(
+    defineProps<{
+        activityTypes?: string[];
+    }>(),
+    {
+        activityTypes: () => [],
     },
-});
+);
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -26,21 +29,29 @@ const breadcrumbs = [
 const form = useForm({
     title: '',
     body: '',
-    images: [],
+    images: [] as File[],
     location: '',
     mood: '',
     activity_type: '',
-    tags: [],
-    visibility: 'public',
-    status: 'draft',
+    tags: [] as string[],
+    visibility: 'public' as FeedVisibility,
+    status: 'draft' as PublishStatus,
     is_pinned: false,
     likes_count: 0,
-    published_at: null,
+    published_at: null as string | null,
+});
+
+/** Bridges the nullable form field to <Input>, whose v-model only accepts string | number. */
+const publishedAt = computed({
+    get: () => form.published_at ?? undefined,
+    set: (value: string | number) => {
+        form.published_at = String(value);
+    },
 });
 
 const newTag = ref('');
 const newActivityType = ref('');
-const imagePreviews = ref([]);
+const imagePreviews = ref<string[]>([]);
 
 const moods = [
     { value: 'happy', label: 'Happy', emoji: '😊' },
@@ -63,12 +74,13 @@ const addTag = () => {
     }
 };
 
-const removeTag = (index) => {
+const removeTag = (index: number) => {
     form.tags.splice(index, 1);
 };
 
-const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
+const handleImageUpload = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
     const currentCount = form.images.length;
 
     if (currentCount + files.length > 10) {
@@ -80,15 +92,18 @@ const handleImageUpload = (event) => {
         form.images.push(file);
         const reader = new FileReader();
         reader.onload = (e) => {
-            imagePreviews.value.push(e.target.result);
+            const result = e.target?.result;
+            if (typeof result === 'string') {
+                imagePreviews.value.push(result);
+            }
         };
         reader.readAsDataURL(file);
     });
 
-    event.target.value = '';
+    input.value = '';
 };
 
-const removeImage = (index) => {
+const removeImage = (index: number) => {
     form.images.splice(index, 1);
     imagePreviews.value.splice(index, 1);
 };
@@ -109,7 +124,7 @@ const availableActivityTypes = computed(() => {
     return existing;
 });
 
-const selectActivityType = (type) => {
+const selectActivityType = (type: string) => {
     form.activity_type = type;
     newActivityType.value = '';
 };
@@ -128,7 +143,9 @@ const selectActivityType = (type) => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="rss" class="size-6" />
                     </div>
                     <div>
@@ -161,7 +178,10 @@ const selectActivityType = (type) => {
                             <Input
                                 v-model="newActivityType"
                                 placeholder="Enter new activity type"
-                                @keyup.enter="form.activity_type = newActivityType; newActivityType = ''"
+                                @keyup.enter="
+                                    form.activity_type = newActivityType;
+                                    newActivityType = '';
+                                "
                             />
                             <div v-if="availableActivityTypes.length > 0" class="flex flex-wrap gap-2">
                                 <Button
@@ -298,7 +318,7 @@ const selectActivityType = (type) => {
                             <!-- Published At -->
                             <div v-if="form.status === 'published'" class="space-y-2">
                                 <Label for="published_at">Publish Date</Label>
-                                <Input id="published_at" v-model="form.published_at" type="datetime-local" />
+                                <Input id="published_at" v-model="publishedAt" type="datetime-local" />
                                 <p class="text-sm text-muted-foreground">Leave empty to publish immediately</p>
                                 <InputError :message="form.errors.published_at" />
                             </div>
@@ -306,7 +326,12 @@ const selectActivityType = (type) => {
 
                         <!-- Pinned -->
                         <div class="flex items-center space-x-2">
-                            <input id="is_pinned" v-model="form.is_pinned" type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary" />
+                            <input
+                                id="is_pinned"
+                                v-model="form.is_pinned"
+                                type="checkbox"
+                                class="rounded border-gray-300 text-primary focus:ring-primary"
+                            />
                             <Label for="is_pinned" class="flex items-center gap-2">
                                 <Icon name="pin" class="size-4" />
                                 Pin to top

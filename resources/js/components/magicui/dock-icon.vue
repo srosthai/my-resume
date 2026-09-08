@@ -7,7 +7,7 @@ interface DockIconProps {
     size?: number;
 }
 
-const props = withDefaults(defineProps<DockIconProps>(), {
+withDefaults(defineProps<DockIconProps>(), {
     size: 36,
 });
 
@@ -24,37 +24,35 @@ const iconScale = computed(() => {
 
     const rect = iconRef.value.getBoundingClientRect();
     const dockRect = iconRef.value.closest('[data-dock]')?.getBoundingClientRect();
-    
+
     if (!dockRect) return 1;
-    
+
     const iconCenterX = rect.left + rect.width / 2 - dockRect.left;
     const distanceFromMouse = Math.abs(mouseX.value - iconCenterX);
-    
+
     // Get current responsive values
     const currentMagnification = typeof magnification === 'object' ? magnification.value : magnification;
     const currentDistance = typeof distance === 'object' ? distance.value : distance;
-    
+
     // Smoother scaling curve using exponential falloff
     const normalizedDistance = Math.min(distanceFromMouse / currentDistance, 1);
     const easedDistance = 1 - Math.pow(normalizedDistance, 1.5);
     const scale = 1 + (currentMagnification / 100) * Math.max(0, easedDistance);
-    
-    return Math.min(scale, 1 + currentMagnification / 100);
-});
 
-const iconSize = computed(() => {
-    return props.size;
+    return Math.min(scale, 1 + currentMagnification / 100);
 });
 </script>
 
 <template>
-    <div 
+    <div
         ref="iconRef"
-        :class="cn(
-            'group flex cursor-pointer items-center justify-center rounded-full transition-all duration-300 ease-out shrink-0',
-            'w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12',
-            $props.class
-        )"
+        :class="
+            cn(
+                'group flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-all duration-300 ease-out',
+                'h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12',
+                $props.class,
+            )
+        "
         :style="{
             transform: `scale(${iconScale})`,
             transformOrigin: 'center bottom',

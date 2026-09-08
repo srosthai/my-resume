@@ -1,23 +1,38 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { AboutMe, AboutMeProp, Project, ResumeEducation, ResumeOwner, ResumeWorkExperience, TechStack } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Mail, MapPin, Phone, Printer } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    users: { type: Object, default: () => ({}) },
-    aboutMe: { type: Object, default: () => ({}) },
-    workExperience: { type: Array, default: () => [] },
-    education: { type: Array, default: () => [] },
-    techStacks: { type: Array, default: () => [] },
-    projects: { type: Array, default: () => [] },
-    title: { type: String, default: 'Resume' },
-    description: { type: String, default: '' },
-});
+const props = withDefaults(
+    defineProps<{
+        users: ResumeOwner;
+        aboutMe?: AboutMeProp;
+        workExperience?: ResumeWorkExperience[];
+        education?: ResumeEducation[];
+        techStacks?: TechStack[];
+        projects?: Project[];
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        aboutMe: () => [],
+        workExperience: () => [],
+        education: () => [],
+        techStacks: () => [],
+        projects: () => [],
+        title: 'Resume',
+        description: '',
+    },
+);
+
+// The backend sends `[]` when no AboutMe row exists; normalise to a nullable record.
+const about = computed<AboutMe | null>(() => (Array.isArray(props.aboutMe) ? null : props.aboutMe));
 
 const { isLoading, isVisible } = usePageReveal(400);
 
@@ -44,8 +59,8 @@ const imageSrc = computed(() => {
 });
 
 const groupedSkills = computed(() => {
-    const groups = {};
-    const order = [];
+    const groups: Record<string, TechStack[]> = {};
+    const order: string[] = [];
     (props.techStacks || []).forEach((t) => {
         const type = t.type || 'Other';
         if (!groups[type]) {
@@ -60,7 +75,7 @@ const groupedSkills = computed(() => {
 const hasContact = computed(() => props.users?.phone || props.users?.email || props.users?.address);
 
 const bio = computed(
-    () => props.users?.description || props.aboutMe?.description || 'A passionate developer crafting modern, reliable web applications.',
+    () => props.users?.description || about.value?.description || 'A passionate developer crafting modern, reliable web applications.',
 );
 
 const printResume = () => {

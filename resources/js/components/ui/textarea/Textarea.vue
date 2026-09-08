@@ -1,34 +1,37 @@
-<script setup>
+<script setup lang="ts">
 import { cn } from '@/lib/utils'
+import type { HTMLAttributes } from 'vue'
 
-const props = defineProps({
-  class: {
-    type: String,
-    default: ''
+const props = withDefaults(
+  defineProps<{
+    class?: HTMLAttributes['class']
+    id?: string
+    placeholder?: string
+    disabled?: boolean
+    readonly?: boolean
+    required?: boolean
+    rows?: number | string
+    cols?: number
+    maxlength?: number
+    minlength?: number
+    name?: string
+    form?: string
+    autocomplete?: string
+    autofocus?: boolean
+    modelValue?: string
+  }>(),
+  {
+    class: '',
+    rows: 3,
   },
-  id: String,
-  placeholder: String,
-  disabled: Boolean,
-  readonly: Boolean,
-  required: Boolean,
-  rows: {
-    type: Number,
-    default: 3
-  },
-  cols: Number,
-  maxlength: Number,
-  minlength: Number,
-  name: String,
-  form: String,
-  autocomplete: String,
-  autofocus: Boolean,
-  modelValue: String
-})
+)
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
 
-const handleInput = (event) => {
-  emit('update:modelValue', event.target.value)
+const handleInput = (event: Event) => {
+  emit('update:modelValue', (event.target as HTMLTextAreaElement).value)
 }
 </script>
 

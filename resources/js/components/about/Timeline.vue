@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
-import TimelineCard from './TimelineCard.vue'
+import type { Component } from 'vue';
+import TimelineCard from './TimelineCard.vue';
 
 interface TimelineItem {
-    id: number
-    title: string
-    company?: string
-    institution?: string
-    description: string
-    from: string
-    to: string
+    id: number;
+    title: string;
+    company?: string;
+    institution?: string;
+    description: string;
+    from: string;
+    to: string;
 }
 
 interface Props {
-    title: string
-    icon: Component
-    items: TimelineItem[]
-    subtitleKey?: 'company' | 'institution'
+    title: string;
+    icon: Component;
+    items: TimelineItem[];
+    subtitleKey?: 'company' | 'institution';
 }
 
 withDefaults(defineProps<Props>(), {
     subtitleKey: 'company',
-})
+});
 </script>
 
 <template>
@@ -37,9 +37,7 @@ withDefaults(defineProps<Props>(), {
 
         <div class="relative space-y-3">
             <!-- Timeline line -->
-            <div
-                class="absolute bottom-0 left-[5px] top-0 hidden w-px bg-gradient-to-b from-border/60 via-border/30 to-transparent md:block"
-            />
+            <div class="absolute top-0 bottom-0 left-[5px] hidden w-px bg-gradient-to-b from-border/60 via-border/30 to-transparent md:block" />
 
             <TimelineCard
                 v-for="(item, index) in items"

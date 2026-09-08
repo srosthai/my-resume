@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { Feed } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -15,6 +16,7 @@ import {
     Compass,
     Eye,
     Heart,
+    type LucideIcon,
     MapPin,
     Pin,
     ScanSearch,
@@ -26,25 +28,41 @@ import {
 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
-const props = defineProps({
-    title: { type: String, default: 'My Feeds' },
-    description: { type: String, default: 'Follow my lifestyle, hangouts, and adventures' },
-    feeds: { type: Array, default: () => [] },
-    activityTypes: { type: Array, default: () => [] },
-});
+const props = withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+        feeds?: Feed[];
+        activityTypes?: string[];
+    }>(),
+    {
+        title: 'My Feeds',
+        description: 'Follow my lifestyle, hangouts, and adventures',
+        feeds: () => [],
+        activityTypes: () => [],
+    },
+);
+
+/** A feed whose `images` array is present — the lightbox is only ever opened for these. */
+type FeedWithImages = Feed & { images: string[] };
+
+interface FeedStat {
+    likes_count: number;
+    views: number;
+}
 
 const { isLoading, isVisible } = usePageReveal(400);
 const searchQuery = ref('');
 const selectedFilter = ref('All');
 const searchFocused = ref(false);
-const expandedImages = ref(null);
+const expandedImages = ref<FeedWithImages | null>(null);
 const currentImageIndex = ref(0);
 const currentYear = new Date().getFullYear();
 
 // Like / view tracking
-const likedFeeds = ref(new Set(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liked_feeds') || '[]') : []));
-const feedStats = reactive({});
-const likingInProgress = ref(new Set());
+const likedFeeds = ref<Set<number>>(new Set<number>(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liked_feeds') || '[]') : []));
+const feedStats = reactive<Record<number, FeedStat>>({});
+const likingInProgress = ref<Set<number>>(new Set());
 
 // Clock for meta strip (date only — 60s tick); `date` format matches former dateString
 const { now, date: dateString } = usePhnomPenhClock(60000);
@@ -61,11 +79,11 @@ const initFeedStats = () => {
     });
 };
 
-const getLikes = (feed) => feedStats[feed.id]?.likes_count ?? feed.likes_count;
-const getViews = (feed) => feedStats[feed.id]?.views ?? feed.views;
-const isLiked = (feedId) => likedFeeds.value.has(feedId);
+const getLikes = (feed: Feed) => feedStats[feed.id]?.likes_count ?? feed.likes_count;
+const getViews = (feed: Feed) => feedStats[feed.id]?.views ?? feed.views;
+const isLiked = (feedId: number) => likedFeeds.value.has(feedId);
 
-const toggleLike = async (feed) => {
+const toggleLike = async (feed: Feed) => {
     if (likingInProgress.value.has(feed.id)) return;
     likingInProgress.value.add(feed.id);
 
@@ -80,7 +98,7 @@ const toggleLike = async (feed) => {
     localStorage.setItem('liked_feeds', JSON.stringify([...likedFeeds.value]));
 
     try {
-        const { data } = await axios.post(`/api/feeds/${feed.id}/like`);
+        const { data } = await axios.post<{ likes_count: number; liked: boolean }>(`/api/feeds/${feed.id}/like`);
         if (feedStats[feed.id]) {
             feedStats[feed.id].likes_count = data.likes_count;
         }
@@ -104,12 +122,12 @@ const toggleLike = async (feed) => {
     }
 };
 
-const trackView = async (feed) => {
+const trackView = async (feed: Feed) => {
     const viewedKey = `feed_viewed_${feed.id}`;
     if (sessionStorage.getItem(viewedKey)) return;
     sessionStorage.setItem(viewedKey, '1');
     try {
-        const { data } = await axios.post(`/api/feeds/${feed.id}/view`);
+        const { data } = await axios.post<{ views: number }>(`/api/feeds/${feed.id}/view`);
         if (feedStats[feed.id]) {
             feedStats[feed.id].views = data.views;
         }
@@ -118,7 +136,7 @@ const trackView = async (feed) => {
     }
 };
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent) => {
     if (!expandedImages.value) return;
     if (e.key === 'Escape') closeImageViewer();
     if (e.key === 'ArrowRight') nextImage();
@@ -131,7 +149,7 @@ const activities = computed(() => {
 });
 
 const countByActivity = computed(() => {
-    const m = { All: props.feeds.length };
+    const m: Record<string, number> = { All: props.feeds.length };
     for (const t of props.activityTypes || []) {
         m[t] = props.feeds.filter((f) => f.activity_type === t).length;
     }
@@ -156,8 +174,8 @@ const filteredFeeds = computed(() => {
     return filtered;
 });
 
-const getActivityIcon = (type) => {
-    const icons = {
+const getActivityIcon = (type: string | null) => {
+    const icons: Record<string, LucideIcon> = {
         hangout: Users,
         travel: Compass,
         food: Utensils,
@@ -165,11 +183,11 @@ const getActivityIcon = (type) => {
         work: Briefcase,
         event: CalendarHeart,
     };
-    return icons[type] || Sparkles;
+    return (type && icons[type]) || Sparkles;
 };
 
-const getMoodEmoji = (mood) => {
-    const emojis = {
+const getMoodEmoji = (mood: string | null) => {
+    const emojis: Record<string, string> = {
         happy: '😊',
         excited: '🎉',
         relaxed: '😌',
@@ -179,12 +197,13 @@ const getMoodEmoji = (mood) => {
         creative: '🎨',
         energetic: '⚡',
     };
-    return emojis[mood] || '';
+    return (mood && emojis[mood]) || '';
 };
 
-const timeAgo = (date) => {
-    const past = new Date(date);
-    const diffMs = now.value - past;
+const timeAgo = (date: string | null) => {
+    // `new Date(null)` is the epoch, exactly like `new Date(0)`.
+    const past = new Date(date ?? 0);
+    const diffMs = now.value.getTime() - past.getTime();
     const diffSecs = Math.floor(diffMs / 1000);
     const diffMins = Math.floor(diffSecs / 60);
     const diffHours = Math.floor(diffMins / 60);
@@ -205,16 +224,17 @@ const timeAgo = (date) => {
     });
 };
 
-const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+const formatDate = (date: string | null) => {
+    return new Date(date ?? 0).toLocaleDateString('en-US', {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
     });
 };
 
-const openImageViewer = (feed, index) => {
-    expandedImages.value = feed;
+const openImageViewer = (feed: Feed, index: number) => {
+    // Only reachable from the template inside `v-if="feed.images && feed.images.length > 0"`.
+    expandedImages.value = feed as FeedWithImages;
     currentImageIndex.value = index;
     document.body.style.overflow = 'hidden';
 };

@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import Icon from '@/components/Icon.vue'
-import { Button } from '@/components/ui/button'
-import AppLayout from '@/layouts/AppLayout.vue'
-import type { BreadcrumbItemType } from '@/types'
-import { Link } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import Icon from '@/components/Icon.vue';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItemType } from '@/types';
+import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface User {
-    id: number
-    name: string
-    email: string
-    dob: string | null
-    phone: string | null
-    address: string | null
-    position: string | null
-    description: string | null
-    image: string | null
-    created_at?: string | null
+    id: number;
+    name: string;
+    email: string;
+    dob: string | null;
+    phone: string | null;
+    address: string | null;
+    position: string | null;
+    description: string | null;
+    image: string | null;
+    created_at?: string | null;
 }
 
 interface Props {
-    user: User
+    user: User;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'ME', href: '/me' },
     { title: 'Details', href: `/backend/users/${props.user.id}` },
-]
+];
 
 const imageSrc = computed(() => {
-    const image = props.user.image
+    const image = props.user.image;
 
-    if (!image) return null
+    if (!image) return null;
 
-    return image.startsWith('http') || image.startsWith('/') ? image : `/${image}`
-})
+    return image.startsWith('http') || image.startsWith('/') ? image : `/${image}`;
+});
 
 const initials = computed(() =>
     props.user.name
@@ -46,17 +46,17 @@ const initials = computed(() =>
         .join('')
         .slice(0, 2)
         .toUpperCase(),
-)
+);
 
 const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return 'Not set'
+    if (!dateString) return 'Not set';
 
     return new Intl.DateTimeFormat('en-US', {
         month: 'long',
         day: '2-digit',
         year: 'numeric',
-    }).format(new Date(dateString))
-}
+    }).format(new Date(dateString));
+};
 
 const detailItems = computed(() => [
     { label: 'Email', value: props.user.email || 'Not set', icon: 'mail' },
@@ -65,7 +65,7 @@ const detailItems = computed(() => [
     { label: 'Address', value: props.user.address || 'Not set', icon: 'mapPin' },
     { label: 'Position', value: props.user.position || 'Not set', icon: 'briefcase' },
     { label: 'Record ID', value: `#${props.user.id}`, icon: 'badgeCheck' },
-])
+]);
 </script>
 
 <template>
@@ -80,7 +80,9 @@ const detailItems = computed(() => [
                         </Button>
                     </Link>
                     <div class="flex items-center gap-4">
-                        <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <div
+                            class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                        >
                             <Icon name="users" class="size-6" />
                         </div>
                         <div>
@@ -101,12 +103,7 @@ const detailItems = computed(() => [
             <div class="overflow-hidden rounded-2xl border bg-card shadow-sm">
                 <div class="flex flex-col gap-5 border-b p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
                     <div class="flex items-center gap-5">
-                        <img
-                            v-if="imageSrc"
-                            :src="imageSrc"
-                            :alt="user.name"
-                            class="size-24 rounded-2xl object-cover ring-1 ring-border"
-                        />
+                        <img v-if="imageSrc" :src="imageSrc" :alt="user.name" class="size-24 rounded-2xl object-cover ring-1 ring-border" />
                         <div
                             v-else
                             class="flex size-24 items-center justify-center rounded-2xl bg-muted text-3xl font-semibold text-muted-foreground"
@@ -126,7 +123,7 @@ const detailItems = computed(() => [
 
                 <div class="p-6 sm:p-8">
                     <div class="rounded-2xl border bg-muted/25 p-5">
-                        <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        <div class="flex items-center gap-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                             <Icon name="fileText" class="size-3.5" />
                             Summary
                         </div>
@@ -136,16 +133,12 @@ const detailItems = computed(() => [
                     </div>
 
                     <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        <div
-                            v-for="item in detailItems"
-                            :key="item.label"
-                            class="rounded-2xl border bg-background p-4"
-                        >
-                            <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        <div v-for="item in detailItems" :key="item.label" class="rounded-2xl border bg-background p-4">
+                            <div class="flex items-center gap-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                 <Icon :name="item.icon" class="size-3.5" />
                                 {{ item.label }}
                             </div>
-                            <div class="mt-3 break-words text-sm font-medium leading-6">
+                            <div class="mt-3 text-sm leading-6 font-medium break-words">
                                 {{ item.value }}
                             </div>
                         </div>

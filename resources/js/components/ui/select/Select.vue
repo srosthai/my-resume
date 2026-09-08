@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { SelectRoot, type SelectRootProps, type SelectRootEmits, useForwardPropsEmits } from 'reka-ui'
+import { reactiveOmit } from '@vueuse/core'
+import { SelectRoot, type SelectRootProps, useForwardPropsEmits } from 'reka-ui'
 
-interface Props extends SelectRootProps {
+interface Props extends Omit<SelectRootProps, 'modelValue'> {
   modelValue?: string | null
 }
 
 const props = defineProps<Props>()
 
-const emits = defineEmits<SelectRootEmits & {
+const emits = defineEmits<{
   'update:modelValue': [value: string | null]
+  'update:open': [value: boolean]
 }>()
 
-const forwarded = useForwardPropsEmits(props, emits)
+// `modelValue` is bound explicitly below, so keep it out of the forwarded props to avoid binding it twice.
+const delegatedProps = reactiveOmit(props, 'modelValue')
 
-const handleValueChange = (value: string) => {
-  emits('update:modelValue', value)
-}
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
 
 <template>
   <SelectRoot
-    :model-value="modelValue || undefined"
-    @update:model-value="handleValueChange"
     v-bind="forwarded"
+    :model-value="modelValue || undefined"
   >
     <slot />
   </SelectRoot>

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { useInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
-import { computed } from 'vue';
 import AppLogoIcon from './AppLogoIcon.vue';
 
 interface Props {
@@ -9,14 +7,9 @@ interface Props {
     showEmail?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     showEmail: false,
 });
-
-const { getInitials } = useInitials();
-
-// Compute whether we should show the avatar image
-const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
 </script>
 
 <template>

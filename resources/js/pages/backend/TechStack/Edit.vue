@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,9 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="layers" class="size-6" />
                     </div>
                     <div>
@@ -62,41 +64,22 @@ const submit = () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="name">Technology Name</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    placeholder="Enter technology name"
-                                    required
-                                    autofocus
-                                />
+                                <Input id="name" v-model="form.name" type="text" placeholder="Enter technology name" required autofocus />
                                 <InputError :message="form.errors.name" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="type">Type/Category</Label>
-                                <Input
-                                    id="type"
-                                    v-model="form.type"
-                                    type="text"
-                                    placeholder="e.g., Frontend, Backend, Database"
-                                />
+                                <Input id="type" v-model="form.type" type="text" placeholder="e.g., Frontend, Backend, Database" />
                                 <InputError :message="form.errors.type" />
                             </div>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="logo">Logo URL</Label>
-                            <Input
-                                id="logo"
-                                v-model="form.logo"
-                                type="url"
-                                placeholder="Enter logo URL (optional)"
-                            />
+                            <Input id="logo" v-model="form.logo" type="url" placeholder="Enter logo URL (optional)" />
                             <InputError :message="form.errors.logo" />
-                            <p class="text-xs text-muted-foreground">
-                                You can use CDN URLs like devicons or upload your own logo
-                            </p>
+                            <p class="text-xs text-muted-foreground">You can use CDN URLs like devicons or upload your own logo</p>
                         </div>
 
                         <div class="space-y-2">

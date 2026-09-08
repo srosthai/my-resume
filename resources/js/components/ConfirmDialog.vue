@@ -55,11 +55,7 @@ const onOpenChange = (value: boolean) => {
                 <Button variant="outline" :disabled="props.processing" @click="onOpenChange(false)">
                     {{ props.cancelLabel }}
                 </Button>
-                <Button
-                    :variant="props.tone === 'danger' ? 'destructive' : 'default'"
-                    :disabled="props.processing"
-                    @click="emit('confirm')"
-                >
+                <Button :variant="props.tone === 'danger' ? 'destructive' : 'default'" :disabled="props.processing" @click="emit('confirm')">
                     <Icon v-if="props.processing" name="loaderCircle" class="size-4 animate-spin" />
                     {{ props.confirmLabel }}
                 </Button>

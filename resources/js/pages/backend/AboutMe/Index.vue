@@ -1,18 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { AboutMe } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const props = defineProps({
-    aboutMes: {
-        type: Array,
-        required: true,
-    },
-});
+const props = defineProps<{
+    aboutMes: AboutMe[];
+}>();
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -22,10 +20,10 @@ const breadcrumbs = [
 const aboutMe = computed(() => props.aboutMes?.[0] || null);
 
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref(null);
+const itemToDelete = ref<AboutMe | null>(null);
 const deleting = ref(false);
 
-const confirmDelete = (item) => {
+const confirmDelete = (item: AboutMe) => {
     itemToDelete.value = item;
     showDeleteConfirm.value = true;
 };
@@ -43,7 +41,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString) => {
+const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Not set';
 
     return new Intl.DateTimeFormat('en-US', {
@@ -62,7 +60,9 @@ const formatDate = (dateString) => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="user" class="size-6" />
                     </div>
                     <div>
@@ -83,7 +83,7 @@ const formatDate = (dateString) => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Title</th>
                                 <th class="px-6 py-4 text-left font-medium">Focus</th>
@@ -94,13 +94,11 @@ const formatDate = (dateString) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in aboutMes"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in aboutMes" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>

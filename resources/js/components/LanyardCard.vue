@@ -1,137 +1,146 @@
-<script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
-const props = defineProps({
-    name: { type: String, default: 'Portfolio' },
-    position: { type: String, default: '' },
-    image: { type: String, default: '' },
-    badge: { type: String, default: 'STAFF' },
-    label: { type: String, default: 'ID · 2026' },
-    strapText: { type: String, default: 'PORTFOLIO · 2026 · PORTFOLIO · 2026' },
-})
+const props = withDefaults(
+    defineProps<{
+        name?: string;
+        position?: string;
+        image?: string;
+        badge?: string;
+        label?: string;
+        strapText?: string;
+    }>(),
+    {
+        name: 'Portfolio',
+        position: '',
+        image: '',
+        badge: 'STAFF',
+        label: 'ID · 2026',
+        strapText: 'PORTFOLIO · 2026 · PORTFOLIO · 2026',
+    },
+);
 
-const root = ref(null)
-const card = ref(null)
+const root = ref<HTMLElement | null>(null);
+const card = ref<HTMLElement | null>(null);
 
-const angle = ref(0)
-let angularVelocity = 0
-let rafId = null
-let lastTs = 0
-let dragging = false
-let dragOffsetAngle = 0
-let prevPointerTs = 0
+const angle = ref(0);
+let angularVelocity = 0;
+let rafId: number | null = null;
+let lastTs = 0;
+let dragging = false;
+let dragOffsetAngle = 0;
+let prevPointerTs = 0;
 
-let pivotX = 0
-let pivotY = 0
+let pivotX = 0;
+let pivotY = 0;
 
-const reducedMotion = ref(false)
+const reducedMotion = ref(false);
 
-const GRAVITY = 0.000085
-const DAMPING_PER_MS = 0.9985
-const MAX_ANGLE = Math.PI * 0.9
-const MAX_VEL = 0.02
+const GRAVITY = 0.000085;
+const DAMPING_PER_MS = 0.9985;
+const MAX_ANGLE = Math.PI * 0.9;
+const MAX_VEL = 0.02;
 
 const updatePivot = () => {
-    if (!root.value) return
-    const rect = root.value.getBoundingClientRect()
-    pivotX = rect.left + rect.width / 2
-    pivotY = rect.top + 20
-}
+    if (!root.value) return;
+    const rect = root.value.getBoundingClientRect();
+    pivotX = rect.left + rect.width / 2;
+    pivotY = rect.top + 20;
+};
 
-const pointerAngle = (cx, cy) => Math.atan2(cx - pivotX, cy - pivotY)
+const pointerAngle = (cx: number, cy: number) => Math.atan2(cx - pivotX, cy - pivotY);
 
-const loop = (ts) => {
-    const dt = lastTs ? Math.min(32, ts - lastTs) : 16
-    lastTs = ts
+const loop = (ts: number) => {
+    const dt = lastTs ? Math.min(32, ts - lastTs) : 16;
+    lastTs = ts;
 
     if (!dragging) {
-        const acc = -GRAVITY * Math.sin(angle.value)
-        angularVelocity += acc * dt
-        angularVelocity *= Math.pow(DAMPING_PER_MS, dt)
-        if (angularVelocity > MAX_VEL) angularVelocity = MAX_VEL
-        if (angularVelocity < -MAX_VEL) angularVelocity = -MAX_VEL
-        angle.value += angularVelocity * dt
+        const acc = -GRAVITY * Math.sin(angle.value);
+        angularVelocity += acc * dt;
+        angularVelocity *= Math.pow(DAMPING_PER_MS, dt);
+        if (angularVelocity > MAX_VEL) angularVelocity = MAX_VEL;
+        if (angularVelocity < -MAX_VEL) angularVelocity = -MAX_VEL;
+        angle.value += angularVelocity * dt;
 
         if (angle.value > MAX_ANGLE) {
-            angle.value = MAX_ANGLE
-            angularVelocity *= -0.4
+            angle.value = MAX_ANGLE;
+            angularVelocity *= -0.4;
         } else if (angle.value < -MAX_ANGLE) {
-            angle.value = -MAX_ANGLE
-            angularVelocity *= -0.4
+            angle.value = -MAX_ANGLE;
+            angularVelocity *= -0.4;
         }
     }
 
-    rafId = requestAnimationFrame(loop)
-}
+    rafId = requestAnimationFrame(loop);
+};
 
-const onPointerDown = (e) => {
-    if (reducedMotion.value) return
-    updatePivot()
-    dragging = true
-    angularVelocity = 0
-    dragOffsetAngle = pointerAngle(e.clientX, e.clientY) - angle.value
-    prevPointerTs = performance.now()
+const onPointerDown = (e: PointerEvent) => {
+    if (reducedMotion.value) return;
+    updatePivot();
+    dragging = true;
+    angularVelocity = 0;
+    dragOffsetAngle = pointerAngle(e.clientX, e.clientY) - angle.value;
+    prevPointerTs = performance.now();
     try {
-        e.target.setPointerCapture?.(e.pointerId)
-    } catch (_) {
+        const target = e.target as Element | null;
+        target?.setPointerCapture?.(e.pointerId);
+    } catch {
         // ignore
     }
-    e.preventDefault()
-}
+    e.preventDefault();
+};
 
-const onPointerMove = (e) => {
-    if (!dragging) return
-    const rawAngle = pointerAngle(e.clientX, e.clientY) - dragOffsetAngle
-    const clamped = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, rawAngle))
-    const now = performance.now()
-    const dt = Math.max(1, now - prevPointerTs)
-    angularVelocity = (clamped - angle.value) / dt
-    angle.value = clamped
-    prevPointerTs = now
-}
+const onPointerMove = (e: PointerEvent) => {
+    if (!dragging) return;
+    const rawAngle = pointerAngle(e.clientX, e.clientY) - dragOffsetAngle;
+    const clamped = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, rawAngle));
+    const now = performance.now();
+    const dt = Math.max(1, now - prevPointerTs);
+    angularVelocity = (clamped - angle.value) / dt;
+    angle.value = clamped;
+    prevPointerTs = now;
+};
 
 const onPointerUp = () => {
-    dragging = false
-}
+    dragging = false;
+};
 
 onMounted(() => {
-    reducedMotion.value = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false
-    updatePivot()
+    reducedMotion.value = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false;
+    updatePivot();
 
     if (!reducedMotion.value) {
-        angularVelocity = 0.0018
-        rafId = requestAnimationFrame(loop)
+        angularVelocity = 0.0018;
+        rafId = requestAnimationFrame(loop);
     }
 
-    window.addEventListener('resize', updatePivot, { passive: true })
-    window.addEventListener('scroll', updatePivot, { passive: true })
-    window.addEventListener('pointermove', onPointerMove, { passive: true })
-    window.addEventListener('pointerup', onPointerUp, { passive: true })
-    window.addEventListener('pointercancel', onPointerUp, { passive: true })
-})
+    window.addEventListener('resize', updatePivot, { passive: true });
+    window.addEventListener('scroll', updatePivot, { passive: true });
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerup', onPointerUp, { passive: true });
+    window.addEventListener('pointercancel', onPointerUp, { passive: true });
+});
 
 onBeforeUnmount(() => {
-    if (rafId) cancelAnimationFrame(rafId)
-    window.removeEventListener('resize', updatePivot)
-    window.removeEventListener('scroll', updatePivot)
-    window.removeEventListener('pointermove', onPointerMove)
-    window.removeEventListener('pointerup', onPointerUp)
-    window.removeEventListener('pointercancel', onPointerUp)
-})
+    if (rafId) cancelAnimationFrame(rafId);
+    window.removeEventListener('resize', updatePivot);
+    window.removeEventListener('scroll', updatePivot);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
+});
 
 const rotateStyle = computed(() => ({
     transform: `rotate(${angle.value}rad)`,
-}))
+}));
 
-const firstName = computed(() => (props.name || '').trim().split(/\s+/)[0] || 'Name')
-const lastName = computed(() =>
-    (props.name || '').trim().split(/\s+/).slice(1).join(' '),
-)
+const firstName = computed(() => (props.name || '').trim().split(/\s+/)[0] || 'Name');
+const lastName = computed(() => (props.name || '').trim().split(/\s+/).slice(1).join(' '));
 
 const imageSrc = computed(() => {
-    if (!props.image) return ''
-    return props.image.startsWith('http') ? props.image : `/${props.image}`
-})
+    if (!props.image) return '';
+    return props.image.startsWith('http') ? props.image : `/${props.image}`;
+});
 </script>
 
 <template>
@@ -159,13 +168,7 @@ const imageSrc = computed(() => {
             </div>
 
             <!-- ID card -->
-            <div
-                ref="card"
-                class="card"
-                @pointerdown="onPointerDown"
-                role="button"
-                :aria-label="`Drag to swing ${name}'s ID card`"
-            >
+            <div ref="card" class="card" @pointerdown="onPointerDown" role="button" :aria-label="`Drag to swing ${name}'s ID card`">
                 <div class="card-slot" aria-hidden="true"></div>
 
                 <div class="card-top">
@@ -176,12 +179,7 @@ const imageSrc = computed(() => {
                 <div class="card-rule" aria-hidden="true"></div>
 
                 <div class="card-photo">
-                    <img
-                        v-if="imageSrc"
-                        :src="imageSrc"
-                        :alt="name"
-                        draggable="false"
-                    />
+                    <img v-if="imageSrc" :src="imageSrc" :alt="name" draggable="false" />
                     <div v-else class="card-photo-fallback">
                         {{ firstName.charAt(0) }}
                     </div>
@@ -225,11 +223,7 @@ const imageSrc = computed(() => {
     width: 80%;
     height: 55%;
     transform: translate(-50%, -50%);
-    background: radial-gradient(
-        ellipse at center,
-        color-mix(in oklab, var(--color-foreground) 6%, transparent),
-        transparent 70%
-    );
+    background: radial-gradient(ellipse at center, color-mix(in oklab, var(--color-foreground) 6%, transparent), transparent 70%);
     filter: blur(30px);
     pointer-events: none;
     z-index: 0;
@@ -244,12 +238,7 @@ const imageSrc = computed(() => {
     height: 14px;
     margin-left: -7px;
     border-radius: 50%;
-    background: radial-gradient(
-        circle at 32% 30%,
-        #c9c9c9 0%,
-        #6b6b6b 48%,
-        #1c1c1c 100%
-    );
+    background: radial-gradient(circle at 32% 30%, #c9c9c9 0%, #6b6b6b 48%, #1c1c1c 100%);
     box-shadow:
         0 0 0 3px color-mix(in oklab, var(--color-foreground) 6%, transparent),
         0 2px 5px rgba(0, 0, 0, 0.45),
@@ -288,16 +277,8 @@ const imageSrc = computed(() => {
     width: 30px;
     height: 138px;
     background:
-        repeating-linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.035) 0 1.5px,
-            transparent 1.5px 3.5px
-        ),
-        repeating-linear-gradient(
-            -45deg,
-            rgba(255, 255, 255, 0.025) 0 1.5px,
-            transparent 1.5px 3.5px
-        ),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 1.5px, transparent 1.5px 3.5px),
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.025) 0 1.5px, transparent 1.5px 3.5px),
         linear-gradient(180deg, #0e0e0e 0%, #191919 50%, #0e0e0e 100%);
     border-left: 1px solid rgba(255, 255, 255, 0.05);
     border-right: 1px solid rgba(0, 0, 0, 0.85);
@@ -317,11 +298,7 @@ const imageSrc = computed(() => {
     top: 4px;
     bottom: 4px;
     width: 1px;
-    background: repeating-linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.22) 0 3px,
-        transparent 3px 6px
-    );
+    background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0 3px, transparent 3px 6px);
 }
 .strap::before {
     left: 3.5px;
@@ -383,13 +360,7 @@ const imageSrc = computed(() => {
     left: 0;
     width: 32px;
     height: 18px;
-    background: linear-gradient(
-        180deg,
-        #e6e6e6 0%,
-        #b9b9b9 35%,
-        #767676 70%,
-        #3d3d3d 100%
-    );
+    background: linear-gradient(180deg, #e6e6e6 0%, #b9b9b9 35%, #767676 70%, #3d3d3d 100%);
     border-radius: 3px;
     border: 1px solid #1f1f1f;
     box-shadow:
@@ -407,11 +378,7 @@ const imageSrc = computed(() => {
     height: 2px;
     margin-top: -1px;
     border-radius: 1px;
-    background: linear-gradient(
-        180deg,
-        rgba(0, 0, 0, 0.45),
-        rgba(255, 255, 255, 0.25)
-    );
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.25));
 }
 
 /* The ID card itself */
@@ -490,12 +457,7 @@ const imageSrc = computed(() => {
 .card-rule {
     height: 1px;
     flex-shrink: 0;
-    background: linear-gradient(
-        90deg,
-        rgba(0, 0, 0, 0.12),
-        rgba(0, 0, 0, 0.04) 60%,
-        transparent
-    );
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.04) 60%, transparent);
 }
 
 .card-photo {
@@ -605,14 +567,7 @@ const imageSrc = computed(() => {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(
-        118deg,
-        transparent 0%,
-        transparent 40%,
-        rgba(255, 255, 255, 0.2) 50%,
-        transparent 60%,
-        transparent 100%
-    );
+    background: linear-gradient(118deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.2) 50%, transparent 60%, transparent 100%);
     mix-blend-mode: overlay;
     border-radius: 18px;
 }

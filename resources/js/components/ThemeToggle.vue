@@ -8,9 +8,7 @@ const { appearance, updateAppearance } = useAppearance();
 
 const currentIcon = computed(() => (appearance.value === 'dark' ? Moon : Sun));
 
-const label = computed(() =>
-    appearance.value === 'dark' ? 'Dark mode active. Switch to light mode' : 'Light mode active. Switch to dark mode',
-);
+const label = computed(() => (appearance.value === 'dark' ? 'Dark mode active. Switch to light mode' : 'Light mode active. Switch to dark mode'));
 
 const toggleAppearance = () => {
     updateAppearance(appearance.value === 'dark' ? 'light' : 'dark');

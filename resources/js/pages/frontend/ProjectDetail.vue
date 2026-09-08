@@ -1,19 +1,28 @@
-<script setup>
+<script setup lang="ts">
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { LegacyProject, ProjectNeighbour } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Github, Laptop } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    title: { type: String, default: 'Project' },
-    description: { type: String, default: '' },
-    project: { type: Object, required: true },
-    previousProject: { type: Object, default: null },
-    nextProject: { type: Object, default: null },
-});
+const props = withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+        project: LegacyProject;
+        previousProject?: ProjectNeighbour | null;
+        nextProject?: ProjectNeighbour | null;
+    }>(),
+    {
+        title: 'Project',
+        description: '',
+        previousProject: null,
+        nextProject: null,
+    },
+);
 
 const { isVisible } = usePageReveal(300);
 
@@ -24,7 +33,8 @@ const { date: dateString } = usePhnomPenhClock(60000);
 const { pointer } = usePointerGlow();
 
 const statusMeta = computed(() => {
-    const s = props.project?.status;
+    // Widened: legacy rows may carry statuses outside the current ProjectStatus union.
+    const s = props.project?.status as string | undefined;
     switch (s) {
         case 'completed':
             return { label: 'Completed', color: '#10b981' };
@@ -69,14 +79,14 @@ const technologies = computed(() => {
     if (props.project?.tech_stack) {
         return props.project.tech_stack
             .split(',')
-            .map((t) => t.trim())
+            .map((t: string) => t.trim())
             .filter(Boolean);
     }
     return [];
 });
 
 const projectLinks = computed(() => {
-    const out = [];
+    const out: { name: string; url: string; isGithub: boolean }[] = [];
     if (Array.isArray(props.project?.links)) {
         for (const l of props.project.links) {
             const name = Object.keys(l)[0];
@@ -96,7 +106,7 @@ const entryNumber = computed(() => {
 const goBack = () => {
     router.visit(route('portfolio'));
 };
-const goToProject = (id) => {
+const goToProject = (id: number) => {
     router.visit(route('portfolio.show', id));
 };
 </script>
@@ -199,7 +209,7 @@ const goToProject = (id) => {
                     <img
                         v-if="project.image"
                         :src="project.image"
-                        :alt="project.title"
+                        :alt="project.title ?? undefined"
                         loading="lazy"
                         decoding="async"
                         class="h-full w-full object-cover"

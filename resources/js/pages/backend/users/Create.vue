@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import Icon from '@/components/Icon.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import type { BreadcrumbItemType } from '@/types'
-import { Link, useForm } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
+import Icon from '@/components/Icon.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItemType } from '@/types';
+import { Link, useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'ME', href: '/me' },
     { title: 'Create', href: '/backend/users/create' },
-]
+];
 
-const imagePreview = ref<string | null>(null)
+const imagePreview = ref<string | null>(null);
 
 const form = useForm({
     name: '',
@@ -29,32 +29,32 @@ const form = useForm({
     position: '',
     description: '',
     image: null as File | null,
-})
+});
 
 const previewInitials = computed(() => {
-    const name = form.name || 'New Profile'
+    const name = form.name || 'New Profile';
 
     return name
         .split(' ')
         .map((part) => part[0])
         .join('')
         .slice(0, 2)
-        .toUpperCase()
-})
+        .toUpperCase();
+});
 
 function onImageChange(event: Event) {
-    const target = event.target as HTMLInputElement
-    const file = target.files?.[0] || null
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0] || null;
 
-    form.image = file
-    imagePreview.value = file ? URL.createObjectURL(file) : null
+    form.image = file;
+    imagePreview.value = file ? URL.createObjectURL(file) : null;
 }
 
 const submit = () => {
     form.post(route('backend.users.store'), {
         forceFormData: true,
-    })
-}
+    });
+};
 </script>
 
 <template>
@@ -68,7 +68,9 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="users" class="size-6" />
                     </div>
                     <div>
@@ -104,7 +106,7 @@ const submit = () => {
                         <!-- Basic info -->
                         <div class="space-y-6">
                             <div>
-                                <h3 class="text-sm font-medium uppercase tracking-wider text-muted-foreground">Basic info</h3>
+                                <h3 class="text-sm font-medium tracking-wider text-muted-foreground uppercase">Basic info</h3>
                             </div>
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -166,7 +168,7 @@ const submit = () => {
                         <!-- Access -->
                         <div class="space-y-6">
                             <div>
-                                <h3 class="text-sm font-medium uppercase tracking-wider text-muted-foreground">Access</h3>
+                                <h3 class="text-sm font-medium tracking-wider text-muted-foreground uppercase">Access</h3>
                             </div>
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -178,7 +180,13 @@ const submit = () => {
 
                                 <div class="space-y-2">
                                     <Label for="password_confirmation">Confirm password</Label>
-                                    <Input id="password_confirmation" v-model="form.password_confirmation" type="password" required autocomplete="new-password" />
+                                    <Input
+                                        id="password_confirmation"
+                                        v-model="form.password_confirmation"
+                                        type="password"
+                                        required
+                                        autocomplete="new-password"
+                                    />
                                     <InputError :message="form.errors.password_confirmation" />
                                 </div>
                             </div>

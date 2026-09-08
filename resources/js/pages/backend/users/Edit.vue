@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import Icon from '@/components/Icon.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import AppLayout from '@/layouts/AppLayout.vue'
-import type { BreadcrumbItemType } from '@/types'
-import { Link, useForm } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
+import Icon from '@/components/Icon.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItemType } from '@/types';
+import { Link, useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface User {
-    id: number
-    name: string
-    email: string
-    dob: string
-    phone: string
-    address: string
-    position: string
-    description: string | null
-    image: string | null
+    id: number;
+    name: string;
+    email: string;
+    dob: string;
+    phone: string;
+    address: string;
+    position: string;
+    description: string | null;
+    image: string | null;
 }
 
 interface Props {
-    user: User
+    user: User;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'ME', href: '/me' },
     { title: 'Edit', href: `/backend/users/${props.user.id}/edit` },
-]
+];
 
 const currentImage = computed(() => {
-    const image = props.user.image
+    const image = props.user.image;
 
-    if (!image) return null
+    if (!image) return null;
 
-    return image.startsWith('http') || image.startsWith('/') ? image : `/${image}`
-})
+    return image.startsWith('http') || image.startsWith('/') ? image : `/${image}`;
+});
 
-const selectedImagePreview = ref<string | null>(null)
+const selectedImagePreview = ref<string | null>(null);
 
 const form = useForm({
     name: props.user.name,
@@ -55,40 +55,38 @@ const form = useForm({
     position: props.user.position,
     description: props.user.description || '',
     image: null as File | null,
-})
+});
 
-const previewImage = computed(() => selectedImagePreview.value || currentImage.value)
+const previewImage = computed(() => selectedImagePreview.value || currentImage.value);
 
 const previewInitials = computed(() => {
-    const name = form.name || 'Profile'
+    const name = form.name || 'Profile';
 
     return name
         .split(' ')
         .map((part) => part[0])
         .join('')
         .slice(0, 2)
-        .toUpperCase()
-})
+        .toUpperCase();
+});
 
 function onImageChange(event: Event) {
-    const target = event.target as HTMLInputElement
-    const file = target.files?.[0] || null
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0] || null;
 
-    form.image = file
-    selectedImagePreview.value = file ? URL.createObjectURL(file) : null
+    form.image = file;
+    selectedImagePreview.value = file ? URL.createObjectURL(file) : null;
 }
 
 const submit = () => {
-    form
-        .transform((data) => ({
-            ...data,
-            _method: 'PUT',
-        }))
-        .post(route('backend.users.update', props.user.id), {
-            forceFormData: true,
-            preserveScroll: true,
-        })
-}
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(route('backend.users.update', props.user.id), {
+        forceFormData: true,
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
@@ -102,7 +100,9 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="users" class="size-6" />
                     </div>
                     <div>
@@ -138,7 +138,7 @@ const submit = () => {
                         <!-- Basic info -->
                         <div class="space-y-6">
                             <div>
-                                <h3 class="text-sm font-medium uppercase tracking-wider text-muted-foreground">Basic info</h3>
+                                <h3 class="text-sm font-medium tracking-wider text-muted-foreground uppercase">Basic info</h3>
                             </div>
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -195,19 +195,31 @@ const submit = () => {
                         <!-- Access -->
                         <div class="space-y-6">
                             <div>
-                                <h3 class="text-sm font-medium uppercase tracking-wider text-muted-foreground">Optional password change</h3>
+                                <h3 class="text-sm font-medium tracking-wider text-muted-foreground uppercase">Optional password change</h3>
                             </div>
 
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="password">New password</Label>
-                                    <Input id="password" v-model="form.password" type="password" autocomplete="new-password" placeholder="Leave blank to keep current" />
+                                    <Input
+                                        id="password"
+                                        v-model="form.password"
+                                        type="password"
+                                        autocomplete="new-password"
+                                        placeholder="Leave blank to keep current"
+                                    />
                                     <InputError :message="form.errors.password" />
                                 </div>
 
                                 <div class="space-y-2">
                                     <Label for="password_confirmation">Confirm new password</Label>
-                                    <Input id="password_confirmation" v-model="form.password_confirmation" type="password" autocomplete="new-password" :disabled="!form.password" />
+                                    <Input
+                                        id="password_confirmation"
+                                        v-model="form.password_confirmation"
+                                        type="password"
+                                        autocomplete="new-password"
+                                        :disabled="!form.password"
+                                    />
                                     <InputError :message="form.errors.password_confirmation" />
                                 </div>
                             </div>

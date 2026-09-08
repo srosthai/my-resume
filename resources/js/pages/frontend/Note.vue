@@ -1,27 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { Note } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ArrowLeft, ArrowUpRight, Book, Check, Code2, Copy, Lightbulb, Search, Terminal, X } from 'lucide-vue-next';
+import { ArrowLeft, ArrowUpRight, Book, Check, Code2, Copy, Lightbulb, type LucideIcon, Search, Terminal, X } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
-const props = defineProps({
-    title: { type: String, default: 'My Notes' },
-    description: {
-        type: String,
-        default: 'My collection of programming notes and tutorials',
+const props = withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+        notes?: Note[];
+    }>(),
+    {
+        title: 'My Notes',
+        description: 'My collection of programming notes and tutorials',
+        notes: () => [],
     },
-    notes: { type: Array, default: () => [] },
-});
+);
 
 const { isLoading, isVisible } = usePageReveal(400);
 const searchQuery = ref('');
 const selectedFilter = ref('All');
-const selectedNote = ref(null);
-const copiedCommands = ref(new Set());
+const selectedNote = ref<Note | null>(null);
+const copiedCommands = ref<Set<string>>(new Set());
 
 const currentYear = new Date().getFullYear();
 
@@ -35,7 +40,7 @@ const categories = computed(() => {
 });
 
 const countByCategory = computed(() => {
-    const m = { All: props.notes.length };
+    const m: Record<string, number> = { All: props.notes.length };
     for (const cat of categories.value) {
         if (cat === 'All') continue;
         m[cat] = props.notes.filter((n) => n.category === cat).length;
@@ -60,9 +65,9 @@ const filteredNotes = computed(() => {
     return filtered;
 });
 
-const copyTimers = new Map();
+const copyTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-const copyCommand = async (command, stepIndex, commandIndex) => {
+const copyCommand = async (command: string, stepIndex: number, commandIndex: number) => {
     try {
         await navigator.clipboard.writeText(command);
         const key = `${stepIndex}-${commandIndex}`;
@@ -80,12 +85,12 @@ const copyCommand = async (command, stepIndex, commandIndex) => {
     }
 };
 
-const isCopied = (stepIndex, commandIndex) => {
+const isCopied = (stepIndex: number, commandIndex: number) => {
     return copiedCommands.value.has(`${stepIndex}-${commandIndex}`);
 };
 
-const getCategoryIcon = (category) => {
-    const icons = {
+const getCategoryIcon = (category: string) => {
+    const icons: Record<string, LucideIcon> = {
         Laravel: Code2,
         'Vue.js': Code2,
         'Next.js': Code2,
@@ -97,7 +102,7 @@ const getCategoryIcon = (category) => {
     return icons[category] || Book;
 };
 
-const formatDate = (date) => {
+const formatDate = (date: string | null) => {
     if (!date) return '';
     try {
         return new Date(date).toLocaleDateString('en-US', {
@@ -110,7 +115,7 @@ const formatDate = (date) => {
     }
 };
 
-const openNote = (note) => {
+const openNote = (note: Note) => {
     selectedNote.value = note;
     if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });

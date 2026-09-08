@@ -1,78 +1,60 @@
 <script setup lang="ts">
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import Icon from '@/components/Icon.vue'
-import { Button } from '@/components/ui/button'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, Link, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
-import type { BreadcrumbItemType } from '@/types'
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import Icon from '@/components/Icon.vue';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItemType } from '@/types';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 interface PopularSong {
-    id: number
-    title: string
-    artist: string
-    url: string
-    duration: number
+    id: number;
+    title: string;
+    artist: string;
+    url: string;
+    duration: number;
 }
 
 interface Props {
-    popularSong: PopularSong
+    popularSong: PopularSong;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Popular Songs', href: '/popular-songs' },
     { title: 'View', href: `/backend/popular-songs/${props.popularSong.id}` },
-]
+];
 
-const isPlaying = ref(false)
-const audio = ref<HTMLAudioElement | null>(null)
-
-const togglePlay = () => {
-    if (isPlaying.value) {
-        audio.value?.pause()
-        isPlaying.value = false
-    } else {
-        if (!audio.value) {
-            audio.value = new Audio(props.popularSong.url)
-            audio.value.addEventListener('ended', () => {
-                isPlaying.value = false
-            })
-        }
-        audio.value.play().catch((error) => {
-            console.warn('Audio play failed:', error)
-            isPlaying.value = false
-        })
-        isPlaying.value = true
-    }
-}
-
-const showDeleteConfirm = ref(false)
-const deleting = ref(false)
+const showDeleteConfirm = ref(false);
+const deleting = ref(false);
 
 const deleteSong = () => {
     router.delete(route('backend.popular-songs.destroy', props.popularSong.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
-            deleting.value = false
-            showDeleteConfirm.value = false
+            deleting.value = false;
+            showDeleteConfirm.value = false;
         },
-    })
-}
+    });
+};
 
 const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-}
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const openSongUrl = () => {
+    window.open(props.popularSong.url, '_blank');
+};
 
 // Extract YouTube video ID from URL
 const extractYouTubeId = (url: string): string | null => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)
-    return match ? match[1] : null
-}
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+};
 </script>
 
 <template>
@@ -89,7 +71,9 @@ const extractYouTubeId = (url: string): string | null => {
                         </Button>
                     </Link>
                     <div class="flex items-center gap-4">
-                        <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <div
+                            class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                        >
                             <Icon name="music" class="size-6" />
                         </div>
                         <div>
@@ -124,9 +108,7 @@ const extractYouTubeId = (url: string): string | null => {
                                 <div class="rounded bg-muted px-3 py-1 text-lg font-semibold">
                                     {{ formatTime(popularSong.duration) }}
                                 </div>
-                                <span class="text-sm text-muted-foreground">
-                                    ({{ popularSong.duration }} seconds)
-                                </span>
+                                <span class="text-sm text-muted-foreground"> ({{ popularSong.duration }} seconds) </span>
                             </div>
                         </div>
 
@@ -137,12 +119,7 @@ const extractYouTubeId = (url: string): string | null => {
                                 <code class="flex-1 truncate rounded bg-muted px-2 py-1 text-sm">
                                     {{ popularSong.url }}
                                 </code>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    class="shrink-0 rounded-lg"
-                                    @click="() => window.open(popularSong.url, '_blank')"
-                                >
+                                <Button size="sm" variant="ghost" class="shrink-0 rounded-lg" @click="openSongUrl">
                                     <Icon name="externalLink" class="size-4" />
                                 </Button>
                             </div>

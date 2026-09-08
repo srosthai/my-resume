@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,9 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="tag" class="size-6" />
                     </div>
                     <div>
@@ -57,13 +59,7 @@ const submit = () => {
                     <div class="space-y-6 p-6 sm:p-8">
                         <div class="space-y-2">
                             <Label for="name">Name *</Label>
-                            <Input
-                                id="name"
-                                v-model="form.name"
-                                type="text"
-                                placeholder="Enter project type name"
-                                required
-                            />
+                            <Input id="name" v-model="form.name" type="text" placeholder="Enter project type name" required />
                             <InputError :message="form.errors.name" />
                         </div>
                     </div>

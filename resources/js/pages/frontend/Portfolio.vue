@@ -1,20 +1,46 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { Project, ProjectType } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowUpRight, ExternalLink, Github, Laptop, Search, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-const props = defineProps({
-    title: { type: String, default: 'Portfolio' },
-    description: { type: String, default: '' },
-    projects: { type: Array, default: () => [] },
-    projectTypes: { type: Array, default: () => [] },
-    filters: { type: Object, default: () => ({ type: '', search: '' }) },
-});
+/**
+ * Optional legacy keys the card helpers still fall back to. The current
+ * controller never sends them, so they are typed as optional extras.
+ */
+type PortfolioProject = Project & {
+    tech_stack?: string | null;
+    github_url?: string | null;
+    demo_url?: string | null;
+    live_url?: string | null;
+};
+
+interface PortfolioFilters {
+    type?: string;
+    search?: string;
+}
+
+const props = withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+        projects?: PortfolioProject[];
+        projectTypes?: ProjectType[];
+        filters?: PortfolioFilters;
+    }>(),
+    {
+        title: 'Portfolio',
+        description: '',
+        projects: () => [],
+        projectTypes: () => [],
+        filters: () => ({ type: '', search: '' }),
+    },
+);
 
 const { isLoading, isVisible } = usePageReveal(400);
 
@@ -28,7 +54,7 @@ const { pointer } = usePointerGlow();
 const currentYear = new Date().getFullYear();
 
 const countByType = computed(() => {
-    const m = {};
+    const m: Record<number, number> = {};
     for (const p of props.projects) {
         const id = p.project_type?.id;
         if (!id) continue;
@@ -67,26 +93,26 @@ const resetFilters = () => {
     selectedCategory.value = 'all';
 };
 
-const openProject = (project) => {
+const openProject = (project: PortfolioProject) => {
     router.visit(route('portfolio.show', project.id));
 };
 
-const getGithubUrl = (project) => {
+const getGithubUrl = (project: PortfolioProject) => {
     if (project.github_url) return project.github_url;
-    if (!Array.isArray(project.links)) return null;
+    if (!Array.isArray(project.links)) return undefined;
     const link = project.links.find((l) => Object.keys(l)[0]?.toLowerCase().includes('github'));
-    return link ? Object.values(link)[0] : null;
+    return link ? Object.values(link)[0] : undefined;
 };
 
-const getLiveUrl = (project) => {
+const getLiveUrl = (project: PortfolioProject) => {
     if (project.demo_url) return project.demo_url;
     if (project.live_url) return project.live_url;
-    if (!Array.isArray(project.links)) return null;
+    if (!Array.isArray(project.links)) return undefined;
     const link = project.links.find((l) => !Object.keys(l)[0]?.toLowerCase().includes('github'));
-    return link ? Object.values(link)[0] : null;
+    return link ? Object.values(link)[0] : undefined;
 };
 
-const getYear = (project) => {
+const getYear = (project: PortfolioProject) => {
     const src = project.created_date || project.created_at;
     if (!src) return null;
     try {
@@ -96,7 +122,7 @@ const getYear = (project) => {
     }
 };
 
-const techsOf = (project) => {
+const techsOf = (project: PortfolioProject) => {
     if (Array.isArray(project.technologies) && project.technologies.length) {
         return project.technologies;
     }
@@ -304,7 +330,7 @@ const techsOf = (project) => {
                             <img
                                 v-if="project.image"
                                 :src="project.image"
-                                :alt="project.title"
+                                :alt="project.title ?? undefined"
                                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                                 loading="lazy"
                             />
