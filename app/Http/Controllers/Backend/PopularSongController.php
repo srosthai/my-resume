@@ -3,56 +3,34 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\PopularSongRequest;
 use App\Models\PopularSong;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PopularSongController extends Controller
 {
-    /**
-     * Display a listing of popular songs.
-     */
     public function index(): Response
     {
-        $popularSongs = PopularSong::latest()->paginate(10);
-
         return Inertia::render('backend/PopularSong/Index', [
-            'popularSongs' => $popularSongs,
+            'popularSongs' => PopularSong::latest()->paginate(10),
         ]);
     }
 
-    /**
-     * Show the form for creating a new popular song.
-     */
     public function create(): Response
     {
         return Inertia::render('backend/PopularSong/Create');
     }
 
-    /**
-     * Store a newly created popular song in storage.
-     */
-    public function store(Request $request): RedirectResponse
+    public function store(PopularSongRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'artist' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'max:1000'],
-            'duration' => ['required', 'integer', 'min:1', 'max:3600'],
-        ]);
+        PopularSong::create($request->validated());
 
-        PopularSong::create($validated);
-
-        return redirect()->route('popular-songs')
-            ->with('success', 'Popular song created successfully.');
+        return redirect()->route('popular-songs')->with('success', 'Popular song created successfully.');
     }
 
-    /**
-     * Display the specified popular song.
-     */
     public function show(PopularSong $popularSong): Response
     {
         return Inertia::render('backend/PopularSong/Show', [
@@ -60,9 +38,6 @@ class PopularSongController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified popular song.
-     */
     public function edit(PopularSong $popularSong): Response
     {
         return Inertia::render('backend/PopularSong/Edit', [
@@ -70,52 +45,35 @@ class PopularSongController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified popular song in storage.
-     */
-    public function update(Request $request, PopularSong $popularSong): RedirectResponse
+    public function update(PopularSongRequest $request, PopularSong $popularSong): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'artist' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'max:1000'],
-            'duration' => ['required', 'integer', 'min:1', 'max:3600'], // Max 1 hour
-        ]);
+        $popularSong->update($request->validated());
 
-        $popularSong->update($validated);
-
-        return redirect()->route('popular-songs')
-            ->with('success', 'Popular song updated successfully.');
+        return redirect()->route('popular-songs')->with('success', 'Popular song updated successfully.');
     }
 
-    /**
-     * Remove the specified popular song from storage.
-     */
     public function destroy(PopularSong $popularSong): RedirectResponse
     {
         $popularSong->delete();
 
-        return redirect()->route('popular-songs')
-            ->with('success', 'Popular song deleted successfully.');
+        return redirect()->route('popular-songs')->with('success', 'Popular song deleted successfully.');
     }
 
     /**
-     * Get popular songs for frontend music player
+     * Playlist for the public music player.
      */
     public function getForPlayer(): JsonResponse
     {
-        $songs = PopularSong::select('id', 'title', 'artist', 'url as src', 'duration')
+        $songs = PopularSong::query()
             ->latest()
-            ->get()
-            ->map(function ($song) {
-                return [
-                    'id' => $song->id,
-                    'title' => $song->title,
-                    'artist' => $song->artist,
-                    'src' => $song->src,
-                    'duration' => $song->duration,
-                ];
-            });
+            ->get(['id', 'title', 'artist', 'url', 'duration'])
+            ->map(fn (PopularSong $song) => [
+                'id' => $song->id,
+                'title' => $song->title,
+                'artist' => $song->artist,
+                'src' => $song->url,
+                'duration' => $song->duration,
+            ]);
 
         return response()->json($songs);
     }

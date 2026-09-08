@@ -17,9 +17,4 @@ class TechStack extends Model
         'type',
         'description',
     ];
-
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
 }

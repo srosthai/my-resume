@@ -19,9 +19,4 @@ class Education extends Model
         'from',
         'to',
     ];
-
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
 }

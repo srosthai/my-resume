@@ -18,9 +18,4 @@ class AboutMe extends Model
         'year_experience',
         'fucus_on',
     ];
-
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
 }

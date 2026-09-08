@@ -29,8 +29,6 @@ class Project extends Model
         'links' => 'array',
         'created_date' => 'date',
         'status' => ProjectStatus::class,
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     /**

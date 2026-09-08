@@ -16,11 +16,6 @@ class ProjectType extends Model
         'name',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     /**
      * Get the projects associated with this project type.
      *

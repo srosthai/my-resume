@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Enums\FeedVisibility;
-use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\FeedRequest;
 use App\Models\Feed;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,166 +14,69 @@ class FeedController extends Controller
 {
     public function __construct(private readonly ImageUploadService $images) {}
 
-    /**
-     * Display all data of Feeds.
-     *
-     * @return Response
-     */
-    public function index()
+    public function index(): Response
     {
-        $feeds = Feed::with('user:id,name,image')->latest()->get();
-        $activityTypes = Feed::getActivityTypes();
-
         return Inertia::render('backend/Feed/Index', [
-            'feeds' => $feeds,
-            'activityTypes' => $activityTypes,
+            'feeds' => Feed::with('user:id,name,image')->latest()->get(),
+            'activityTypes' => Feed::getActivityTypes(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new Feed entry.
-     *
-     * @return Response
-     */
-    public function create()
+    public function create(): Response
     {
-        $activityTypes = Feed::getActivityTypes();
-
         return Inertia::render('backend/Feed/Create', [
-            'activityTypes' => $activityTypes,
+            'activityTypes' => Feed::getActivityTypes(),
         ]);
     }
 
-    /**
-     * Store a newly created Feed entry in storage.
-     *
-     * @return RedirectResponse
-     */
-    public function store(Request $request)
+    public function store(FeedRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'body' => 'required|string|max:5000',
-            'images' => 'nullable|array|max:10',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'location' => 'nullable|string|max:255',
-            'mood' => 'nullable|string|max:50',
-            'activity_type' => 'nullable|string|max:100',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string|max:50',
-            'visibility' => ['required', Rule::enum(FeedVisibility::class)],
-            'status' => ['required', Rule::enum(PublishStatus::class)],
-            'is_pinned' => 'boolean',
-            'likes_count' => 'nullable|integer|min:0',
-            'published_at' => 'nullable|date',
-        ]);
+        $data = $request->feedData();
 
-        $imagePaths = [];
+        $paths = [];
         foreach ($request->file('images', []) as $image) {
-            $imagePaths[] = $this->images->store($image, 'feeds');
+            $paths[] = $this->images->store($image, 'feeds');
         }
-        $validated['images'] = $imagePaths !== [] ? $imagePaths : null;
+        $data['images'] = $paths !== [] ? $paths : null;
 
-        if (isset($validated['tags'])) {
-            $validated['tags'] = array_filter($validated['tags'], function ($tag) {
-                return ! empty(trim($tag));
-            });
-        }
-
-        $validated['user_id'] = auth()->id();
-
-        if ($validated['status'] === 'published' && empty($validated['published_at'])) {
-            $validated['published_at'] = now();
-        }
-
-        Feed::create($validated);
+        $request->user()->feeds()->create($data);
 
         return redirect()->route('feeds.index')->with('success', 'Feed created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified Feed entry.
-     *
-     * @return Response
-     */
-    public function edit(Feed $feed)
+    public function edit(Feed $feed): Response
     {
-        $activityTypes = Feed::getActivityTypes();
-
         return Inertia::render('backend/Feed/Edit', [
             'feed' => $feed,
-            'activityTypes' => $activityTypes,
+            'activityTypes' => Feed::getActivityTypes(),
         ]);
     }
 
-    /**
-     * Update the specified Feed entry in storage.
-     *
-     * @return RedirectResponse
-     */
-    public function update(Request $request, Feed $feed)
+    public function update(FeedRequest $request, Feed $feed): RedirectResponse
     {
+        $data = $request->feedData();
 
-        $validated = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'body' => 'required|string|max:5000',
-            'images' => 'nullable|array|max:10',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'existing_images' => 'nullable|array',
-            'existing_images.*' => 'string',
-            'location' => 'nullable|string|max:255',
-            'mood' => 'nullable|string|max:50',
-            'activity_type' => 'nullable|string|max:100',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string|max:50',
-            'visibility' => ['required', Rule::enum(FeedVisibility::class)],
-            'status' => ['required', Rule::enum(PublishStatus::class)],
-            'is_pinned' => 'boolean',
-            'likes_count' => 'nullable|integer|min:0',
-            'published_at' => 'nullable|date',
-        ]);
+        // Only paths that already belong to this feed may be kept; anything
+        // else in existing_images (foreign paths, URLs, traversal) is dropped.
+        $current = $feed->images ?? [];
+        $kept = array_values(array_intersect($current, (array) $request->input('existing_images', [])));
 
-        // Only paths that already belong to this feed may be kept. Anything else
-        // in existing_images (foreign paths, URLs, traversal) is discarded.
-        $oldImages = $feed->images ?? [];
-        $requestedKeep = (array) $request->input('existing_images', []);
-        $existingImages = array_values(array_intersect($oldImages, $requestedKeep));
-
-        foreach (array_diff($oldImages, $existingImages) as $removed) {
+        foreach (array_diff($current, $kept) as $removed) {
             $this->images->delete($removed);
         }
 
-        $newImagePaths = [];
         foreach ($request->file('images', []) as $image) {
-            $newImagePaths[] = $this->images->store($image, 'feeds');
+            $kept[] = $this->images->store($image, 'feeds');
         }
 
-        $allImages = array_merge($existingImages, $newImagePaths);
-        $validated['images'] = $allImages !== [] ? $allImages : null;
+        $data['images'] = $kept !== [] ? $kept : null;
 
-        unset($validated['existing_images']);
-
-        if (isset($validated['tags'])) {
-            $validated['tags'] = array_filter($validated['tags'], function ($tag) {
-                return ! empty(trim($tag));
-            });
-        }
-
-        if ($validated['status'] === 'published' && empty($validated['published_at']) && $feed->status !== PublishStatus::Published) {
-            $validated['published_at'] = now();
-        }
-
-        $feed->update($validated);
+        $feed->update($data);
 
         return redirect()->route('feeds.index')->with('success', 'Feed updated successfully.');
     }
 
-    /**
-     * Remove the specified Feed from storage.
-     *
-     * @return RedirectResponse
-     */
-    public function destroy(Feed $feed)
+    public function destroy(Feed $feed): RedirectResponse
     {
         foreach ($feed->images ?? [] as $image) {
             $this->images->delete($image);
@@ -187,18 +87,12 @@ class FeedController extends Controller
         return redirect()->route('feeds.index')->with('success', 'Feed deleted successfully.');
     }
 
-    /**
-     * Toggle pinned status of the feed.
-     *
-     * @return RedirectResponse
-     */
-    public function togglePinned(Feed $feed)
+    public function togglePinned(Feed $feed): RedirectResponse
     {
         $feed->update(['is_pinned' => ! $feed->is_pinned]);
 
         $status = $feed->is_pinned ? 'pinned' : 'unpinned';
 
-        return redirect()->back()
-            ->with('success', "Feed has been {$status} successfully.");
+        return redirect()->back()->with('success', "Feed has been {$status} successfully.");
     }
 }

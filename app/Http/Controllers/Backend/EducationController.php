@@ -3,103 +3,48 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\EducationRequest;
 use App\Models\Education;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class EducationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index()
+    public function index(): Response
     {
-        $educations = Education::latest()->get();
-
         return Inertia::render('backend/Education/Index', [
-            'educations' => $educations,
+            'educations' => Education::latest()->get(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('backend/Education/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @return RedirectResponse
-     *
-     * @throws ValidationException
-     */
-    public function store(Request $request)
+    public function store(EducationRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'major' => 'nullable|string|max:255',
-            'institution' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'from' => 'nullable|string|max:255',
-            'to' => 'nullable|string|max:255',
-        ]);
-
-        Education::create($validated);
+        Education::create($request->validated());
 
         return redirect()->route('eductions')->with('success', 'Education created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return Response
-     */
-    public function edit(Education $education)
+    public function edit(Education $education): Response
     {
         return Inertia::render('backend/Education/Edit', [
             'education' => $education,
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @return RedirectResponse
-     *
-     * @throws ValidationException
-     */
-    public function update(Request $request, Education $education)
+    public function update(EducationRequest $request, Education $education): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'major' => 'nullable|string|max:255',
-            'institution' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'from' => 'nullable|string|max:255',
-            'to' => 'nullable|string|max:255',
-        ]);
-
-        $education->update($validated);
+        $education->update($request->validated());
 
         return redirect()->route('eductions')->with('success', 'Education updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @return RedirectResponse
-     */
-    public function destroy(Education $education)
+    public function destroy(Education $education): RedirectResponse
     {
         $education->delete();
 

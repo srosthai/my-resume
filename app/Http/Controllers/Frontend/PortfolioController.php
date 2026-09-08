@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use App\Enums\FeedVisibility;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\ContactMessageRequest;
 use App\Mail\ContactMessage;
@@ -100,9 +99,10 @@ class PortfolioController extends Controller
         if ($search !== '') {
             // Escape LIKE wildcards so a visitor cannot turn the search into a pattern scan.
             $term = '%'.addcslashes($search, '%_\\').'%';
+            // ESCAPE is explicit because SQLite has no default escape character.
             $query->where(function ($q) use ($term) {
-                $q->where('title', 'like', $term)
-                    ->orWhere('description', 'like', $term);
+                $q->whereRaw('title LIKE ? ESCAPE ?', [$term, '\\'])
+                    ->orWhereRaw('description LIKE ? ESCAPE ?', [$term, '\\']);
             });
         }
 
@@ -237,7 +237,7 @@ class PortfolioController extends Controller
     public function feeds()
     {
         $feeds = Feed::published()
-            ->where('visibility', FeedVisibility::Public)
+            ->visible()
             ->with('user:id,name,image')
             ->orderBy('is_pinned', 'desc')
             ->orderBy('published_at', 'desc')
