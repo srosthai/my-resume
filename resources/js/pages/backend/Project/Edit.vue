@@ -31,6 +31,7 @@ const form = useForm({
     title: props.project.title || '',
     description: props.project.description || '',
     image: null,
+    remove_image: false,
     project_type_id: props.project.project_type_id ? props.project.project_type_id.toString() : null,
     technologies: props.project.technologies || [],
     created_date: props.project.created_date || '',
@@ -180,7 +181,12 @@ const submit = () => {
                                     :src="`/${project.image}`"
                                     :alt="project.title"
                                     class="size-32 rounded-xl border object-cover"
+                                    :class="{ 'opacity-40 grayscale': form.remove_image }"
                                 />
+                                <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                                    <input v-model="form.remove_image" type="checkbox" class="size-4 rounded border" />
+                                    Remove current image
+                                </label>
                             </div>
                             <Input
                                 id="image"

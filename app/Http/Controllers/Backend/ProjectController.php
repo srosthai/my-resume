@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectType;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
+    public function __construct(private readonly ImageUploadService $images) {}
+
     /**
      * Display all data of Projects.
      * @return \Inertia\Response
@@ -45,7 +48,7 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'title'           => 'required|string|max:255',
             'description'     => 'nullable|string',
-            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'project_type_id' => 'nullable|exists:project_types,id',
             'technologies'    => 'nullable|array',
             'created_date'    => 'nullable|date',
@@ -54,10 +57,7 @@ class ProjectController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $image      = $request->file('image');
-            $imageName  = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/projects'), $imageName);
-            $validated['image'] = 'uploads/projects/' . $imageName;
+            $validated['image'] = $this->images->store($request->file('image'), 'projects');
         }
 
         Project::create($validated);
@@ -86,14 +86,13 @@ class ProjectController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Project $project)
     {
-        $project = Project::findOrFail($id);
-
         $validated = $request->validate([
             'title'           => 'required|string|max:255',
             'description'     => 'nullable|string',
-            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'remove_image'    => 'nullable|boolean',
             'project_type_id' => 'nullable|exists:project_types,id',
             'technologies'    => 'nullable|array',
             'created_date'    => 'nullable|date',
@@ -101,24 +100,17 @@ class ProjectController extends Controller
             'links'           => 'nullable|array',
         ]);
 
-        if ($request->hasFile('image')) {
-            if ($project->image && file_exists(public_path($project->image))) {
-                unlink(public_path($project->image));
-            }
-            $image = $request->file('image');
-            $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/projects'), $imageName);
+        unset($validated['remove_image']);
 
-            $validated['image'] = 'uploads/projects/' . $imageName;
-        } elseif ($request->filled('image') && $request->input('image') === null) {
-            if ($project->image && file_exists(public_path($project->image))) {
-                unlink(public_path($project->image));
-            }
+        if ($request->hasFile('image')) {
+            $this->images->delete($project->image);
+            $validated['image'] = $this->images->store($request->file('image'), 'projects');
+        } elseif ($request->boolean('remove_image')) {
+            $this->images->delete($project->image);
             $validated['image'] = null;
         } else {
             $validated['image'] = $project->image;
         }
-
 
         $project->update($validated);
 
@@ -132,9 +124,7 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        if ($project->image && file_exists(public_path($project->image))) {
-            unlink(public_path($project->image));
-        }
+        $this->images->delete($project->image);
 
         $project->delete();
 

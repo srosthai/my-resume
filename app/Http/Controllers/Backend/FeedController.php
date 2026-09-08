@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FeedController extends Controller
 {
+    public function __construct(private readonly ImageUploadService $images) {}
+
     /**
      * Display all data of Feeds.
      * @return \Inertia\Response
@@ -61,16 +64,11 @@ class FeedController extends Controller
             'published_at'  => 'nullable|date',
         ]);
 
-        // Handle multiple image uploads
         $imagePaths = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('uploads/feeds'), $imageName);
-                $imagePaths[] = 'uploads/feeds/' . $imageName;
-            }
+        foreach ($request->file('images', []) as $image) {
+            $imagePaths[] = $this->images->store($image, 'feeds');
         }
-        $validated['images'] = !empty($imagePaths) ? $imagePaths : null;
+        $validated['images'] = $imagePaths !== [] ? $imagePaths : null;
 
         if (isset($validated['tags'])) {
             $validated['tags'] = array_filter($validated['tags'], function ($tag) {
@@ -107,12 +105,11 @@ class FeedController extends Controller
     /**
      * Update the specified Feed entry in storage.
      * @param \Illuminate\Http\Request $request
-     * @param int $id
+     * @param \App\Models\Feed $feed
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Feed $feed)
     {
-        $feed = Feed::findOrFail($id);
 
         $validated = $request->validate([
             'title'            => 'nullable|string|max:255',
@@ -133,29 +130,23 @@ class FeedController extends Controller
             'published_at'     => 'nullable|date',
         ]);
 
-        // Keep existing images that weren't removed
-        $existingImages = $request->input('existing_images', []);
+        // Only paths that already belong to this feed may be kept. Anything else
+        // in existing_images (foreign paths, URLs, traversal) is discarded.
         $oldImages      = $feed->images ?? [];
+        $requestedKeep  = (array) $request->input('existing_images', []);
+        $existingImages = array_values(array_intersect($oldImages, $requestedKeep));
 
-        // Delete removed images from disk
-        foreach ($oldImages as $oldImage) {
-            if (!in_array($oldImage, $existingImages) && file_exists(public_path($oldImage))) {
-                unlink(public_path($oldImage));
-            }
+        foreach (array_diff($oldImages, $existingImages) as $removed) {
+            $this->images->delete($removed);
         }
 
-        // Handle new image uploads
         $newImagePaths = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('uploads/feeds'), $imageName);
-                $newImagePaths[] = 'uploads/feeds/' . $imageName;
-            }
+        foreach ($request->file('images', []) as $image) {
+            $newImagePaths[] = $this->images->store($image, 'feeds');
         }
 
-        $allImages            = array_merge($existingImages, $newImagePaths);
-        $validated['images']  = !empty($allImages) ? $allImages : null;
+        $allImages           = array_merge($existingImages, $newImagePaths);
+        $validated['images'] = $allImages !== [] ? $allImages : null;
 
         unset($validated['existing_images']);
 
@@ -181,13 +172,8 @@ class FeedController extends Controller
      */
     public function destroy(Feed $feed)
     {
-        // Delete all associated images
-        if ($feed->images) {
-            foreach ($feed->images as $image) {
-                if (file_exists(public_path($image))) {
-                    unlink(public_path($image));
-                }
-            }
+        foreach ($feed->images ?? [] as $image) {
+            $this->images->delete($image);
         }
 
         $feed->delete();

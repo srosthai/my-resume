@@ -47,6 +47,17 @@ return [
             'report' => false,
         ],
 
+        // User uploads (project images, feed photos, profile picture). Kept under
+        // public/uploads so existing rows and /uploads/... URLs keep working.
+        'uploads' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'url' => env('APP_URL').'/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

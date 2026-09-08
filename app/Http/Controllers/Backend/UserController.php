@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +13,8 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    public function __construct(private readonly ImageUploadService $images) {}
+
     public function index(): Response
     {
         $user = User::owner()->first();
@@ -52,10 +55,7 @@ class UserController extends Controller
         ];
 
         if ($request->hasFile('image')) {
-            $image      = $request->file('image');
-            $imageName  = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/users'), $imageName);
-            $userData['image'] = 'uploads/users/' . $imageName;
+            $userData['image'] = $this->images->store($request->file('image'), 'users');
         }
 
         $user = new User($userData);
@@ -113,10 +113,8 @@ class UserController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $image      = $request->file('image');
-            $imageName  = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/users'), $imageName);
-            $userData['image'] = 'uploads/users/' . $imageName;
+            $this->images->delete($user->image);
+            $userData['image'] = $this->images->store($request->file('image'), 'users');
         }
 
         $user->update($userData);
@@ -134,6 +132,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $this->images->delete($user->image);
         $user->delete();
 
         return redirect()->route('backend.users.index')
