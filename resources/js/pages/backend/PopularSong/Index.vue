@@ -29,8 +29,8 @@ interface Props {
 defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Popular Songs', href: '/popular-songs' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Popular Songs', href: route('backend.popular-songs.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -81,7 +81,7 @@ const formatDuration = (seconds: number): string => {
                         <p class="text-sm text-muted-foreground">Manage songs for your portfolio music player</p>
                     </div>
                 </div>
-                <Link href="/backend/popular-songs/create">
+                <Link :href="route('backend.popular-songs.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add New Song
@@ -125,13 +125,13 @@ const formatDuration = (seconds: number): string => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(song.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/popular-songs/${song.id}`">
+                                        <Link :href="route('backend.popular-songs.show', song.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="eye" class="size-4" />
                                                 View
                                             </Button>
                                         </Link>
-                                        <Link :href="`/backend/popular-songs/${song.id}/edit`">
+                                        <Link :href="route('backend.popular-songs.edit', song.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -156,7 +156,7 @@ const formatDuration = (seconds: number): string => {
                                             <Icon name="music" class="size-6" />
                                         </div>
                                         <p class="text-sm">No songs found</p>
-                                        <Link href="/backend/popular-songs/create">
+                                        <Link :href="route('backend.popular-songs.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add Your First Song

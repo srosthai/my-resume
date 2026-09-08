@@ -13,11 +13,11 @@ use Inertia\Testing\AssertableInertia;
  * [model, index route name, backend route prefix, index page, index prop, payload]
  */
 $resources = [
-    'about me' => [AboutMe::class, 'about-me', 'backend.about-me', 'backend/AboutMe/Index', 'aboutMes', ['title' => 'About', 'description' => 'Hi', 'location' => 'PP', 'year_experience' => '3', 'fucus_on' => 'Backend']],
-    'education' => [Education::class, 'eductions', 'backend.eductions', 'backend/Education/Index', 'educations', ['title' => 'BSc', 'major' => 'IT', 'institution' => 'RUPP', 'description' => 'x', 'from' => '2018', 'to' => '2022']],
-    'work experience' => [WorkExperience::class, 'work-experience', 'backend.work-experience', 'backend/WorkExperience/Index', 'workExperiences', ['title' => 'Dev', 'position' => 'Backend', 'company' => 'ACME', 'description' => 'x', 'from' => '2022', 'to' => '2024']],
-    'tech stack' => [TechStack::class, 'tech-stacks', 'backend.tech-stacks', 'backend/TechStack/Index', 'techStacks', ['name' => 'Laravel', 'logo' => 'https://x/logo.svg', 'type' => 'Backend', 'description' => 'x']],
-    'project type' => [ProjectType::class, 'project-types', 'backend.project-types', 'backend/ProjectType/Index', 'projectTypes', ['name' => 'Web']],
+    'about me' => [AboutMe::class, 'backend.about-me.index', 'backend.about-me', 'backend/AboutMe/Index', 'aboutMes', ['title' => 'About', 'description' => 'Hi', 'location' => 'PP', 'year_experience' => '3', 'fucus_on' => 'Backend']],
+    'education' => [Education::class, 'backend.education.index', 'backend.education', 'backend/Education/Index', 'educations', ['title' => 'BSc', 'major' => 'IT', 'institution' => 'RUPP', 'description' => 'x', 'from' => '2018', 'to' => '2022']],
+    'work experience' => [WorkExperience::class, 'backend.work-experience.index', 'backend.work-experience', 'backend/WorkExperience/Index', 'workExperiences', ['title' => 'Dev', 'position' => 'Backend', 'company' => 'ACME', 'description' => 'x', 'from' => '2022', 'to' => '2024']],
+    'tech stack' => [TechStack::class, 'backend.tech-stacks.index', 'backend.tech-stacks', 'backend/TechStack/Index', 'techStacks', ['name' => 'Laravel', 'logo' => 'https://x/logo.svg', 'type' => 'Backend', 'description' => 'x']],
+    'project type' => [ProjectType::class, 'backend.project-types.index', 'backend.project-types', 'backend/ProjectType/Index', 'projectTypes', ['name' => 'Web']],
 ];
 
 beforeEach(fn () => $this->owner = User::factory()->owner()->create());

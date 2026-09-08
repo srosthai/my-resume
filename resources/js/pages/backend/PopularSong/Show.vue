@@ -22,9 +22,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Popular Songs', href: '/popular-songs' },
-    { title: 'View', href: `/backend/popular-songs/${props.popularSong.id}` },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Popular Songs', href: route('backend.popular-songs.index') },
+    { title: 'View', href: route('backend.popular-songs.show', props.popularSong.id) },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -65,7 +65,7 @@ const extractYouTubeId = (url: string): string | null => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <Link href="/popular-songs">
+                    <Link :href="route('backend.popular-songs.index')">
                         <Button variant="outline" size="icon" class="rounded-xl">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
@@ -83,7 +83,7 @@ const extractYouTubeId = (url: string): string | null => {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Link :href="`/backend/popular-songs/${popularSong.id}/edit`">
+                    <Link :href="route('backend.popular-songs.edit', popularSong.id)">
                         <Button variant="outline" class="rounded-xl">
                             <Icon name="squarePen" class="size-4" />
                             Edit
@@ -144,19 +144,19 @@ const extractYouTubeId = (url: string): string | null => {
 
                 <!-- Footer actions -->
                 <div class="flex flex-wrap items-center gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                    <Link :href="`/backend/popular-songs/${popularSong.id}/edit`">
+                    <Link :href="route('backend.popular-songs.edit', popularSong.id)">
                         <Button class="rounded-xl shadow-sm">
                             <Icon name="squarePen" class="size-4" />
                             Edit Song
                         </Button>
                     </Link>
-                    <Link href="/backend/popular-songs/create">
+                    <Link :href="route('backend.popular-songs.create')">
                         <Button variant="outline" class="rounded-xl">
                             <Icon name="plus" class="size-4" />
                             Add New Song
                         </Button>
                     </Link>
-                    <Link href="/popular-songs">
+                    <Link :href="route('backend.popular-songs.index')">
                         <Button variant="outline" class="rounded-xl">
                             <Icon name="arrowLeft" class="size-4" />
                             Back to List

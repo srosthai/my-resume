@@ -13,8 +13,8 @@ defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Projects', href: '/projects' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Projects', href: route('backend.projects.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -63,7 +63,7 @@ const getStatusBadgeVariant = (status: string) => {
                         <p class="text-sm text-muted-foreground">View and manage your projects</p>
                     </div>
                 </div>
-                <Link href="/backend/projects/create">
+                <Link :href="route('backend.projects.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Project
@@ -120,7 +120,7 @@ const getStatusBadgeVariant = (status: string) => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.created_date ? formatDate(item.created_date) : '-' }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/projects/${item.id}/edit`">
+                                        <Link :href="route('backend.projects.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -145,7 +145,7 @@ const getStatusBadgeVariant = (status: string) => {
                                             <Icon name="folderKanban" class="size-6" />
                                         </div>
                                         <p class="text-sm">No projects found</p>
-                                        <Link href="/backend/projects/create">
+                                        <Link :href="route('backend.projects.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first project

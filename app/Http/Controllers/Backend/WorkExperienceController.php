@@ -27,7 +27,7 @@ class WorkExperienceController extends Controller
     {
         WorkExperience::create($request->validated());
 
-        return redirect()->route('work-experience')->with('success', 'Work Experience created successfully.');
+        return redirect()->route('backend.work-experience.index')->with('success', 'Work Experience created successfully.');
     }
 
     public function edit(WorkExperience $workExperience): Response
@@ -41,13 +41,13 @@ class WorkExperienceController extends Controller
     {
         $workExperience->update($request->validated());
 
-        return redirect()->route('work-experience')->with('success', 'Work Experience updated successfully.');
+        return redirect()->route('backend.work-experience.index')->with('success', 'Work Experience updated successfully.');
     }
 
     public function destroy(WorkExperience $workExperience): RedirectResponse
     {
         $workExperience->delete();
 
-        return redirect()->route('work-experience')->with('success', 'Work Experience deleted successfully.');
+        return redirect()->route('backend.work-experience.index')->with('success', 'Work Experience deleted successfully.');
     }
 }

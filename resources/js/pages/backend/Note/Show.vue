@@ -12,8 +12,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Notes', href: '/notes' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Notes', href: route('backend.notes.index') },
     { title: props.note.title, href: '' },
 ];
 
@@ -54,7 +54,7 @@ const getStatusColor = (status: string) => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('notes.index')">
+                    <Link :href="route('backend.notes.index')">
                         <Button variant="outline" size="icon" class="rounded-xl">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
@@ -71,7 +71,7 @@ const getStatusColor = (status: string) => {
                         </div>
                     </div>
                 </div>
-                <Link :href="route('notes.edit', note.id)">
+                <Link :href="route('backend.notes.edit', note.id)">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="squarePen" class="size-4" />
                         Edit Note

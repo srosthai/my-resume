@@ -27,7 +27,7 @@ class EducationController extends Controller
     {
         Education::create($request->validated());
 
-        return redirect()->route('eductions')->with('success', 'Education created successfully.');
+        return redirect()->route('backend.education.index')->with('success', 'Education created successfully.');
     }
 
     public function edit(Education $education): Response
@@ -41,13 +41,13 @@ class EducationController extends Controller
     {
         $education->update($request->validated());
 
-        return redirect()->route('eductions')->with('success', 'Education updated successfully.');
+        return redirect()->route('backend.education.index')->with('success', 'Education updated successfully.');
     }
 
     public function destroy(Education $education): RedirectResponse
     {
         $education->delete();
 
-        return redirect()->route('eductions')->with('success', 'Education deleted successfully.');
+        return redirect()->route('backend.education.index')->with('success', 'Education deleted successfully.');
     }
 }

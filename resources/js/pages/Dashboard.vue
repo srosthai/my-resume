@@ -42,7 +42,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: route('dashboard'),
     },
 ];
 
@@ -267,7 +267,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/projects">
+                                    <Link :href="route('backend.projects.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>
@@ -311,7 +311,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/work-experience">
+                                    <Link :href="route('backend.work-experience.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>
@@ -360,7 +360,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/eductions">
+                                    <Link :href="route('backend.education.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>
@@ -395,7 +395,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/popular-songs">
+                                    <Link :href="route('backend.popular-songs.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>

@@ -9,9 +9,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Education', href: '/eductions' },
-    { title: 'Create', href: '/backend/eductions/create' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Education', href: route('backend.education.index') },
+    { title: 'Create', href: route('backend.education.create') },
 ];
 
 const form = useForm({
@@ -24,7 +24,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('backend.eductions.store'));
+    form.post(route('backend.education.store'));
 };
 </script>
 
@@ -35,7 +35,7 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/eductions">
+                <Link :href="route('backend.education.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -97,7 +97,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/eductions">
+                        <Link :href="route('backend.education.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

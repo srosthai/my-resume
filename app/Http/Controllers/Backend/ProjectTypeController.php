@@ -27,7 +27,7 @@ class ProjectTypeController extends Controller
     {
         ProjectType::create($request->validated());
 
-        return redirect()->route('project-types')->with('success', 'Project Type created successfully.');
+        return redirect()->route('backend.project-types.index')->with('success', 'Project Type created successfully.');
     }
 
     public function edit(ProjectType $projectType): Response
@@ -41,13 +41,13 @@ class ProjectTypeController extends Controller
     {
         $projectType->update($request->validated());
 
-        return redirect()->route('project-types')->with('success', 'Project Type updated successfully.');
+        return redirect()->route('backend.project-types.index')->with('success', 'Project Type updated successfully.');
     }
 
     public function destroy(ProjectType $projectType): RedirectResponse
     {
         $projectType->delete();
 
-        return redirect()->route('project-types')->with('success', 'Project Type deleted successfully.');
+        return redirect()->route('backend.project-types.index')->with('success', 'Project Type deleted successfully.');
     }
 }

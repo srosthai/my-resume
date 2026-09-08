@@ -19,8 +19,8 @@ withDefaults(
 );
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Feeds', href: '/feeds-management' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Feeds', href: route('backend.feeds.index') },
 ];
 
 const showDeleteConfirm = ref(false);

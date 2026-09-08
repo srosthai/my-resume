@@ -12,7 +12,7 @@ test('a feed without a title derives its slug from the body and belongs to the c
         'visibility' => 'public',
         'status' => 'published',
         'tags' => ['friends', ''],
-    ])->assertRedirect(route('feeds.index'));
+    ])->assertRedirect(route('backend.feeds.index'));
 
     $feed = Feed::first();
     expect($feed->user_id)->toBe($this->owner->id)
@@ -31,7 +31,7 @@ test('pin toggle, update and destroy', function () {
     $feed = Feed::factory()->create(['user_id' => $this->owner->id]);
     $this->actingAs($this->owner);
 
-    $this->patch(route('feeds.toggle-pinned', $feed))->assertRedirect();
+    $this->patch(route('backend.feeds.toggle-pinned', $feed))->assertRedirect();
     expect($feed->fresh()->is_pinned)->toBeTrue();
 
     $this->put(route('backend.feeds.update', $feed), ['body' => 'Edited', 'visibility' => 'private', 'status' => 'published'])->assertRedirect();

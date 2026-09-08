@@ -22,8 +22,8 @@ defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Work Experience', href: '/work-experience' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Work Experience', href: route('backend.work-experience.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -77,7 +77,7 @@ const deleteItem = () => {
                         <p class="text-sm text-muted-foreground">View and manage your work experience records</p>
                     </div>
                 </div>
-                <Link href="/backend/work-experience/create">
+                <Link :href="route('backend.work-experience.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Experience
@@ -118,7 +118,7 @@ const deleteItem = () => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/work-experience/${item.id}/edit`">
+                                        <Link :href="route('backend.work-experience.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -143,7 +143,7 @@ const deleteItem = () => {
                                             <Icon name="briefcase" class="size-6" />
                                         </div>
                                         <p class="text-sm">No work experience records found</p>
-                                        <Link href="/backend/work-experience/create">
+                                        <Link :href="route('backend.work-experience.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first record

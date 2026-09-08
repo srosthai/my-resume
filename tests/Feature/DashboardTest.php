@@ -20,10 +20,10 @@ test('a non-owner user is forbidden from the dashboard and every backend route',
     $this->actingAs($user);
 
     $this->get('/dashboard')->assertForbidden();
-    $this->get('/projects')->assertForbidden();
+    $this->get('/backend/projects')->assertForbidden();
     $this->get('/backend/projects/create')->assertForbidden();
     $this->post('/backend/projects', ['title' => 'x', 'status' => 'processing'])->assertForbidden();
-    $this->get('/notes')->assertForbidden();
-    $this->get('/feeds-management')->assertForbidden();
-    $this->get('/me')->assertForbidden();
+    $this->get('/backend/notes')->assertForbidden();
+    $this->get('/backend/feeds')->assertForbidden();
+    $this->get('/backend/me')->assertForbidden();
 });

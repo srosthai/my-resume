@@ -22,9 +22,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'ME', href: '/me' },
-    { title: 'Delete', href: `/backend/users/${props.user.id}/delete` },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'ME', href: route('backend.users.index') },
+    { title: 'Delete', href: route('backend.users.delete', props.user.id) },
 ];
 
 const form = useForm({});
@@ -56,7 +56,7 @@ const deleteUser = () => {
         <div class="mx-auto w-full max-w-xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/me">
+                <Link :href="route('backend.users.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -105,7 +105,7 @@ const deleteUser = () => {
 
                 <!-- Footer actions -->
                 <form class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8" @submit.prevent="deleteUser">
-                    <Link href="/me">
+                    <Link :href="route('backend.users.index')">
                         <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                     </Link>
                     <Button type="submit" variant="destructive" :disabled="form.processing" class="rounded-xl shadow-sm">

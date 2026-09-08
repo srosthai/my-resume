@@ -14,8 +14,8 @@ defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Tech Stack', href: '/tech-stacks' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Tech Stack', href: route('backend.tech-stacks.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -61,7 +61,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                         <p class="text-sm text-muted-foreground">View and manage your technology stack</p>
                     </div>
                 </div>
-                <Link href="/backend/tech-stacks/create">
+                <Link :href="route('backend.tech-stacks.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Technology
@@ -112,7 +112,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/tech-stacks/${item.id}/edit`">
+                                        <Link :href="route('backend.tech-stacks.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -137,7 +137,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                             <Icon name="layers" class="size-6" />
                                         </div>
                                         <p class="text-sm">No tech stack records found</p>
-                                        <Link href="/backend/tech-stacks/create">
+                                        <Link :href="route('backend.tech-stacks.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first technology

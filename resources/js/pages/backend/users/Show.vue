@@ -26,9 +26,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'ME', href: '/me' },
-    { title: 'Details', href: `/backend/users/${props.user.id}` },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'ME', href: route('backend.users.index') },
+    { title: 'Details', href: route('backend.users.show', props.user.id) },
 ];
 
 const imageSrc = computed(() => {
@@ -74,7 +74,7 @@ const detailItems = computed(() => [
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <Link href="/me">
+                    <Link :href="route('backend.users.index')">
                         <Button variant="outline" size="icon" class="rounded-xl">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
@@ -91,7 +91,7 @@ const detailItems = computed(() => [
                         </div>
                     </div>
                 </div>
-                <Link :href="`/backend/users/${user.id}/edit`">
+                <Link :href="route('backend.users.edit', user.id)">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="squarePen" class="size-4" />
                         Edit profile

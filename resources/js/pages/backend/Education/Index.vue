@@ -13,8 +13,8 @@ defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Education', href: '/eductions' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Education', href: route('backend.education.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -28,7 +28,7 @@ const confirmDelete = (item: Education) => {
 
 const deleteItem = () => {
     if (!itemToDelete.value) return;
-    router.delete(route('backend.eductions.destroy', itemToDelete.value.id), {
+    router.delete(route('backend.education.destroy', itemToDelete.value.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
             deleting.value = false;
@@ -60,7 +60,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                         <p class="text-sm text-muted-foreground">View and manage your education records</p>
                     </div>
                 </div>
-                <Link href="/backend/eductions/create">
+                <Link :href="route('backend.education.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Education
@@ -101,7 +101,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/eductions/${item.id}/edit`">
+                                        <Link :href="route('backend.education.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -126,7 +126,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                             <Icon name="graduationCap" class="size-6" />
                                         </div>
                                         <p class="text-sm">No education records found</p>
-                                        <Link href="/backend/eductions/create">
+                                        <Link :href="route('backend.education.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first record

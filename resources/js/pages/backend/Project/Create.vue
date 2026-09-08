@@ -16,9 +16,9 @@ defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Projects', href: '/projects' },
-    { title: 'Create', href: '/backend/projects/create' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Projects', href: route('backend.projects.index') },
+    { title: 'Create', href: route('backend.projects.create') },
 ];
 
 const form = useForm({
@@ -78,7 +78,7 @@ const submit = () => {
         <div class="mx-auto w-full max-w-4xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/projects">
+                <Link :href="route('backend.projects.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -201,7 +201,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/projects">
+                        <Link :href="route('backend.projects.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

@@ -32,7 +32,7 @@ class NoteController extends Controller
     {
         $request->user()->notes()->create($request->noteData());
 
-        return redirect()->route('notes.index')->with('success', 'Note created successfully.');
+        return redirect()->route('backend.notes.index')->with('success', 'Note created successfully.');
     }
 
     public function show(Note $note): Response
@@ -54,14 +54,14 @@ class NoteController extends Controller
     {
         $note->update($request->noteData());
 
-        return redirect()->route('notes.index')->with('success', 'Note updated successfully.');
+        return redirect()->route('backend.notes.index')->with('success', 'Note updated successfully.');
     }
 
     public function destroy(Note $note): RedirectResponse
     {
         $note->delete();
 
-        return redirect()->route('notes.index')->with('success', 'Note deleted successfully.');
+        return redirect()->route('backend.notes.index')->with('success', 'Note deleted successfully.');
     }
 
     public function toggleFeatured(Note $note): RedirectResponse
@@ -83,6 +83,6 @@ class NoteController extends Controller
         $duplicate->user_id = $request->user()->id;
         $duplicate->save();
 
-        return redirect()->route('notes.edit', $duplicate)->with('success', 'Note duplicated successfully.');
+        return redirect()->route('backend.notes.edit', $duplicate)->with('success', 'Note duplicated successfully.');
     }
 }

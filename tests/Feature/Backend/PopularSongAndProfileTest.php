@@ -14,7 +14,7 @@ test('popular songs crud and the public player endpoint', function () {
     $this->actingAs($this->owner);
 
     $this->post(route('backend.popular-songs.store'), ['title' => 'Song', 'artist' => 'Artist', 'url' => 'https://www.youtube.com/watch?v=abc', 'duration' => 200])
-        ->assertRedirect(route('popular-songs'));
+        ->assertRedirect(route('backend.popular-songs.index'));
     $this->post(route('backend.popular-songs.store'), ['title' => 'Bad', 'artist' => 'A', 'url' => 'not a url', 'duration' => 0])
         ->assertSessionHasErrors(['url', 'duration']);
 

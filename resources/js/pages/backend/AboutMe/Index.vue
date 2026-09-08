@@ -13,8 +13,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'About Me', href: '/about-me' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'About Me', href: route('backend.about-me.index') },
 ];
 
 const aboutMe = computed(() => props.aboutMes?.[0] || null);
@@ -70,7 +70,7 @@ const formatDate = (dateString: string | null) => {
                         <p class="text-sm text-muted-foreground">View and manage your about me content</p>
                     </div>
                 </div>
-                <Link v-if="!aboutMe" href="/backend/about-me/create">
+                <Link v-if="!aboutMe" :href="route('backend.about-me.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add About Me
@@ -111,7 +111,7 @@ const formatDate = (dateString: string | null) => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/about-me/${item.id}/edit`">
+                                        <Link :href="route('backend.about-me.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -136,7 +136,7 @@ const formatDate = (dateString: string | null) => {
                                             <Icon name="user" class="size-6" />
                                         </div>
                                         <p class="text-sm">No about me content found</p>
-                                        <Link href="/backend/about-me/create">
+                                        <Link :href="route('backend.about-me.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first record

@@ -28,7 +28,7 @@ class PopularSongController extends Controller
     {
         PopularSong::create($request->validated());
 
-        return redirect()->route('popular-songs')->with('success', 'Popular song created successfully.');
+        return redirect()->route('backend.popular-songs.index')->with('success', 'Popular song created successfully.');
     }
 
     public function show(PopularSong $popularSong): Response
@@ -49,14 +49,14 @@ class PopularSongController extends Controller
     {
         $popularSong->update($request->validated());
 
-        return redirect()->route('popular-songs')->with('success', 'Popular song updated successfully.');
+        return redirect()->route('backend.popular-songs.index')->with('success', 'Popular song updated successfully.');
     }
 
     public function destroy(PopularSong $popularSong): RedirectResponse
     {
         $popularSong->delete();
 
-        return redirect()->route('popular-songs')->with('success', 'Popular song deleted successfully.');
+        return redirect()->route('backend.popular-songs.index')->with('success', 'Popular song deleted successfully.');
     }
 
     /**

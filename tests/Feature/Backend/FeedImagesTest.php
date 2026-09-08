@@ -24,7 +24,7 @@ test('uploaded feed images are stored on the uploads disk under uploads/feeds', 
         ->post(route('backend.feeds.store'), feedPayload([
             'images' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.png')],
         ]))
-        ->assertRedirect(route('feeds.index'));
+        ->assertRedirect(route('backend.feeds.index'));
 
     $feed = Feed::first();
     expect($feed->images)->toHaveCount(2);
@@ -50,7 +50,7 @@ test('existing_images cannot inject foreign paths or delete files outside the fe
                 'https://evil.example/x.jpg',
             ],
         ]))
-        ->assertRedirect(route('feeds.index'));
+        ->assertRedirect(route('backend.feeds.index'));
 
     expect($feed->fresh()->images)->toBe(['uploads/feeds/keep.jpg']);
     Storage::disk('uploads')->assertExists('feeds/keep.jpg');

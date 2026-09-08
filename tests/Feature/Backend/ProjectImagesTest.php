@@ -20,7 +20,7 @@ test('a project image can be removed without uploading a replacement', function 
             'status' => 'completed',
             'remove_image' => true,
         ])
-        ->assertRedirect(route('projects'));
+        ->assertRedirect(route('backend.projects.index'));
 
     expect($project->fresh()->image)->toBeNull();
     Storage::disk('uploads')->assertMissing('projects/old.jpg');

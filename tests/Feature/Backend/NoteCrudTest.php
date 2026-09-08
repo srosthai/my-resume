@@ -25,7 +25,7 @@ function notePayload(array $overrides = []): array
 }
 
 test('a note is created for the current user with a slug, cleaned tags and a publish timestamp', function () {
-    $this->actingAs($this->owner)->post(route('notes.store'), notePayload())->assertRedirect(route('notes.index'));
+    $this->actingAs($this->owner)->post(route('backend.notes.store'), notePayload())->assertRedirect(route('backend.notes.index'));
 
     $note = Note::first();
     expect($note->user_id)->toBe($this->owner->id)
@@ -36,31 +36,31 @@ test('a note is created for the current user with a slug, cleaned tags and a pub
 });
 
 test('a draft has no publish timestamp until it is published, and keeps it afterwards', function () {
-    $this->actingAs($this->owner)->post(route('notes.store'), notePayload(['status' => 'draft']));
+    $this->actingAs($this->owner)->post(route('backend.notes.store'), notePayload(['status' => 'draft']));
     $note = Note::first();
     expect($note->published_at)->toBeNull();
 
-    $this->actingAs($this->owner)->patch(route('notes.update', $note), notePayload(['status' => 'published']));
+    $this->actingAs($this->owner)->patch(route('backend.notes.update', $note), notePayload(['status' => 'published']));
     $first = $note->fresh()->published_at;
     expect($first)->not->toBeNull();
 
     $this->travel(1)->day();
-    $this->actingAs($this->owner)->patch(route('notes.update', $note), notePayload(['status' => 'published', 'title' => 'Renamed']));
+    $this->actingAs($this->owner)->patch(route('backend.notes.update', $note), notePayload(['status' => 'published', 'title' => 'Renamed']));
     expect($note->fresh()->published_at->equalTo($first))->toBeTrue()
         ->and($note->fresh()->slug)->toBe('renamed');
 });
 
 test('slugs are unique and duplicates get a numeric suffix', function () {
     $this->actingAs($this->owner);
-    $this->post(route('notes.store'), notePayload());
-    $this->post(route('notes.store'), notePayload());
+    $this->post(route('backend.notes.store'), notePayload());
+    $this->post(route('backend.notes.store'), notePayload());
 
     expect(Note::pluck('slug')->all())->toBe(['install-laravel', 'install-laravel-1']);
 });
 
 test('nested content is validated', function () {
     $this->actingAs($this->owner)
-        ->post(route('notes.store'), notePayload(['content' => ['overview' => 'x', 'requirements' => [], 'steps' => [['title' => '', 'description' => 'd', 'commands' => []]]]]))
+        ->post(route('backend.notes.store'), notePayload(['content' => ['overview' => 'x', 'requirements' => [], 'steps' => [['title' => '', 'description' => 'd', 'commands' => []]]]]))
         ->assertSessionHasErrors(['content.requirements', 'content.steps.0.title', 'content.steps.0.commands']);
 });
 
@@ -68,10 +68,10 @@ test('toggle featured, duplicate and destroy work', function () {
     $note = Note::factory()->create(['user_id' => $this->owner->id, 'is_featured' => false, 'views' => 12]);
     $this->actingAs($this->owner);
 
-    $this->patch(route('notes.toggle-featured', $note))->assertRedirect();
+    $this->patch(route('backend.notes.toggle-featured', $note))->assertRedirect();
     expect($note->fresh()->is_featured)->toBeTrue();
 
-    $this->post(route('notes.duplicate', $note))->assertRedirect();
+    $this->post(route('backend.notes.duplicate', $note))->assertRedirect();
     $copy = Note::where('id', '!=', $note->id)->first();
     expect($copy->title)->toBe($note->title.' (Copy)')
         ->and($copy->slug)->not->toBe($note->slug)
@@ -79,7 +79,7 @@ test('toggle featured, duplicate and destroy work', function () {
         ->and($copy->views)->toBe(0)
         ->and($copy->is_featured)->toBeFalse();
 
-    $this->delete(route('notes.destroy', $note))->assertRedirect(route('notes.index'));
+    $this->delete(route('backend.notes.destroy', $note))->assertRedirect(route('backend.notes.index'));
     expect(Note::count())->toBe(1);
 });
 

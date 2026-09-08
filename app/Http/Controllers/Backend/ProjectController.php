@@ -39,7 +39,7 @@ class ProjectController extends Controller
 
         Project::create($data);
 
-        return redirect()->route('projects')->with('success', 'Project created successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project created successfully.');
     }
 
     public function edit(Project $project): Response
@@ -64,7 +64,7 @@ class ProjectController extends Controller
 
         $project->update($data);
 
-        return redirect()->route('projects')->with('success', 'Project updated successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -72,6 +72,6 @@ class ProjectController extends Controller
         $this->images->delete($project->image);
         $project->delete();
 
-        return redirect()->route('projects')->with('success', 'Project deleted successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project deleted successfully.');
     }
 }

@@ -32,7 +32,7 @@ test('guests only receive the public ziggy route group', function () {
 
         expect($routes)->toHaveKey('home')->toHaveKey('contact.send')->toHaveKey('api.feeds.like')
             ->not->toHaveKey('backend.projects.store')
-            ->not->toHaveKey('notes.destroy')
+            ->not->toHaveKey('backend.notes.destroy')
             ->not->toHaveKey('dashboard');
     });
 });

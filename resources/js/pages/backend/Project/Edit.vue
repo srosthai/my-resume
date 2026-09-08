@@ -17,9 +17,9 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Projects', href: '/projects' },
-    { title: 'Edit', href: `/backend/projects/${props.project.id}/edit` },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Projects', href: route('backend.projects.index') },
+    { title: 'Edit', href: route('backend.projects.edit', props.project.id) },
 ];
 
 const form = useForm({
@@ -79,8 +79,8 @@ const submit = () => {
         form.project_type_id = '';
     }
 
-    // The route accepts POST as well as PUT; the old `_method: 'PUT'` option was not a valid form option and was ignored.
-    form.post(route('backend.projects.update', props.project.id), {
+    // Browsers cannot send multipart PUT, so spoof the method on a POST.
+    form.transform((data) => ({ ...data, _method: 'put' })).post(route('backend.projects.update', props.project.id), {
         forceFormData: true,
     });
 };
@@ -93,7 +93,7 @@ const submit = () => {
         <div class="mx-auto w-full max-w-4xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/projects">
+                <Link :href="route('backend.projects.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -229,7 +229,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/projects">
+                        <Link :href="route('backend.projects.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

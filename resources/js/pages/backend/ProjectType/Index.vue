@@ -13,8 +13,8 @@ defineProps<{
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Project Types', href: '/project-types' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Project Types', href: route('backend.project-types.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -60,7 +60,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                         <p class="text-sm text-muted-foreground">View and manage your project types</p>
                     </div>
                 </div>
-                <Link href="/backend/project-types/create">
+                <Link :href="route('backend.project-types.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Project Type
@@ -95,7 +95,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/project-types/${item.id}/edit`">
+                                        <Link :href="route('backend.project-types.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -120,7 +120,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                             <Icon name="tag" class="size-6" />
                                         </div>
                                         <p class="text-sm">No project types found</p>
-                                        <Link href="/backend/project-types/create">
+                                        <Link :href="route('backend.project-types.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first project type

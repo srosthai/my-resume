@@ -27,7 +27,7 @@ class AboutMeController extends Controller
     {
         AboutMe::create($request->validated());
 
-        return redirect()->route('about-me')->with('success', 'About Me created successfully.');
+        return redirect()->route('backend.about-me.index')->with('success', 'About Me created successfully.');
     }
 
     public function edit(AboutMe $aboutMe): Response
@@ -41,13 +41,13 @@ class AboutMeController extends Controller
     {
         $aboutMe->update($request->validated());
 
-        return redirect()->route('about-me')->with('success', 'About Me updated successfully.');
+        return redirect()->route('backend.about-me.index')->with('success', 'About Me updated successfully.');
     }
 
     public function destroy(AboutMe $aboutMe): RedirectResponse
     {
         $aboutMe->delete();
 
-        return redirect()->route('about-me')->with('success', 'About Me deleted successfully.');
+        return redirect()->route('backend.about-me.index')->with('success', 'About Me deleted successfully.');
     }
 }

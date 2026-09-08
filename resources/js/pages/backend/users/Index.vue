@@ -27,8 +27,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'ME', href: '/me' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'ME', href: route('backend.users.index') },
 ];
 
 const profile = computed(() => props.user);
@@ -106,7 +106,7 @@ const deleteItem = () => {
                         <p class="text-sm text-muted-foreground">View and manage your profile record</p>
                     </div>
                 </div>
-                <Link v-if="!profile" href="/backend/users/create">
+                <Link v-if="!profile" :href="route('backend.users.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Profile
@@ -133,13 +133,13 @@ const deleteItem = () => {
                     </div>
 
                     <div class="flex items-center gap-1">
-                        <Link :href="`/backend/users/${profile.id}/edit`">
+                        <Link :href="route('backend.users.edit', profile.id)">
                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                 <Icon name="squarePen" class="size-4" />
                                 Edit
                             </Button>
                         </Link>
-                        <Link :href="`/backend/users/${profile.id}`">
+                        <Link :href="route('backend.users.show', profile.id)">
                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                 <Icon name="eye" class="size-4" />
                                 View
@@ -183,7 +183,7 @@ const deleteItem = () => {
                         <Icon name="users" class="size-6" />
                     </div>
                     <p class="text-sm">No profile record yet</p>
-                    <Link href="/backend/users/create">
+                    <Link :href="route('backend.users.create')">
                         <Button variant="outline" size="sm" class="rounded-lg">
                             <Icon name="plus" class="size-4" />
                             Create your profile

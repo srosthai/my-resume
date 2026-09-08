@@ -19,8 +19,8 @@ const props = withDefaults(
 );
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Notes', href: '/notes' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Notes', href: route('backend.notes.index') },
 ];
 
 const showDeleteConfirm = ref(false);
@@ -36,7 +36,7 @@ const confirmDelete = (item: Note) => {
 
 const deleteItem = () => {
     if (!itemToDelete.value) return;
-    router.delete(route('notes.destroy', itemToDelete.value.id), {
+    router.delete(route('backend.notes.destroy', itemToDelete.value.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
             deleting.value = false;
@@ -48,7 +48,7 @@ const deleteItem = () => {
 
 const toggleFeatured = (note: Note) => {
     router.patch(
-        route('notes.toggle-featured', note.id),
+        route('backend.notes.toggle-featured', note.id),
         {},
         {
             preserveScroll: true,
@@ -57,7 +57,7 @@ const toggleFeatured = (note: Note) => {
 };
 
 const duplicateNote = (note: Note) => {
-    router.post(route('notes.duplicate', note.id));
+    router.post(route('backend.notes.duplicate', note.id));
 };
 
 const filteredNotes = computed(() => {
@@ -114,7 +114,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                         <p class="text-sm text-muted-foreground">Manage your programming notes and tutorials</p>
                     </div>
                 </div>
-                <Link :href="route('notes.create')">
+                <Link :href="route('backend.notes.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Note
@@ -199,13 +199,13 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(note.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="route('notes.show', note.id)">
+                                        <Link :href="route('backend.notes.show', note.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="eye" class="size-4" />
                                                 View
                                             </Button>
                                         </Link>
-                                        <Link :href="route('notes.edit', note.id)">
+                                        <Link :href="route('backend.notes.edit', note.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -238,7 +238,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                             <Icon name="stickyNote" class="size-6" />
                                         </div>
                                         <p class="text-sm">No notes found</p>
-                                        <Link :href="route('notes.create')">
+                                        <Link :href="route('backend.notes.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first note

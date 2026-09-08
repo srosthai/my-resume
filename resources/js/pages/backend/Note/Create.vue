@@ -20,8 +20,8 @@ const props = withDefaults(
 );
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Notes', href: '/notes' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Notes', href: route('backend.notes.index') },
     { title: 'Create Note', href: '' },
 ];
 
@@ -118,7 +118,7 @@ const submit = () => {
         }))
         .filter((step) => step.title.trim() && step.description.trim() && step.commands.length > 0);
 
-    form.post(route('notes.store'));
+    form.post(route('backend.notes.store'));
 };
 
 const availableCategories = computed(() => {
@@ -142,7 +142,7 @@ const selectCategory = (category: string) => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link :href="route('notes.index')">
+                <Link :href="route('backend.notes.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -451,7 +451,7 @@ const selectCategory = (category: string) => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link :href="route('notes.index')">
+                        <Link :href="route('backend.notes.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

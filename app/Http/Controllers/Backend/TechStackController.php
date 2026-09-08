@@ -27,7 +27,7 @@ class TechStackController extends Controller
     {
         TechStack::create($request->validated());
 
-        return redirect()->route('tech-stacks')->with('success', 'Tech Stack created successfully.');
+        return redirect()->route('backend.tech-stacks.index')->with('success', 'Tech Stack created successfully.');
     }
 
     public function edit(TechStack $techStack): Response
@@ -41,13 +41,13 @@ class TechStackController extends Controller
     {
         $techStack->update($request->validated());
 
-        return redirect()->route('tech-stacks')->with('success', 'Tech Stack updated successfully.');
+        return redirect()->route('backend.tech-stacks.index')->with('success', 'Tech Stack updated successfully.');
     }
 
     public function destroy(TechStack $techStack): RedirectResponse
     {
         $techStack->delete();
 
-        return redirect()->route('tech-stacks')->with('success', 'Tech Stack deleted successfully.');
+        return redirect()->route('backend.tech-stacks.index')->with('success', 'Tech Stack deleted successfully.');
     }
 }

@@ -9,9 +9,9 @@ import type { BreadcrumbItemType } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Popular Songs', href: '/popular-songs' },
-    { title: 'Create', href: '/backend/popular-songs/create' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Popular Songs', href: route('backend.popular-songs.index') },
+    { title: 'Create', href: route('backend.popular-songs.create') },
 ];
 
 const form = useForm({
@@ -60,7 +60,7 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/popular-songs">
+                <Link :href="route('backend.popular-songs.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -170,7 +170,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/popular-songs">
+                        <Link :href="route('backend.popular-songs.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing || !isValidYouTubeUrl(form.url)" class="rounded-xl shadow-sm">

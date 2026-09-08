@@ -21,8 +21,8 @@ const props = withDefaults(
 );
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Feeds', href: '/feeds-management' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Feeds', href: route('backend.feeds.index') },
     { title: 'Create Feed', href: '' },
 ];
 
@@ -137,7 +137,7 @@ const selectActivityType = (type: string) => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link :href="route('feeds.index')">
+                <Link :href="route('backend.feeds.index')">
                     <Button variant="outline" size="icon" class="rounded-xl">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
@@ -341,7 +341,7 @@ const selectActivityType = (type: string) => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link :href="route('feeds.index')">
+                        <Link :href="route('backend.feeds.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

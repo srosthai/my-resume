@@ -41,7 +41,7 @@ class FeedController extends Controller
 
         $request->user()->feeds()->create($data);
 
-        return redirect()->route('feeds.index')->with('success', 'Feed created successfully.');
+        return redirect()->route('backend.feeds.index')->with('success', 'Feed created successfully.');
     }
 
     public function edit(Feed $feed): Response
@@ -73,7 +73,7 @@ class FeedController extends Controller
 
         $feed->update($data);
 
-        return redirect()->route('feeds.index')->with('success', 'Feed updated successfully.');
+        return redirect()->route('backend.feeds.index')->with('success', 'Feed updated successfully.');
     }
 
     public function destroy(Feed $feed): RedirectResponse
@@ -84,7 +84,7 @@ class FeedController extends Controller
 
         $feed->delete();
 
-        return redirect()->route('feeds.index')->with('success', 'Feed deleted successfully.');
+        return redirect()->route('backend.feeds.index')->with('success', 'Feed deleted successfully.');
     }
 
     public function togglePinned(Feed $feed): RedirectResponse
