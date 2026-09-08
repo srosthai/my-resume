@@ -179,7 +179,7 @@ const imageSrc = computed(() => {
                 <div class="card-rule" aria-hidden="true"></div>
 
                 <div class="card-photo">
-                    <img v-if="imageSrc" :src="imageSrc" :alt="name" draggable="false" />
+                    <img v-if="imageSrc" :src="imageSrc" :alt="name" width="300" height="400" decoding="async" draggable="false" />
                     <div v-else class="card-photo-fallback">
                         {{ firstName.charAt(0) }}
                     </div>

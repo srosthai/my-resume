@@ -2,6 +2,7 @@
 import Icon from '@/components/Icon.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { BreadcrumbItemType } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -48,15 +49,7 @@ const initials = computed(() =>
         .toUpperCase(),
 );
 
-const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return 'Not set';
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        day: '2-digit',
-        year: 'numeric',
-    }).format(new Date(dateString));
-};
+const formatDate = (dateString: string | null | undefined) => formatSharedDate(dateString, { month: 'long' }) || 'Not set';
 
 const detailItems = computed(() => [
     { label: 'Email', value: props.user.email || 'Not set', icon: 'mail' },
@@ -75,7 +68,7 @@ const detailItems = computed(() => [
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
                     <Link :href="route('backend.users.index')">
-                        <Button variant="outline" size="icon" class="rounded-xl">
+                        <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
                     </Link>
@@ -103,7 +96,16 @@ const detailItems = computed(() => [
             <div class="overflow-hidden rounded-2xl border bg-card shadow-sm">
                 <div class="flex flex-col gap-5 border-b p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
                     <div class="flex items-center gap-5">
-                        <img v-if="imageSrc" :src="imageSrc" :alt="user.name" class="size-24 rounded-2xl object-cover ring-1 ring-border" />
+                        <img
+                            v-if="imageSrc"
+                            :src="imageSrc"
+                            :alt="user.name"
+                            class="size-24 rounded-2xl object-cover ring-1 ring-border"
+                            width="96"
+                            height="96"
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <div
                             v-else
                             class="flex size-24 items-center justify-center rounded-2xl bg-muted text-3xl font-semibold text-muted-foreground"

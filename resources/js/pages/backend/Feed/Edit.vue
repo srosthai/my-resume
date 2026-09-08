@@ -145,7 +145,7 @@ const selectActivityType = (type: string) => {
             <!-- Page header -->
             <div class="flex items-center gap-4">
                 <Link :href="route('backend.feeds.index')">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
@@ -244,13 +244,22 @@ const selectActivityType = (type: string) => {
                                 <Label class="mb-2 block">Current Images</Label>
                                 <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                                     <div v-for="(image, index) in form.existing_images" :key="'existing-' + index" class="group relative">
-                                        <img :src="'/' + image" class="h-32 w-full rounded-lg object-cover" />
+                                        <img
+                                            :src="'/' + image"
+                                            :alt="`Image ${index + 1}`"
+                                            class="h-32 w-full rounded-lg object-cover"
+                                            width="256"
+                                            height="128"
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
                                         <Button
                                             type="button"
                                             variant="destructive"
                                             size="sm"
                                             class="absolute top-1 right-1 size-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                                             @click="removeExistingImage(index)"
+                                            aria-label="Remove image"
                                         >
                                             <Icon name="x" class="size-3" />
                                         </Button>
@@ -274,13 +283,22 @@ const selectActivityType = (type: string) => {
                             <!-- New Image Previews -->
                             <div v-if="newImagePreviews.length > 0" class="grid grid-cols-2 gap-4 md:grid-cols-4">
                                 <div v-for="(preview, index) in newImagePreviews" :key="'new-' + index" class="group relative">
-                                    <img :src="preview" class="h-32 w-full rounded-lg object-cover" />
+                                    <img
+                                        :src="preview"
+                                        :alt="`Selected image ${index + 1}`"
+                                        class="h-32 w-full rounded-lg object-cover"
+                                        width="256"
+                                        height="128"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
                                     <Button
                                         type="button"
                                         variant="destructive"
                                         size="sm"
                                         class="absolute top-1 right-1 size-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                                         @click="removeNewImage(index)"
+                                        aria-label="Remove image"
                                     >
                                         <Icon name="x" class="size-3" />
                                     </Button>
@@ -294,14 +312,14 @@ const selectActivityType = (type: string) => {
                             <p class="text-sm text-muted-foreground">Add tags to help categorize your post</p>
                             <div class="flex gap-2">
                                 <Input v-model="newTag" placeholder="Add a tag" @keyup.enter="addTag" />
-                                <Button type="button" variant="outline" @click="addTag">
+                                <Button type="button" variant="outline" aria-label="Add tag" @click="addTag">
                                     <Icon name="plus" class="size-4" />
                                 </Button>
                             </div>
                             <div v-if="form.tags.length > 0" class="flex flex-wrap gap-2">
                                 <Badge v-for="(tag, index) in form.tags" :key="index" variant="secondary" class="flex items-center gap-1">
                                     {{ tag }}
-                                    <button type="button" class="ml-1 hover:text-destructive" @click="removeTag(index)">
+                                    <button type="button" class="ml-1 hover:text-destructive" @click="removeTag(index)" aria-label="Remove tag">
                                         <Icon name="trash2" class="size-3" />
                                     </button>
                                 </Badge>

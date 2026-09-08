@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { Project } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -38,7 +39,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString: string) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 
 const getStatusBadgeVariant = (status: string) => {
     return status === 'completed' ? 'default' : 'secondary';
@@ -102,6 +103,10 @@ const getStatusBadgeVariant = (status: string) => {
                                             :src="`/${item.image}`"
                                             :alt="item.title ?? undefined"
                                             class="size-full object-cover"
+                                            width="56"
+                                            height="56"
+                                            loading="lazy"
+                                            decoding="async"
                                         />
                                         <div v-else class="flex size-full items-center justify-center text-muted-foreground">
                                             <Icon name="image" class="size-5" />

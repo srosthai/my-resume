@@ -4,6 +4,7 @@ import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { Feed } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
@@ -26,7 +27,7 @@ import {
     Utensils,
     X,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -57,6 +58,8 @@ const selectedFilter = ref('All');
 const searchFocused = ref(false);
 const expandedImages = ref<FeedWithImages | null>(null);
 const currentImageIndex = ref(0);
+const lightbox = ref<HTMLElement | null>(null);
+let lightboxTrigger: HTMLElement | null = null;
 const currentYear = new Date().getFullYear();
 
 // Like / view tracking
@@ -217,32 +220,27 @@ const timeAgo = (date: string | null) => {
     if (diffDays < 7) return `${diffDays}d ago`;
     if (diffWeeks < 4) return `${diffWeeks}w ago`;
     if (diffMonths < 12) return `${diffMonths}mo ago`;
-    return past.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
+    return formatSharedDate(date, { month: 'short', day: 'numeric' });
 };
 
-const formatDate = (date: string | null) => {
-    return new Date(date ?? 0).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-    });
-};
+const formatDate = (date: string | null) => formatSharedDate(date, { weekday: 'short', month: 'short', day: 'numeric', year: undefined });
 
 const openImageViewer = (feed: Feed, index: number) => {
     // Only reachable from the template inside `v-if="feed.images && feed.images.length > 0"`.
     expandedImages.value = feed as FeedWithImages;
     currentImageIndex.value = index;
     document.body.style.overflow = 'hidden';
+    lightboxTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    void nextTick(() => lightbox.value?.focus());
 };
 
 const closeImageViewer = () => {
     expandedImages.value = null;
     currentImageIndex.value = 0;
     document.body.style.overflow = '';
+    const trigger = lightboxTrigger;
+    lightboxTrigger = null;
+    void nextTick(() => trigger?.focus());
 };
 
 const nextImage = () => {
@@ -291,7 +289,7 @@ onBeforeUnmount(() => {
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-8">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-8">
             <Skeleton class="mb-5 h-56 w-full rounded-3xl" />
             <Skeleton class="mb-6 h-16 w-full rounded-2xl" />
             <div class="space-y-6">
@@ -495,11 +493,17 @@ onBeforeUnmount(() => {
                                         <div
                                             v-if="feed.images.length === 1"
                                             class="group/img cursor-pointer overflow-hidden rounded-2xl"
+                                            role="button"
+                                            tabindex="0"
                                             @click="openImageViewer(feed, 0)"
+                                            @keydown.enter.prevent="openImageViewer(feed, 0)"
+                                            @keydown.space.prevent="openImageViewer(feed, 0)"
                                         >
                                             <img
                                                 :src="feed.images[0]"
                                                 :alt="feed.title || 'Feed photo'"
+                                                width="1200"
+                                                height="800"
                                                 class="max-h-[420px] w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.03]"
                                                 loading="lazy"
                                                 decoding="async"
@@ -515,11 +519,17 @@ onBeforeUnmount(() => {
                                                 v-for="(img, idx) in feed.images"
                                                 :key="idx"
                                                 class="group/img cursor-pointer overflow-hidden"
+                                                role="button"
+                                                tabindex="0"
                                                 @click="openImageViewer(feed, idx)"
+                                                @keydown.enter.prevent="openImageViewer(feed, idx)"
+                                                @keydown.space.prevent="openImageViewer(feed, idx)"
                                             >
                                                 <img
                                                     :src="img"
                                                     :alt="`Photo ${idx + 1}`"
+                                                    width="800"
+                                                    height="600"
                                                     class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                     loading="lazy"
                                                     decoding="async"
@@ -529,20 +539,38 @@ onBeforeUnmount(() => {
 
                                         <!-- Three or more -->
                                         <div v-else class="flex h-56 gap-1 overflow-hidden rounded-2xl sm:h-72">
-                                            <div class="group/img flex-[2] cursor-pointer overflow-hidden" @click="openImageViewer(feed, 0)">
+                                            <div
+                                                class="group/img flex-[2] cursor-pointer overflow-hidden"
+                                                role="button"
+                                                tabindex="0"
+                                                @click="openImageViewer(feed, 0)"
+                                                @keydown.enter.prevent="openImageViewer(feed, 0)"
+                                                @keydown.space.prevent="openImageViewer(feed, 0)"
+                                            >
                                                 <img
                                                     :src="feed.images[0]"
                                                     alt="Photo 1"
+                                                    width="800"
+                                                    height="600"
                                                     class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.04]"
                                                     loading="lazy"
                                                     decoding="async"
                                                 />
                                             </div>
                                             <div class="flex flex-[1] flex-col gap-1">
-                                                <div class="group/img flex-1 cursor-pointer overflow-hidden" @click="openImageViewer(feed, 1)">
+                                                <div
+                                                    class="group/img flex-1 cursor-pointer overflow-hidden"
+                                                    role="button"
+                                                    tabindex="0"
+                                                    @click="openImageViewer(feed, 1)"
+                                                    @keydown.enter.prevent="openImageViewer(feed, 1)"
+                                                    @keydown.space.prevent="openImageViewer(feed, 1)"
+                                                >
                                                     <img
                                                         :src="feed.images[1]"
                                                         alt="Photo 2"
+                                                        width="800"
+                                                        height="600"
                                                         class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                         loading="lazy"
                                                         decoding="async"
@@ -550,11 +578,17 @@ onBeforeUnmount(() => {
                                                 </div>
                                                 <div
                                                     class="group/img relative flex-1 cursor-pointer overflow-hidden"
+                                                    role="button"
+                                                    tabindex="0"
                                                     @click="openImageViewer(feed, 2)"
+                                                    @keydown.enter.prevent="openImageViewer(feed, 2)"
+                                                    @keydown.space.prevent="openImageViewer(feed, 2)"
                                                 >
                                                     <img
                                                         :src="feed.images[2]"
                                                         alt="Photo 3"
+                                                        width="800"
+                                                        height="600"
                                                         class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                         loading="lazy"
                                                         decoding="async"
@@ -630,7 +664,16 @@ onBeforeUnmount(() => {
         <!-- IMAGE LIGHTBOX -->
         <Teleport to="body">
             <Transition name="lightbox">
-                <div v-if="expandedImages" class="fixed inset-0 z-[100] flex items-center justify-center" @click.self="closeImageViewer">
+                <div
+                    v-if="expandedImages"
+                    ref="lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Image viewer"
+                    tabindex="-1"
+                    class="fixed inset-0 z-[100] flex items-center justify-center outline-none"
+                    @click.self="closeImageViewer"
+                >
                     <div class="absolute inset-0 bg-black/90 backdrop-blur-xl sm:bg-black/85"></div>
 
                     <button
@@ -656,7 +699,10 @@ onBeforeUnmount(() => {
                         <img
                             :src="expandedImages.images[currentImageIndex]"
                             :alt="`Photo ${currentImageIndex + 1}`"
-                            class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl sm:max-h-[88vh]"
+                            width="1600"
+                            height="1200"
+                            decoding="async"
+                            class="h-auto max-h-[80vh] w-auto max-w-full rounded-lg object-contain shadow-2xl sm:max-h-[88vh]"
                             :key="currentImageIndex"
                         />
                     </div>

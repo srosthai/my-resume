@@ -105,7 +105,7 @@ const stats = computed(() => [
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-80 rounded-3xl md:col-span-8" />
                 <Skeleton class="col-span-2 h-80 rounded-3xl md:col-span-4" />
@@ -157,7 +157,15 @@ const stats = computed(() => [
                         <div
                             class="relative h-20 w-20 overflow-hidden rounded-[1.25rem] border border-border/60 bg-muted shadow-xl ring-1 ring-foreground/5 sm:h-28 sm:w-28 xs:h-24 xs:w-24"
                         >
-                            <img v-if="imageSrc" :src="imageSrc" :alt="user?.name" class="h-full w-full object-cover object-[center_25%]" />
+                            <img
+                                v-if="imageSrc"
+                                :src="imageSrc"
+                                alt=""
+                                width="80"
+                                height="80"
+                                decoding="async"
+                                class="h-full w-full object-cover object-[center_25%]"
+                            />
                             <div
                                 v-else
                                 class="flex h-full w-full items-center justify-center bg-muted font-serif text-4xl text-muted-foreground italic"
@@ -239,7 +247,15 @@ const stats = computed(() => [
                     </div>
 
                     <div class="relative mx-auto mt-5 aspect-[3/4] overflow-hidden rounded-2xl border border-border/50">
-                        <img v-if="imageSrc" :src="imageSrc" :alt="user?.name" class="h-full w-full object-cover object-[center_25%]" />
+                        <img
+                            v-if="imageSrc"
+                            :src="imageSrc"
+                            :alt="user?.name"
+                            width="600"
+                            height="800"
+                            decoding="async"
+                            class="h-full w-full object-cover object-[center_25%]"
+                        />
                         <div v-else class="flex h-full w-full items-center justify-center bg-muted font-serif text-6xl text-muted-foreground italic">
                             {{ firstName.charAt(0) }}
                         </div>
@@ -440,7 +456,16 @@ const stats = computed(() => [
 
                         <ul class="mt-4 flex flex-wrap gap-2">
                             <li v-for="tech in group.items" :key="tech.id" class="tech-chip" :title="tech.description ?? undefined">
-                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name ?? undefined" class="tech-chip-logo" loading="lazy" />
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    :alt="tech.name ?? undefined"
+                                    width="18"
+                                    height="18"
+                                    class="tech-chip-logo"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <span
                                     v-else
                                     class="inline-flex h-4 w-4 items-center justify-center rounded-md bg-muted font-mono text-[9px] font-semibold text-muted-foreground"

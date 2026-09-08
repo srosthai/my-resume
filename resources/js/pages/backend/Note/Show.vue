@@ -3,6 +3,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate } from '@/lib/date';
 import type { Note } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -27,8 +28,8 @@ const copyCommand = async (command: string, stepIndex: number, commandIndex: num
         setTimeout(() => {
             copiedCommands.value.delete(key);
         }, 2000);
-    } catch (err) {
-        console.error('Failed to copy command:', err);
+    } catch {
+        // Clipboard access can be denied; silently keep the "copy" state.
     }
 };
 
@@ -55,7 +56,7 @@ const getStatusColor = (status: string) => {
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
                     <Link :href="route('backend.notes.index')">
-                        <Button variant="outline" size="icon" class="rounded-xl">
+                        <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
                     </Link>
@@ -120,11 +121,11 @@ const getStatusColor = (status: string) => {
                         </div>
                         <div class="flex items-center gap-2">
                             <Icon name="calendar" class="size-4" />
-                            <span>Created: {{ new Date(note.created_at ?? 0).toLocaleDateString() }}</span>
+                            <span>Created: {{ formatDate(note.created_at, { month: 'numeric', day: 'numeric' }) }}</span>
                         </div>
                         <div v-if="note.published_at" class="flex items-center gap-2">
                             <Icon name="calendar" class="size-4" />
-                            <span>Published: {{ new Date(note.published_at).toLocaleDateString() }}</span>
+                            <span>Published: {{ formatDate(note.published_at, { month: 'numeric', day: 'numeric' }) }}</span>
                         </div>
                     </div>
                 </div>
@@ -192,6 +193,7 @@ const getStatusColor = (status: string) => {
                                     variant="ghost"
                                     class="absolute top-2 right-2 size-8 rounded-lg p-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-primary/10"
                                     @click="copyCommand(command, stepIndex, commandIndex)"
+                                    :aria-label="isCopied(stepIndex, commandIndex) ? 'Copied' : 'Copy command'"
                                 >
                                     <Icon v-if="isCopied(stepIndex, commandIndex)" name="check" class="size-4 text-green-500" />
                                     <Icon v-else name="copy" class="size-4" />

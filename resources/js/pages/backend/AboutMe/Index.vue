@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { AboutMe } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -41,15 +42,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not set';
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-    }).format(new Date(dateString));
-};
+const formatDate = (dateString: string | null) => formatSharedDate(dateString) || 'Not set';
 </script>
 
 <template>

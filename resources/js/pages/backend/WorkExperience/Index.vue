@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -30,15 +31,7 @@ const showDeleteConfirm = ref(false);
 const itemToDelete = ref<WorkExperience | null>(null);
 const deleting = ref(false);
 
-const formatDate = (dateString?: string | null) => {
-    if (!dateString) return '-';
-
-    const parsedDate = new Date(dateString);
-
-    if (Number.isNaN(parsedDate.getTime())) return dateString;
-
-    return parsedDate.toLocaleDateString();
-};
+const formatDate = (dateString?: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' }) || '-';
 
 const confirmDelete = (item: WorkExperience) => {
     itemToDelete.value = item;

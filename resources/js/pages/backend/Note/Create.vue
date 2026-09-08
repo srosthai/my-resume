@@ -143,7 +143,7 @@ const selectCategory = (category: string) => {
             <!-- Page header -->
             <div class="flex items-center gap-4">
                 <Link :href="route('backend.notes.index')">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
@@ -245,7 +245,7 @@ const selectCategory = (category: string) => {
                             <div class="space-y-2">
                                 <div class="flex gap-2">
                                     <Input v-model="newTag" placeholder="Add a tag" @keyup.enter="addTag" />
-                                    <Button type="button" variant="outline" class="rounded-xl" @click="addTag">
+                                    <Button type="button" variant="outline" class="rounded-xl" aria-label="Add tag" @click="addTag">
                                         <Icon name="plus" class="size-4" />
                                     </Button>
                                 </div>
@@ -257,7 +257,7 @@ const selectCategory = (category: string) => {
                                         class="flex items-center gap-1 rounded-full font-normal"
                                     >
                                         {{ tag }}
-                                        <button type="button" class="ml-1 hover:text-red-500" @click="removeTag(index)">
+                                        <button type="button" class="ml-1 hover:text-red-500" @click="removeTag(index)" aria-label="Remove tag">
                                             <Icon name="trash2" class="size-3" />
                                         </button>
                                     </Badge>
@@ -310,6 +310,7 @@ const selectCategory = (category: string) => {
                                         class="rounded-lg px-2"
                                         :disabled="form.content.requirements.length === 1"
                                         @click="removeRequirement(index)"
+                                        aria-label="Remove requirement"
                                     >
                                         <Icon name="trash2" class="size-3" />
                                     </Button>
@@ -340,6 +341,7 @@ const selectCategory = (category: string) => {
                                             class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                             :disabled="form.content.steps.length === 1"
                                             @click="removeStep(stepIndex)"
+                                            aria-label="Remove step"
                                         >
                                             <Icon name="trash2" class="size-3" />
                                         </Button>
@@ -387,6 +389,7 @@ const selectCategory = (category: string) => {
                                                     class="rounded-lg px-2"
                                                     :disabled="step.commands.length === 1"
                                                     @click="removeCommand(stepIndex, commandIndex)"
+                                                    aria-label="Remove command"
                                                 >
                                                     <Icon name="trash2" class="size-3" />
                                                 </Button>

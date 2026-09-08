@@ -4,10 +4,11 @@ import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { formatDate } from '@/lib/date';
 import type { Note } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, Book, Check, Code2, Copy, Lightbulb, type LucideIcon, Search, Terminal, X } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -26,6 +27,8 @@ const { isLoading, isVisible } = usePageReveal(400);
 const searchQuery = ref('');
 const selectedFilter = ref('All');
 const selectedNote = ref<Note | null>(null);
+const detailPanel = ref<HTMLElement | null>(null);
+let lastOpenedNoteId: number | null = null;
 const copiedCommands = ref<Set<string>>(new Set());
 
 const currentYear = new Date().getFullYear();
@@ -80,8 +83,8 @@ const copyCommand = async (command: string, stepIndex: number, commandIndex: num
                 copyTimers.delete(key);
             }, 2000),
         );
-    } catch (err) {
-        console.error('Failed to copy command:', err);
+    } catch {
+        // Clipboard access can be denied; silently keep the "copy" state.
     }
 };
 
@@ -102,34 +105,40 @@ const getCategoryIcon = (category: string) => {
     return icons[category] || Book;
 };
 
-const formatDate = (date: string | null) => {
-    if (!date) return '';
-    try {
-        return new Date(date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-        });
-    } catch {
-        return '';
-    }
-};
-
 const openNote = (note: Note) => {
     selectedNote.value = note;
+    lastOpenedNoteId = note.id;
     if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    // Move focus into the detail panel once it has rendered.
+    void nextTick(() => detailPanel.value?.focus({ preventScroll: true }));
 };
 
 const closeNote = () => {
+    const id = lastOpenedNoteId;
     selectedNote.value = null;
+    lastOpenedNoteId = null;
     if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    // Return focus to the card that opened the panel (it is re-rendered, so look it up by id).
+    void nextTick(() => {
+        if (id === null || typeof document === 'undefined') return;
+        document.querySelector<HTMLElement>(`[data-note-id="${id}"]`)?.focus({ preventScroll: true });
+    });
 };
 
+const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && selectedNote.value) closeNote();
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+});
+
 onBeforeUnmount(() => {
+    window.removeEventListener('keydown', handleKeydown);
     for (const id of copyTimers.values()) clearTimeout(id);
     copyTimers.clear();
 });
@@ -151,7 +160,7 @@ onBeforeUnmount(() => {
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-56 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-16 rounded-2xl md:col-span-12" />
@@ -279,6 +288,7 @@ onBeforeUnmount(() => {
                         :key="note.id"
                         class="card-3d note-card reveal group relative cursor-pointer overflow-hidden rounded-[1.25rem] border border-border/60 bg-card/60 p-5 backdrop-blur-xl sm:p-6"
                         :style="{ '--d': 240 + i * 60 + 'ms' }"
+                        :data-note-id="note.id"
                         tabindex="0"
                         role="button"
                         @click="openNote(note)"
@@ -344,7 +354,12 @@ onBeforeUnmount(() => {
         <!-- DETAIL VIEW -->
         <section
             v-else
-            class="relative mx-auto w-full max-w-4xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+            ref="detailPanel"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="selectedNote.title"
+            tabindex="-1"
+            class="relative mx-auto w-full max-w-4xl px-3 py-6 outline-none sm:px-6 sm:py-8 lg:px-10"
             :class="{ 'is-visible': isVisible }"
             :key="selectedNote.id"
         >

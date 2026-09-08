@@ -43,7 +43,7 @@ const submit = () => {
             <!-- Page header -->
             <div class="flex items-center gap-4">
                 <Link :href="route('backend.education.index')">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>

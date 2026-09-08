@@ -4,6 +4,7 @@ import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { formatDate } from '@/lib/date';
 import type { AboutMe, AboutMeProp, Project, ResumeEducation, ResumeOwner, ResumeWorkExperience, TechStack } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Mail, MapPin, Phone, Printer } from 'lucide-vue-next';
@@ -40,8 +41,9 @@ const { date: dateString } = usePhnomPenhClock(60000);
 
 const { pointer } = usePointerGlow();
 
-const lastUpdated = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-const generatedDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const today = new Date().toISOString();
+const lastUpdated = formatDate(today, { month: 'long', day: undefined });
+const generatedDate = formatDate(today, { month: 'short', day: 'numeric' });
 
 const firstName = computed(() => {
     const parts = (props.users?.name || 'Name').trim().split(/\s+/);
@@ -112,7 +114,7 @@ const printResume = () => {
         </div>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-72 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-96 rounded-3xl md:col-span-4" />
@@ -190,7 +192,15 @@ const printResume = () => {
                         <div
                             class="relative h-20 w-20 overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-lg ring-1 ring-foreground/5 sm:h-28 sm:w-28 md:h-32 md:w-32 xs:h-24 xs:w-24"
                         >
-                            <img v-if="imageSrc" :src="imageSrc" :alt="users?.name" class="h-full w-full object-cover object-[center_25%]" />
+                            <img
+                                v-if="imageSrc"
+                                :src="imageSrc"
+                                :alt="users?.name"
+                                width="80"
+                                height="80"
+                                decoding="async"
+                                class="h-full w-full object-cover object-[center_25%]"
+                            />
                             <div v-else class="flex h-full w-full items-center justify-center font-serif text-3xl text-muted-foreground italic">
                                 {{ firstName.charAt(0) }}
                             </div>

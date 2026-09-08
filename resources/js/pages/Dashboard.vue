@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { BriefcaseBusiness, CalendarDays, Code2, ExternalLink, GraduationCap, Layers3, Music4, Sparkles } from 'lucide-vue-next';
@@ -46,18 +47,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const formatDate = (date?: string | null) => {
-    if (!date) return 'Present';
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) return 'Present';
-
-    return parsedDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-    });
-};
+const formatDate = (date?: string | null) => formatSharedDate(date, { month: 'short', day: undefined }) || 'Present';
 
 const formatDuration = (song: any) => {
     if (song.formatted_duration) return song.formatted_duration;

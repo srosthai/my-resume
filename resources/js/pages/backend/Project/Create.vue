@@ -79,7 +79,7 @@ const submit = () => {
             <!-- Page header -->
             <div class="flex items-center gap-4">
                 <Link :href="route('backend.projects.index')">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
@@ -185,6 +185,7 @@ const submit = () => {
                                     <Button
                                         type="button"
                                         @click="removeLink(index)"
+                                        aria-label="Remove link"
                                         variant="ghost"
                                         size="icon"
                                         class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"

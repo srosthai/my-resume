@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { Note } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -92,8 +93,7 @@ const getStatusColor = (status: string) => {
 
 const categories = computed(() => ['All', ...props.categories]);
 
-// `new Date(null)` is the epoch, so `?? 0` keeps the previous untyped behaviour.
-const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLocaleDateString();
+const formatDate = (dateString: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 </script>
 
 <template>
@@ -191,6 +191,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                         size="sm"
                                         class="rounded-lg text-muted-foreground hover:text-foreground"
                                         @click="toggleFeatured(note)"
+                                        :aria-label="note.is_featured ? 'Unfeature note' : 'Feature note'"
                                     >
                                         <Icon name="star" class="size-4" :class="note.is_featured ? 'fill-yellow-400 text-yellow-400' : ''" />
                                     </Button>
@@ -216,6 +217,7 @@ const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLo
                                             size="sm"
                                             class="rounded-lg text-muted-foreground hover:text-foreground"
                                             @click="duplicateNote(note)"
+                                            aria-label="Duplicate note"
                                         >
                                             <Icon name="copy" class="size-4" />
                                         </Button>

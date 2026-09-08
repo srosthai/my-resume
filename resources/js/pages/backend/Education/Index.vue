@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { Education } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -38,8 +39,7 @@ const deleteItem = () => {
     });
 };
 
-// `new Date(null)` is the epoch, so `?? 0` keeps the previous untyped behaviour.
-const formatDate = (dateString: string | null) => new Date(dateString ?? 0).toLocaleDateString();
+const formatDate = (dateString: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 </script>
 
 <template>

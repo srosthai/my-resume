@@ -152,7 +152,7 @@ const techsOf = (project: PortfolioProject) => {
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-56 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-16 rounded-2xl md:col-span-12" />
@@ -331,8 +331,11 @@ const techsOf = (project: PortfolioProject) => {
                                 v-if="project.image"
                                 :src="project.image"
                                 :alt="project.title ?? undefined"
+                                width="1600"
+                                height="1000"
                                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                                 loading="lazy"
+                                decoding="async"
                             />
                             <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/60 to-muted/20">
                                 <Laptop class="h-10 w-10 text-muted-foreground/40" />

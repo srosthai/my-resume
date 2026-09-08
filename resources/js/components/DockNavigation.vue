@@ -58,7 +58,8 @@ const links = [
 </script>
 
 <template>
-    <div
+    <nav
+        aria-label="Primary"
         class="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex w-full items-center justify-center px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:sticky md:top-0 md:bottom-auto md:px-4 md:py-4"
     >
         <!-- Only the pill is a surface; the strip around it is transparent and lets clicks through -->
@@ -71,5 +72,5 @@ const links = [
             className="card-3d dock-3d bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 dark:bg-background/80 supports-[backdrop-filter]:dark:bg-background/70"
             mobileClassName="card-3d dock-3d max-w-full overflow-x-auto backdrop-blur-xl"
         />
-    </div>
+    </nav>
 </template>

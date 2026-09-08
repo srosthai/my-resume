@@ -66,7 +66,7 @@ const extractYouTubeId = (url: string): string | null => {
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
                     <Link :href="route('backend.popular-songs.index')">
-                        <Button variant="outline" size="icon" class="rounded-xl">
+                        <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
                     </Link>
@@ -119,7 +119,7 @@ const extractYouTubeId = (url: string): string | null => {
                                 <code class="flex-1 truncate rounded bg-muted px-2 py-1 text-sm">
                                     {{ popularSong.url }}
                                 </code>
-                                <Button size="sm" variant="ghost" class="shrink-0 rounded-lg" @click="openSongUrl">
+                                <Button size="sm" variant="ghost" class="shrink-0 rounded-lg" aria-label="Open song URL" @click="openSongUrl">
                                     <Icon name="externalLink" class="size-4" />
                                 </Button>
                             </div>

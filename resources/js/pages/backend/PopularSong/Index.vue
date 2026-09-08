@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { BreadcrumbItemType } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -54,7 +55,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString: string) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 
 const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);

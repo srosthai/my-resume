@@ -3,6 +3,7 @@ import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { formatDate } from '@/lib/date';
 import type { LegacyProject, ProjectNeighbour } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Github, Laptop } from 'lucide-vue-next';
@@ -51,15 +52,7 @@ const statusMeta = computed(() => {
 const formattedDate = computed(() => {
     const raw = props.project?.created_date || props.project?.created_at;
     if (!raw) return null;
-    try {
-        return new Date(raw).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    } catch {
-        return null;
-    }
+    return formatDate(raw, { month: 'long', day: 'numeric' }) || null;
 });
 
 const year = computed(() => {
@@ -210,6 +203,8 @@ const goToProject = (id: number) => {
                         v-if="project.image"
                         :src="project.image"
                         :alt="project.title ?? undefined"
+                        width="1600"
+                        height="900"
                         loading="lazy"
                         decoding="async"
                         class="h-full w-full object-cover"

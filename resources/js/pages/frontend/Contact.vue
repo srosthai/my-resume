@@ -150,7 +150,7 @@ onBeforeUnmount(() => {
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-64 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-[34rem] rounded-3xl md:col-span-8" />

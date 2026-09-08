@@ -3,6 +3,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import type { BreadcrumbItemType } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -52,15 +53,7 @@ const initials = computed(() => {
         .toUpperCase();
 });
 
-const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not set';
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-    }).format(new Date(dateString));
-};
+const formatDate = (dateString: string | null) => formatSharedDate(dateString) || 'Not set';
 
 const detailItems = computed(() => [
     { label: 'Email', value: profile.value?.email || 'Not set', icon: 'mail' },
@@ -118,7 +111,16 @@ const deleteItem = () => {
             <div v-if="profile" class="overflow-hidden rounded-2xl border bg-card shadow-sm">
                 <div class="flex flex-col gap-6 border-b p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
                     <div class="flex items-center gap-5">
-                        <img v-if="imageSrc" :src="imageSrc" :alt="profile.name" class="size-20 rounded-2xl object-cover ring-1 ring-border" />
+                        <img
+                            v-if="imageSrc"
+                            :src="imageSrc"
+                            :alt="profile.name"
+                            class="size-20 rounded-2xl object-cover ring-1 ring-border"
+                            width="80"
+                            height="80"
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <div
                             v-else
                             class="flex size-20 items-center justify-center rounded-2xl bg-muted text-2xl font-semibold text-muted-foreground"
