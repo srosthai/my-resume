@@ -24,7 +24,7 @@ class AboutMeRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'location' => ['nullable', 'string'],
             'year_experience' => ['nullable', 'string', 'max:255'],
-            'fucus_on' => ['nullable', 'string', 'max:255'],
+            'focus_on' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

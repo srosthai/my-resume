@@ -61,7 +61,7 @@ const formatDuration = (song: any) => {
 
 const initials = computed(() => props.summary.user?.name?.charAt(0)?.toUpperCase() || 'U');
 const experienceLabel = computed(() => `${props.summary.aboutMe?.year_experience || 0}+ years`);
-const focusLabel = computed(() => props.summary.aboutMe?.fucus_on || 'development');
+const focusLabel = computed(() => props.summary.aboutMe?.focus_on || 'development');
 
 const statCards = computed(() => [
     {

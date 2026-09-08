@@ -84,7 +84,7 @@ const stats = computed(() => [
     {
         icon: Target,
         label: 'Focus',
-        value: about.value?.fucus_on || 'Web Development',
+        value: about.value?.focus_on || 'Web Development',
     },
 ]);
 </script>
@@ -98,10 +98,6 @@ const stats = computed(() => [
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="profile" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton -->

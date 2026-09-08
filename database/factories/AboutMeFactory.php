@@ -17,7 +17,7 @@ class AboutMeFactory extends Factory
             'description' => fake()->paragraph(),
             'location' => fake()->city(),
             'year_experience' => '3+ Years',
-            'fucus_on' => 'Backend Development',
+            'focus_on' => 'Backend Development',
         ];
     }
 }

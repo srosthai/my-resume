@@ -47,7 +47,7 @@ export interface AboutMe extends Timestamps {
     description: string | null;
     location: string | null;
     year_experience: string | null;
-    fucus_on: string | null;
+    focus_on: string | null;
 }
 
 export interface WorkExperience extends Timestamps {

@@ -26,7 +26,7 @@ const form = useForm({
     description: props.aboutMe.description || '',
     location: props.aboutMe.location || '',
     year_experience: props.aboutMe.year_experience || '',
-    fucus_on: props.aboutMe.fucus_on || '',
+    focus_on: props.aboutMe.focus_on || '',
 });
 
 const submit = () => {
@@ -84,9 +84,9 @@ const submit = () => {
                                 <InputError :message="form.errors.year_experience" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="fucus_on">Focus area</Label>
-                                <Input id="fucus_on" v-model="form.fucus_on" type="text" />
-                                <InputError :message="form.errors.fucus_on" />
+                                <Label for="focus_on">Focus area</Label>
+                                <Input id="focus_on" v-model="form.focus_on" type="text" />
+                                <InputError :message="form.errors.focus_on" />
                             </div>
                         </div>
 

@@ -16,6 +16,6 @@ class AboutMe extends Model
         'description',
         'location',
         'year_experience',
-        'fucus_on',
+        'focus_on',
     ];
 }

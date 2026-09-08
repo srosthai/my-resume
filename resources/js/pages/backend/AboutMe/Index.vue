@@ -97,7 +97,7 @@ const formatDate = (dateString: string | null) => formatSharedDate(dateString) |
                                 </td>
                                 <td class="px-6 py-4 font-medium">{{ item.title || '-' }}</td>
                                 <td class="px-6 py-4">
-                                    <Badge variant="secondary" class="rounded-full font-normal">{{ item.fucus_on || '-' }}</Badge>
+                                    <Badge variant="secondary" class="rounded-full font-normal">{{ item.focus_on || '-' }}</Badge>
                                 </td>
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.location || '-' }}</td>
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.year_experience || '-' }}</td>
