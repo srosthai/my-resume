@@ -31,7 +31,7 @@ class SitemapController extends Controller
         $urls = [];
         foreach ($static as [$path, $freq, $priority]) {
             $urls[] = [
-                'loc' => $base . ($path !== '' ? '/' . $path : ''),
+                'loc' => $base.($path !== '' ? '/'.$path : ''),
                 'changefreq' => $freq,
                 'priority' => $priority,
                 'lastmod' => null,
@@ -44,7 +44,7 @@ class SitemapController extends Controller
             ->get()
             ->each(function (Project $project) use (&$urls, $base) {
                 $urls[] = [
-                    'loc' => $base . '/portfolio/' . $project->id,
+                    'loc' => $base.'/portfolio/'.$project->id,
                     'changefreq' => 'monthly',
                     'priority' => '0.7',
                     'lastmod' => optional($project->updated_at)->toAtomString(),

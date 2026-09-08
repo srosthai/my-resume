@@ -4,28 +4,32 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Education;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class EducationController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function index()
     {
         $educations = Education::latest()->get();
+
         return Inertia::render('backend/Education/Index', [
-            'educations' => $educations
+            'educations' => $educations,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function create()
     {
@@ -35,19 +39,19 @@ class EducationController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
+     * @return RedirectResponse
+     *
+     * @throws ValidationException
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'       => 'nullable|string|max:255',
-            'major'       => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'major' => 'nullable|string|max:255',
             'institution' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'from'        => 'nullable|string|max:255',
-            'to'          => 'nullable|string|max:255',
+            'from' => 'nullable|string|max:255',
+            'to' => 'nullable|string|max:255',
         ]);
 
         Education::create($validated);
@@ -58,33 +62,31 @@ class EducationController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param \App\Models\Education $education
-     * @return \Inertia\Response
+     * @return Response
      */
     public function edit(Education $education)
     {
         return Inertia::render('backend/Education/Edit', [
-            'education' => $education
+            'education' => $education,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Education $education
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
+     * @return RedirectResponse
+     *
+     * @throws ValidationException
      */
     public function update(Request $request, Education $education)
     {
         $validated = $request->validate([
-            'title'       => 'nullable|string|max:255',
-            'major'       => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'major' => 'nullable|string|max:255',
             'institution' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'from'        => 'nullable|string|max:255',
-            'to'          => 'nullable|string|max:255',
+            'from' => 'nullable|string|max:255',
+            'to' => 'nullable|string|max:255',
         ]);
 
         $education->update($validated);
@@ -95,8 +97,7 @@ class EducationController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\Education $education
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function destroy(Education $education)
     {

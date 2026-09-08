@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use App\Models\User;
 use App\Models\AboutMe;
-use App\Models\Project;
 use App\Models\Education;
-use App\Models\TechStack;
 use App\Models\PopularSong;
+use App\Models\Project;
 use App\Models\ProjectType;
+use App\Models\TechStack;
 use App\Models\WorkExperience;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -19,7 +17,7 @@ class DashboardController extends Controller
     {
         $aboutMe = AboutMe::first();
         $user = auth()->user();
-        
+
         // Projects summary
         $totalProjects = Project::count();
         $projectsByType = ProjectType::withCount('projects')->get();
@@ -27,30 +25,30 @@ class DashboardController extends Controller
             ->orderBy('created_date', 'desc')
             ->limit(5)
             ->get();
-        
+
         // Tech stack categories
         $techStacksByType = TechStack::selectRaw('type, COUNT(*) as count')
             ->groupBy('type')
             ->get()
             ->pluck('count', 'type');
-        
+
         // Work experience
         $totalExperience = WorkExperience::count();
         $recentExperience = WorkExperience::orderBy('from', 'desc')
             ->limit(3)
             ->get();
-        
+
         // Education
         $totalEducation = Education::count();
         $latestEducation = Education::orderBy('to', 'desc')
             ->first();
-        
+
         // Popular songs
         $totalSongs = PopularSong::count();
         $recentSongs = PopularSong::orderBy('created_at', 'desc')
             ->limit(3)
             ->get();
-        
+
         return Inertia::render('Dashboard', [
             'summary' => [
                 'aboutMe' => $aboutMe,
@@ -76,7 +74,7 @@ class DashboardController extends Controller
                     'total' => $totalSongs,
                     'recent' => $recentSongs,
                 ],
-            ]
+            ],
         ]);
     }
 }

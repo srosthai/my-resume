@@ -4,26 +4,32 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProjectType;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectTypeController extends Controller
 {
     /**
      * Display all data of Project Types.
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function index()
     {
         $projectTypes = ProjectType::latest()->get();
+
         return Inertia::render('backend/ProjectType/Index', [
-            'projectTypes' => $projectTypes
+            'projectTypes' => $projectTypes,
         ]);
     }
 
     /**
      * Show the form for creating a new Project Type entry.
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function create()
     {
@@ -32,9 +38,10 @@ class ProjectTypeController extends Controller
 
     /**
      * Store a newly created Project Type entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return RedirectResponse
+     *
+     * @throws ValidationException
      */
     public function store(Request $request)
     {
@@ -49,22 +56,22 @@ class ProjectTypeController extends Controller
 
     /**
      * Show the form for editing the specified Project Type entry.
-     * @param \App\Models\ProjectType $projectType
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function edit(ProjectType $projectType)
     {
         return Inertia::render('backend/ProjectType/Edit', [
-            'projectType' => $projectType
+            'projectType' => $projectType,
         ]);
     }
 
     /**
      * Update the specified Project Type entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\ProjectType $projectType
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return RedirectResponse
+     *
+     * @throws ValidationException
      */
     public function update(Request $request, ProjectType $projectType)
     {
@@ -79,8 +86,8 @@ class ProjectTypeController extends Controller
 
     /**
      * Remove the specified Project Type entry from storage.
-     * @param \App\Models\ProjectType $projectType
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @return RedirectResponse
      */
     public function destroy(ProjectType $projectType)
     {

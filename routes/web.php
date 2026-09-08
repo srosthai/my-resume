@@ -1,20 +1,19 @@
 <?php
 
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Backend\UserController;
 use App\Http\Controllers\Backend\AboutMeController;
 use App\Http\Controllers\Backend\EducationController;
-use App\Http\Controllers\Backend\TechStackController;
-use App\Http\Controllers\Backend\ProjectTypeController;
+use App\Http\Controllers\Backend\FeedController;
+use App\Http\Controllers\Backend\NoteController;
+use App\Http\Controllers\Backend\PopularSongController;
 use App\Http\Controllers\Backend\ProjectController;
+use App\Http\Controllers\Backend\ProjectTypeController;
+use App\Http\Controllers\Backend\TechStackController;
+use App\Http\Controllers\Backend\UserController;
+use App\Http\Controllers\Backend\WorkExperienceController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Frontend\PortfolioController;
 use App\Http\Controllers\Frontend\SitemapController;
-use App\Http\Controllers\Backend\WorkExperienceController;
-use App\Http\Controllers\Backend\PopularSongController;
-use App\Http\Controllers\Backend\NoteController;
-use App\Http\Controllers\Backend\FeedController;
-use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Route;
 
 // SEO
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -66,7 +65,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::put('backend/about-me/{aboutMe}', [AboutMeController::class, 'update'])->name('backend.about-me.update');
     Route::delete('backend/about-me/{aboutMe}', [AboutMeController::class, 'destroy'])->name('backend.about-me.destroy');
 
-    //Work Experience Routes
+    // Work Experience Routes
     Route::get('work-experience', [WorkExperienceController::class, 'index'])->name('work-experience');
     Route::get('backend/work-experience/create', [WorkExperienceController::class, 'create'])->name('backend.work-experience.create');
     Route::post('backend/work-experience', [WorkExperienceController::class, 'store'])->name('backend.work-experience.store');
@@ -74,7 +73,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::put('backend/work-experience/{workExperience}', [WorkExperienceController::class, 'update'])->name('backend.work-experience.update');
     Route::delete('backend/work-experience/{workExperience}', [WorkExperienceController::class, 'destroy'])->name('backend.work-experience.destroy');
 
-    //Education Routes
+    // Education Routes
     Route::get('eductions', [EducationController::class, 'index'])->name('eductions');
     Route::get('backend/eductions/create', [EducationController::class, 'create'])->name('backend.eductions.create');
     Route::post('backend/eductions', [EducationController::class, 'store'])->name('backend.eductions.store');
@@ -82,7 +81,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::put('backend/eductions/{education}', [EducationController::class, 'update'])->name('backend.eductions.update');
     Route::delete('backend/eductions/{education}', [EducationController::class, 'destroy'])->name('backend.eductions.destroy');
 
-    //TechStack Routes
+    // TechStack Routes
     Route::get('tech-stacks', [TechStackController::class, 'index'])->name('tech-stacks');
     Route::get('backend/tech-stacks/create', [TechStackController::class, 'create'])->name('backend.tech-stacks.create');
     Route::post('backend/tech-stacks', [TechStackController::class, 'store'])->name('backend.tech-stacks.store');
@@ -90,7 +89,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::put('backend/tech-stacks/{techStack}', [TechStackController::class, 'update'])->name('backend.tech-stacks.update');
     Route::delete('backend/tech-stacks/{techStack}', [TechStackController::class, 'destroy'])->name('backend.tech-stacks.destroy');
 
-    //Project Types Routes
+    // Project Types Routes
     Route::get('project-types', [ProjectTypeController::class, 'index'])->name('project-types');
     Route::get('backend/project-types/create', [ProjectTypeController::class, 'create'])->name('backend.project-types.create');
     Route::post('backend/project-types', [ProjectTypeController::class, 'store'])->name('backend.project-types.store');
@@ -98,7 +97,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::put('backend/project-types/{projectType}', [ProjectTypeController::class, 'update'])->name('backend.project-types.update');
     Route::delete('backend/project-types/{projectType}', [ProjectTypeController::class, 'destroy'])->name('backend.project-types.destroy');
 
-    //Projects Routes
+    // Projects Routes
     Route::get('projects', [ProjectController::class, 'index'])->name('projects');
     Route::get('backend/projects/create', [ProjectController::class, 'create'])->name('backend.projects.create');
     Route::post('backend/projects', [ProjectController::class, 'store'])->name('backend.projects.store');
@@ -106,7 +105,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::match(['PUT', 'POST'], 'backend/projects/{project}', [ProjectController::class, 'update'])->name('backend.projects.update');
     Route::delete('backend/projects/{project}', [ProjectController::class, 'destroy'])->name('backend.projects.destroy');
 
-    //Popular Songs Routes
+    // Popular Songs Routes
     Route::get('popular-songs', [PopularSongController::class, 'index'])->name('popular-songs');
     Route::get('backend/popular-songs/create', [PopularSongController::class, 'create'])->name('backend.popular-songs.create');
     Route::post('backend/popular-songs', [PopularSongController::class, 'store'])->name('backend.popular-songs.store');
@@ -115,7 +114,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::put('backend/popular-songs/{popularSong}', [PopularSongController::class, 'update'])->name('backend.popular-songs.update');
     Route::delete('backend/popular-songs/{popularSong}', [PopularSongController::class, 'destroy'])->name('backend.popular-songs.destroy');
 
-    //Notes Routes
+    // Notes Routes
     Route::get('notes', [NoteController::class, 'index'])->name('notes.index');
     Route::get('notes/create', [NoteController::class, 'create'])->name('notes.create');
     Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
@@ -126,7 +125,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::patch('notes/{note}/toggle-featured', [NoteController::class, 'toggleFeatured'])->name('notes.toggle-featured');
     Route::post('notes/{note}/duplicate', [NoteController::class, 'duplicate'])->name('notes.duplicate');
 
-    //Feeds Routes
+    // Feeds Routes
     Route::get('feeds-management', [FeedController::class, 'index'])->name('feeds.index');
     Route::get('backend/feeds/create', [FeedController::class, 'create'])->name('backend.feeds.create');
     Route::post('backend/feeds', [FeedController::class, 'store'])->name('backend.feeds.store');
@@ -136,5 +135,5 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::patch('backend/feeds/{feed}/toggle-pinned', [FeedController::class, 'togglePinned'])->name('feeds.toggle-pinned');
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

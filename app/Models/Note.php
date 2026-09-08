@@ -37,11 +37,11 @@ class Note extends Model
 
         static::creating(function ($note) {
             if (empty($note->slug)) {
-                $note->slug   = Str::slug($note->title);
+                $note->slug = Str::slug($note->title);
                 $originalSlug = $note->slug;
-                $counter      = 1;
+                $counter = 1;
                 while (static::where('slug', $note->slug)->exists()) {
-                    $note->slug = $originalSlug . '-' . $counter;
+                    $note->slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
             }
@@ -49,11 +49,11 @@ class Note extends Model
 
         static::updating(function ($note) {
             if ($note->isDirty('title')) {
-                $note->slug   = Str::slug($note->title);
+                $note->slug = Str::slug($note->title);
                 $originalSlug = $note->slug;
-                $counter      = 1;
+                $counter = 1;
                 while (static::where('slug', $note->slug)->where('id', '!=', $note->id)->exists()) {
-                    $note->slug = $originalSlug . '-' . $counter;
+                    $note->slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
             }
@@ -74,7 +74,7 @@ class Note extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published')
-                    ->whereNotNull('published_at');
+            ->whereNotNull('published_at');
     }
 
     /**
@@ -115,9 +115,9 @@ class Note extends Model
     public static function getCategories()
     {
         return static::distinct('category')
-                    ->whereNotNull('category')
-                    ->pluck('category')
-                    ->sort()
-                    ->values();
+            ->whereNotNull('category')
+            ->pluck('category')
+            ->sort()
+            ->values();
     }
 }

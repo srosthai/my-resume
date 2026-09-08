@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\AboutMe;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class AboutMeController extends Controller
 {
@@ -15,8 +18,9 @@ class AboutMeController extends Controller
     public function index()
     {
         $aboutMes = AboutMe::latest()->get();
+
         return Inertia::render('backend/AboutMe/Index', [
-            'aboutMes' => $aboutMes
+            'aboutMes' => $aboutMes,
         ]);
     }
 
@@ -30,18 +34,19 @@ class AboutMeController extends Controller
 
     /**
      * Srore a newly created About Me entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return RedirectResponse
+     *
+     * @throws ValidationException
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'           => 'nullable|string|max:255',
-            'description'     => 'nullable|string',
-            'location'        => 'nullable|string',
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'location' => 'nullable|string',
             'year_experience' => 'nullable|string|max:255',
-            'fucus_on'        => 'nullable|string|max:255',
+            'fucus_on' => 'nullable|string|max:255',
         ]);
 
         AboutMe::create($validated);
@@ -51,31 +56,31 @@ class AboutMeController extends Controller
 
     /**
      * Show the form for editing the specified About Me entry.
-     * @param \App\Models\AboutMe $aboutMe
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function edit(AboutMe $aboutMe)
     {
         return Inertia::render('backend/AboutMe/Edit', [
-            'aboutMe' => $aboutMe
+            'aboutMe' => $aboutMe,
         ]);
     }
 
     /**
      * Update the specified About Me entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\AboutMe $aboutMe
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return RedirectResponse
+     *
+     * @throws ValidationException
      */
     public function update(Request $request, AboutMe $aboutMe)
     {
         $validated = $request->validate([
-            'title'           => 'nullable|string|max:255',
-            'description'     => 'nullable|string',
-            'location'        => 'nullable|string',
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'location' => 'nullable|string',
             'year_experience' => 'nullable|string|max:255',
-            'fucus_on'        => 'nullable|string|max:255',
+            'fucus_on' => 'nullable|string|max:255',
         ]);
 
         $aboutMe->update($validated);
@@ -85,8 +90,8 @@ class AboutMeController extends Controller
 
     /**
      * Remove the specified About Me entry from storage.
-     * @param \App\Models\AboutMe $aboutMe
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @return RedirectResponse
      */
     public function destroy(AboutMe $aboutMe)
     {

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Services\ImageUploadService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class FeedController extends Controller
 {
@@ -14,22 +16,24 @@ class FeedController extends Controller
 
     /**
      * Display all data of Feeds.
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function index()
     {
-        $feeds         = Feed::with('user:id,name,image')->latest()->get();
+        $feeds = Feed::with('user:id,name,image')->latest()->get();
         $activityTypes = Feed::getActivityTypes();
 
         return Inertia::render('backend/Feed/Index', [
-            'feeds'         => $feeds,
+            'feeds' => $feeds,
             'activityTypes' => $activityTypes,
         ]);
     }
 
     /**
      * Show the form for creating a new Feed entry.
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function create()
     {
@@ -42,26 +46,26 @@ class FeedController extends Controller
 
     /**
      * Store a newly created Feed entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @return RedirectResponse
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'         => 'nullable|string|max:255',
-            'body'          => 'required|string|max:5000',
-            'images'        => 'nullable|array|max:10',
-            'images.*'      => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'location'      => 'nullable|string|max:255',
-            'mood'          => 'nullable|string|max:50',
+            'title' => 'nullable|string|max:255',
+            'body' => 'required|string|max:5000',
+            'images' => 'nullable|array|max:10',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'location' => 'nullable|string|max:255',
+            'mood' => 'nullable|string|max:50',
             'activity_type' => 'nullable|string|max:100',
-            'tags'          => 'nullable|array',
-            'tags.*'        => 'string|max:50',
-            'visibility'    => 'required|in:public,private',
-            'status'        => 'required|in:draft,published,archived',
-            'is_pinned'     => 'boolean',
-            'likes_count'   => 'nullable|integer|min:0',
-            'published_at'  => 'nullable|date',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
+            'visibility' => 'required|in:public,private',
+            'status' => 'required|in:draft,published,archived',
+            'is_pinned' => 'boolean',
+            'likes_count' => 'nullable|integer|min:0',
+            'published_at' => 'nullable|date',
         ]);
 
         $imagePaths = [];
@@ -72,7 +76,7 @@ class FeedController extends Controller
 
         if (isset($validated['tags'])) {
             $validated['tags'] = array_filter($validated['tags'], function ($tag) {
-                return !empty(trim($tag));
+                return ! empty(trim($tag));
             });
         }
 
@@ -89,51 +93,50 @@ class FeedController extends Controller
 
     /**
      * Show the form for editing the specified Feed entry.
-     * @param \App\Models\Feed $feed
-     * @return \Inertia\Response
+     *
+     * @return Response
      */
     public function edit(Feed $feed)
     {
         $activityTypes = Feed::getActivityTypes();
 
         return Inertia::render('backend/Feed/Edit', [
-            'feed'          => $feed,
+            'feed' => $feed,
             'activityTypes' => $activityTypes,
         ]);
     }
 
     /**
      * Update the specified Feed entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Feed $feed
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @return RedirectResponse
      */
     public function update(Request $request, Feed $feed)
     {
 
         $validated = $request->validate([
-            'title'            => 'nullable|string|max:255',
-            'body'             => 'required|string|max:5000',
-            'images'           => 'nullable|array|max:10',
-            'images.*'         => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'existing_images'  => 'nullable|array',
+            'title' => 'nullable|string|max:255',
+            'body' => 'required|string|max:5000',
+            'images' => 'nullable|array|max:10',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'existing_images' => 'nullable|array',
             'existing_images.*' => 'string',
-            'location'         => 'nullable|string|max:255',
-            'mood'             => 'nullable|string|max:50',
-            'activity_type'    => 'nullable|string|max:100',
-            'tags'             => 'nullable|array',
-            'tags.*'           => 'string|max:50',
-            'visibility'       => 'required|in:public,private',
-            'status'           => 'required|in:draft,published,archived',
-            'is_pinned'        => 'boolean',
-            'likes_count'      => 'nullable|integer|min:0',
-            'published_at'     => 'nullable|date',
+            'location' => 'nullable|string|max:255',
+            'mood' => 'nullable|string|max:50',
+            'activity_type' => 'nullable|string|max:100',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
+            'visibility' => 'required|in:public,private',
+            'status' => 'required|in:draft,published,archived',
+            'is_pinned' => 'boolean',
+            'likes_count' => 'nullable|integer|min:0',
+            'published_at' => 'nullable|date',
         ]);
 
         // Only paths that already belong to this feed may be kept. Anything else
         // in existing_images (foreign paths, URLs, traversal) is discarded.
-        $oldImages      = $feed->images ?? [];
-        $requestedKeep  = (array) $request->input('existing_images', []);
+        $oldImages = $feed->images ?? [];
+        $requestedKeep = (array) $request->input('existing_images', []);
         $existingImages = array_values(array_intersect($oldImages, $requestedKeep));
 
         foreach (array_diff($oldImages, $existingImages) as $removed) {
@@ -145,14 +148,14 @@ class FeedController extends Controller
             $newImagePaths[] = $this->images->store($image, 'feeds');
         }
 
-        $allImages           = array_merge($existingImages, $newImagePaths);
+        $allImages = array_merge($existingImages, $newImagePaths);
         $validated['images'] = $allImages !== [] ? $allImages : null;
 
         unset($validated['existing_images']);
 
         if (isset($validated['tags'])) {
             $validated['tags'] = array_filter($validated['tags'], function ($tag) {
-                return !empty(trim($tag));
+                return ! empty(trim($tag));
             });
         }
 
@@ -167,8 +170,8 @@ class FeedController extends Controller
 
     /**
      * Remove the specified Feed from storage.
-     * @param \App\Models\Feed $feed
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @return RedirectResponse
      */
     public function destroy(Feed $feed)
     {
@@ -183,12 +186,12 @@ class FeedController extends Controller
 
     /**
      * Toggle pinned status of the feed.
-     * @param \App\Models\Feed $feed
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @return RedirectResponse
      */
     public function togglePinned(Feed $feed)
     {
-        $feed->update(['is_pinned' => !$feed->is_pinned]);
+        $feed->update(['is_pinned' => ! $feed->is_pinned]);
 
         $status = $feed->is_pinned ? 'pinned' : 'unpinned';
 

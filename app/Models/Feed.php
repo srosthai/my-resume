@@ -41,12 +41,12 @@ class Feed extends Model
 
         static::creating(function ($feed) {
             if (empty($feed->slug)) {
-                $source       = $feed->title ?: Str::limit($feed->body, 50, '');
-                $feed->slug   = Str::slug($source);
+                $source = $feed->title ?: Str::limit($feed->body, 50, '');
+                $feed->slug = Str::slug($source);
                 $originalSlug = $feed->slug;
-                $counter      = 1;
+                $counter = 1;
                 while (static::where('slug', $feed->slug)->exists()) {
-                    $feed->slug = $originalSlug . '-' . $counter;
+                    $feed->slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
             }
@@ -54,12 +54,12 @@ class Feed extends Model
 
         static::updating(function ($feed) {
             if ($feed->isDirty('title')) {
-                $source       = $feed->title ?: Str::limit($feed->body, 50, '');
-                $feed->slug   = Str::slug($source);
+                $source = $feed->title ?: Str::limit($feed->body, 50, '');
+                $feed->slug = Str::slug($source);
                 $originalSlug = $feed->slug;
-                $counter      = 1;
+                $counter = 1;
                 while (static::where('slug', $feed->slug)->where('id', '!=', $feed->id)->exists()) {
-                    $feed->slug = $originalSlug . '-' . $counter;
+                    $feed->slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
             }
@@ -74,7 +74,7 @@ class Feed extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published')
-                    ->whereNotNull('published_at');
+            ->whereNotNull('published_at');
     }
 
     public function scopePinned($query)
@@ -100,9 +100,9 @@ class Feed extends Model
     public static function getActivityTypes()
     {
         return static::distinct('activity_type')
-                    ->whereNotNull('activity_type')
-                    ->pluck('activity_type')
-                    ->sort()
-                    ->values();
+            ->whereNotNull('activity_type')
+            ->pluck('activity_type')
+            ->sort()
+            ->values();
     }
 }

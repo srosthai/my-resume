@@ -27,6 +27,7 @@ class PopularSong extends Model
     {
         $minutes = floor($this->duration / 60);
         $seconds = $this->duration % 60;
+
         return sprintf('%d:%02d', $minutes, $seconds);
     }
 
@@ -44,6 +45,7 @@ class PopularSong extends Model
     public function getFileExtensionAttribute(): string
     {
         $path = parse_url($this->url, PHP_URL_PATH);
+
         return pathinfo($path, PATHINFO_EXTENSION) ?: 'mp3';
     }
 }

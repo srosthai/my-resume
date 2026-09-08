@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\PopularSong;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,10 +38,10 @@ class PopularSongController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'    => ['required', 'string', 'max:255'],
-            'artist'   => ['required', 'string', 'max:255'],
-            'url'      => ['required', 'string', 'max:1000'],
-            'duration' => ['required', 'integer', 'min:1', 'max:3600'], 
+            'title' => ['required', 'string', 'max:255'],
+            'artist' => ['required', 'string', 'max:255'],
+            'url' => ['required', 'string', 'max:1000'],
+            'duration' => ['required', 'integer', 'min:1', 'max:3600'],
         ]);
 
         PopularSong::create($validated);
@@ -75,9 +76,9 @@ class PopularSongController extends Controller
     public function update(Request $request, PopularSong $popularSong): RedirectResponse
     {
         $validated = $request->validate([
-            'title'    => ['required', 'string', 'max:255'],
-            'artist'   => ['required', 'string', 'max:255'],
-            'url'      => ['required', 'string', 'max:1000'],
+            'title' => ['required', 'string', 'max:255'],
+            'artist' => ['required', 'string', 'max:255'],
+            'url' => ['required', 'string', 'max:1000'],
             'duration' => ['required', 'integer', 'min:1', 'max:3600'], // Max 1 hour
         ]);
 
@@ -101,17 +102,17 @@ class PopularSongController extends Controller
     /**
      * Get popular songs for frontend music player
      */
-    public function getForPlayer(): \Illuminate\Http\JsonResponse
+    public function getForPlayer(): JsonResponse
     {
         $songs = PopularSong::select('id', 'title', 'artist', 'url as src', 'duration')
             ->latest()
             ->get()
             ->map(function ($song) {
                 return [
-                    'id'       => $song->id,
-                    'title'    => $song->title,
-                    'artist'   => $song->artist,
-                    'src'      => $song->src,
+                    'id' => $song->id,
+                    'title' => $song->title,
+                    'artist' => $song->artist,
+                    'src' => $song->src,
                     'duration' => $song->duration,
                 ];
             });

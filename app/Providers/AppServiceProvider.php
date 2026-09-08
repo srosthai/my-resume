@@ -41,12 +41,12 @@ class AppServiceProvider extends ServiceProvider
 
             $image = User::owner()->value('image');
             $seo['person']['image'] = $image
-                ? (str_starts_with($image, 'http') ? $image : $base . '/' . ltrim($image, '/'))
-                : $base . $seo['default_image'];
+                ? (str_starts_with($image, 'http') ? $image : $base.'/'.ltrim($image, '/'))
+                : $base.$seo['default_image'];
 
             // Canonical URL on the production domain (ignores local APP_URL host).
             $path = trim(request()->getPathInfo(), '/');
-            $seo['canonical'] = $base . ($path !== '' ? '/' . $path : '');
+            $seo['canonical'] = $base.($path !== '' ? '/'.$path : '');
 
             $view->with('seo', $seo);
         });

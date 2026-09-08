@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
-use Inertia\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
@@ -32,25 +32,25 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|string|email|max:255|unique:users',
-            'password'    => ['required', 'confirmed', Rules\Password::defaults()],
-            'dob'         => 'required|date',
-            'phone'       => 'required|string|max:20',
-            'address'     => 'required|string|max:500',
-            'position'    => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'dob' => 'required|date',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'position' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $userData = [
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'password'    => Hash::make($request->password),
-            'dob'         => $request->dob,
-            'phone'       => $request->phone,
-            'address'     => $request->address,
-            'position'    => $request->position,
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'dob' => $request->dob,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'position' => $request->position,
             'description' => $request->description,
         ];
 
@@ -80,16 +80,16 @@ class UserController extends Controller
     }
 
     public function update(Request $request, User $user)
-    {   
+    {
         $rules = [
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'dob'         => 'required|date',
-            'phone'       => 'required|string|max:20',
-            'address'     => 'required|string|max:500',
-            'position'    => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'dob' => 'required|date',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'position' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
 
         if ($request->filled('password')) {
@@ -99,12 +99,12 @@ class UserController extends Controller
         $request->validate($rules);
 
         $userData = [
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'dob'         => $request->dob,
-            'phone'       => $request->phone,
-            'address'     => $request->address,
-            'position'    => $request->position,
+            'name' => $request->name,
+            'email' => $request->email,
+            'dob' => $request->dob,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'position' => $request->position,
             'description' => $request->description,
         ];
 

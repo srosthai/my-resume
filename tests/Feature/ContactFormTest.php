@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\ContactMessage;
+use App\Models\Feed;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -79,7 +80,7 @@ test('the contact endpoint is throttled per ip', function () {
 });
 
 test('feed like and view endpoints are throttled', function () {
-    $feed = \App\Models\Feed::factory()->create();
+    $feed = Feed::factory()->create();
 
     foreach (range(1, 30) as $i) {
         $this->post("/api/feeds/{$feed->id}/view")->assertOk();
