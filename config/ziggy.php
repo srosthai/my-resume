@@ -15,7 +15,7 @@ return [
     'groups' => [
         'public' => [
             'home', 'about', 'portfolio', 'portfolio.*', 'contact', 'contact.*', 'hobby', 'more',
-            'resume', 'note', 'feeds', 'sitemap', 'api.*',
+            'resume', 'note', 'note.*', 'feeds', 'feeds.*', 'sitemap', 'api.*',
             'login', 'logout', 'register', 'password.*', 'verification.*', 'profile.*', 'appearance',
         ],
     ],

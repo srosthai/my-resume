@@ -6,7 +6,7 @@ import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { formatDate } from '@/lib/date';
 import type { Note } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, Book, Check, Code2, Copy, Lightbulb, type LucideIcon, Search, Terminal, X } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
@@ -393,6 +393,14 @@ onBeforeUnmount(() => {
                 </button>
                 <span class="text-border">/</span>
                 <span class="truncate text-foreground/80">{{ selectedNote.title }}</span>
+                <Link
+                    :href="route('note.show', selectedNote.slug)"
+                    class="ml-auto inline-flex shrink-0 items-center gap-1 tracking-normal normal-case transition-colors hover:text-foreground"
+                    aria-label="Open this note on its own page"
+                >
+                    Permalink
+                    <ArrowUpRight class="h-3 w-3" />
+                </Link>
             </nav>
 
             <!-- HERO -->

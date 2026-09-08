@@ -99,8 +99,8 @@ const entryNumber = computed(() => {
 const goBack = () => {
     router.visit(route('portfolio'));
 };
-const goToProject = (id: number) => {
-    router.visit(route('portfolio.show', id));
+const goToProject = (target: ProjectNeighbour) => {
+    router.visit(route('portfolio.show', target.slug ?? target.id));
 };
 </script>
 
@@ -312,7 +312,7 @@ const goToProject = (id: number) => {
             <!-- PAGINATION -->
             <nav class="mobile-pager reveal mt-8 border-t border-border/50 pt-6 sm:mt-10 sm:pt-8" style="--d: 500ms">
                 <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-4">
-                    <button v-if="previousProject" @click="goToProject(previousProject.id)" class="btn-3d pager-btn group pager-prev">
+                    <button v-if="previousProject" @click="goToProject(previousProject)" class="btn-3d pager-btn group pager-prev">
                         <ChevronLeft class="h-4 w-4 shrink-0 opacity-60 transition-transform duration-300 group-hover:-translate-x-0.5" />
                         <div class="min-w-0 text-left">
                             <p class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">← Previous</p>
@@ -330,7 +330,7 @@ const goToProject = (id: number) => {
                         All entries
                     </button>
 
-                    <button v-if="nextProject" @click="goToProject(nextProject.id)" class="btn-3d pager-btn group pager-next">
+                    <button v-if="nextProject" @click="goToProject(nextProject)" class="btn-3d pager-btn group pager-next">
                         <div class="min-w-0 text-right">
                             <p class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">Next →</p>
                             <p class="mt-1 truncate font-serif text-base text-foreground sm:text-lg">

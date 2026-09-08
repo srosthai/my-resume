@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ProjectStatus;
+use App\Models\Concerns\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     protected $table = 'projects';
 
@@ -36,7 +37,20 @@ class Project extends Model
      *
      * @return BelongsTo
      */
-    public function projectType()
+    protected function slugSource(): string
+    {
+        return (string) $this->title;
+    }
+
+    /**
+     * Slugs are the canonical public key; PortfolioController still resolves ids.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function projectType(): BelongsTo
     {
         return $this->belongsTo(ProjectType::class);
     }

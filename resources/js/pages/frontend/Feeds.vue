@@ -6,7 +6,7 @@ import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import { formatDate as formatSharedDate } from '@/lib/date';
 import type { Feed } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
     Briefcase,
@@ -470,7 +470,13 @@ onBeforeUnmount(() => {
                                             </span>
                                         </div>
                                         <div class="mt-1 ml-[34px] font-mono text-[9px] tracking-[0.22em] text-muted-foreground/60 uppercase">
-                                            {{ formatDate(feed.published_at || feed.created_at) }}
+                                            <Link
+                                                :href="route('feeds.show', feed.slug)"
+                                                class="transition-colors hover:text-foreground"
+                                                :aria-label="`Open entry from ${formatDate(feed.published_at || feed.created_at)}`"
+                                            >
+                                                {{ formatDate(feed.published_at || feed.created_at) }}
+                                            </Link>
                                         </div>
                                     </div>
 
@@ -480,7 +486,9 @@ onBeforeUnmount(() => {
                                             v-if="feed.title"
                                             class="mt-1 font-serif text-2xl leading-tight tracking-tight text-foreground sm:text-[28px]"
                                         >
-                                            {{ feed.title }}
+                                            <Link :href="route('feeds.show', feed.slug)" class="transition-colors hover:text-foreground/80">
+                                                {{ feed.title }}
+                                            </Link>
                                         </h3>
                                         <p class="mt-2.5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground sm:text-[15px]">
                                             {{ feed.body }}

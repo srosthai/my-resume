@@ -92,6 +92,7 @@ export type ProjectLink = Record<string, string>;
 export interface Project extends Timestamps {
     id: number;
     title: string | null;
+    slug: string | null;
     description: string | null;
     image: string | null;
     project_type_id: number | null;
@@ -202,7 +203,7 @@ export interface LegacyProject extends Project {
 }
 
 /** Neighbouring project used for prev/next navigation (select id, title). */
-export type ProjectNeighbour = Pick<Project, 'id' | 'title'>;
+export type ProjectNeighbour = Pick<Project, 'id' | 'title' | 'slug'>;
 
 /**
  * Optional fields the resume template renders when present. They are not

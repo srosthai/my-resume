@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Feed;
+use App\Models\Note;
 use App\Models\Project;
 use Illuminate\Http\Response;
 
@@ -39,15 +41,42 @@ class SitemapController extends Controller
         }
 
         Project::query()
-            ->select(['id', 'updated_at'])
+            ->select(['id', 'slug', 'updated_at'])
             ->latest('updated_at')
             ->get()
             ->each(function (Project $project) use (&$urls, $base) {
                 $urls[] = [
-                    'loc' => $base.'/portfolio/'.$project->id,
+                    'loc' => $base.'/portfolio/'.($project->slug ?: $project->id),
                     'changefreq' => 'monthly',
                     'priority' => '0.7',
                     'lastmod' => optional($project->updated_at)->toAtomString(),
+                ];
+            });
+
+        Note::published()
+            ->select(['slug', 'updated_at'])
+            ->latest('updated_at')
+            ->get()
+            ->each(function (Note $note) use (&$urls, $base) {
+                $urls[] = [
+                    'loc' => $base.'/note/'.$note->slug,
+                    'changefreq' => 'monthly',
+                    'priority' => '0.6',
+                    'lastmod' => optional($note->updated_at)->toAtomString(),
+                ];
+            });
+
+        Feed::published()
+            ->visible()
+            ->select(['slug', 'updated_at'])
+            ->latest('updated_at')
+            ->get()
+            ->each(function (Feed $feed) use (&$urls, $base) {
+                $urls[] = [
+                    'loc' => $base.'/feeds/'.$feed->slug,
+                    'changefreq' => 'monthly',
+                    'priority' => '0.5',
+                    'lastmod' => optional($feed->updated_at)->toAtomString(),
                 ];
             });
 

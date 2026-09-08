@@ -94,7 +94,7 @@ const resetFilters = () => {
 };
 
 const openProject = (project: PortfolioProject) => {
-    router.visit(route('portfolio.show', project.id));
+    router.visit(route('portfolio.show', project.slug ?? project.id));
 };
 
 const getGithubUrl = (project: PortfolioProject) => {

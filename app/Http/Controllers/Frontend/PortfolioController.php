@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Enums\FeedVisibility;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\ContactMessageRequest;
 use App\Mail\ContactMessage;
@@ -19,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -132,19 +134,32 @@ class PortfolioController extends Controller
     /**
      * Display a single project detail page.
      */
-    public function showProject(Project $project)
+    public function showProject(string $project)
     {
+        // Slugs are canonical; old numeric URLs still resolve and redirect permanently.
+        $model = Project::where('slug', $project)->first();
+
+        if ($model === null && ctype_digit($project)) {
+            $model = Project::findOrFail((int) $project);
+
+            if ($model->slug) {
+                return redirect()->route('portfolio.show', $model->slug, 301);
+            }
+        }
+
+        abort_if($model === null, 404);
+        $project = $model;
+
         $project->load('projectType');
         $project->image = $project->image ? asset($project->image) : null;
 
-        // Get previous and next project IDs for navigation
         $previousProject = Project::where('id', '<', $project->id)
             ->orderBy('id', 'desc')
-            ->first(['id', 'title']);
+            ->first(['id', 'title', 'slug']);
 
         $nextProject = Project::where('id', '>', $project->id)
             ->orderBy('id', 'asc')
-            ->first(['id', 'title']);
+            ->first(['id', 'title', 'slug']);
 
         return Inertia::render('frontend/ProjectDetail', [
             'title' => $project->title,
@@ -152,6 +167,16 @@ class PortfolioController extends Controller
             'project' => $project,
             'previousProject' => $previousProject,
             'nextProject' => $nextProject,
+            'jsonLd' => [
+                '@context' => 'https://schema.org',
+                '@type' => 'CreativeWork',
+                'name' => $project->title,
+                'description' => Str::limit(strip_tags((string) $project->description), 200),
+                'image' => $project->image,
+                'url' => route('portfolio.show', $project->slug),
+                'dateCreated' => optional($project->created_date)->toDateString(),
+                'author' => ['@id' => config('seo.url').'/#person'],
+            ],
         ]);
     }
 
@@ -277,6 +302,88 @@ class PortfolioController extends Controller
             'description' => 'My collection of programming notes and tutorials',
             'notes' => $notes,
         ]);
+    }
+
+    /**
+     * A single published note at its permanent URL.
+     */
+    public function showNote(Note $note, Request $request)
+    {
+        abort_unless($note->isPublished(), 404);
+
+        $this->countView($note, 'note', $request);
+
+        $related = Note::published()
+            ->where('category', $note->category)
+            ->whereKeyNot($note->id)
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get(['id', 'title', 'slug', 'category', 'description', 'published_at']);
+
+        $summary = Str::limit(strip_tags($note->description), 160);
+
+        return Inertia::render('frontend/NoteShow', [
+            'title' => $note->title,
+            'description' => $summary,
+            'note' => $note,
+            'related' => $related,
+            'jsonLd' => [
+                '@context' => 'https://schema.org',
+                '@type' => 'TechArticle',
+                'headline' => $note->title,
+                'description' => $summary,
+                'articleSection' => $note->category,
+                'keywords' => implode(', ', $note->tags ?? []),
+                'url' => route('note.show', $note->slug),
+                'datePublished' => $note->published_at?->toAtomString(),
+                'dateModified' => $note->updated_at?->toAtomString(),
+                'author' => ['@id' => config('seo.url').'/#person'],
+            ],
+        ]);
+    }
+
+    /**
+     * A single public feed entry at its permanent URL.
+     */
+    public function showFeed(Feed $feed, Request $request)
+    {
+        abort_unless($feed->isPublished() && $feed->visibility === FeedVisibility::Public, 404);
+
+        $this->countView($feed, 'feed', $request);
+
+        $feed->load('user:id,name,image');
+        $feed->images = $feed->images ? array_map(fn ($img) => asset($img), $feed->images) : null;
+
+        $summary = Str::limit(strip_tags($feed->body), 160);
+
+        return Inertia::render('frontend/FeedShow', [
+            'title' => $feed->title ?: $summary,
+            'description' => $summary,
+            'feed' => $feed,
+            'jsonLd' => [
+                '@context' => 'https://schema.org',
+                '@type' => 'SocialMediaPosting',
+                'headline' => $feed->title ?: $summary,
+                'articleBody' => $feed->body,
+                'image' => $feed->images,
+                'url' => route('feeds.show', $feed->slug),
+                'datePublished' => $feed->published_at?->toAtomString(),
+                'author' => ['@id' => config('seo.url').'/#person'],
+            ],
+        ]);
+    }
+
+    /**
+     * Count one view per visitor per five minutes.
+     */
+    private function countView(Note|Feed $model, string $kind, Request $request): void
+    {
+        $key = "{$kind}_view_{$model->id}_{$request->ip()}";
+
+        if (! cache()->has($key)) {
+            $model->increment('views');
+            cache()->put($key, true, 300);
+        }
     }
 
     /**

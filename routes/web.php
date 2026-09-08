@@ -28,7 +28,9 @@ Route::get('/hobby', [PortfolioController::class, 'hobby'])->name('hobby');
 Route::get('/more', [PortfolioController::class, 'more'])->name('more');
 Route::get('/resume', [PortfolioController::class, 'resume'])->name('resume');
 Route::get('/note', [PortfolioController::class, 'note'])->name('note');
+Route::get('/note/{note:slug}', [PortfolioController::class, 'showNote'])->name('note.show');
 Route::get('/feeds', [PortfolioController::class, 'feeds'])->name('feeds');
+Route::get('/feeds/{feed:slug}', [PortfolioController::class, 'showFeed'])->name('feeds.show');
 Route::post('/contact/send', [PortfolioController::class, 'sendContactMessage'])->middleware('throttle:contact')->name('contact.send');
 
 // Public JSON endpoints
