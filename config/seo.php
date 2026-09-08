@@ -49,5 +49,5 @@ return [
 
     // Fallback share image (1200x630) relative to the site root, used when no
     // profile photo is available.
-    'default_image' => '/og-image.jpg',
+    'default_image' => '/og-image.png',
 ];

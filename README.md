@@ -8,14 +8,14 @@ A modern portfolio/resume application built with Laravel 12, Vue 3, Inertia.js, 
 - Vue 3 with TypeScript
 - Inertia.js
 - Tailwind CSS 4
-- MySQL Database
+- SQLite by default (MySQL or PostgreSQL work too)
 
 ## Prerequisites
 
 - PHP 8.2+
 - Composer
-- Node.js 18+
-- MySQL 8.0+
+- Node.js 22+
+- SQLite (bundled with PHP) or MySQL 8 / PostgreSQL 15
 
 ## Installation
 
@@ -37,40 +37,37 @@ php artisan key:generate
 
 ### 3. Database Setup
 
-Create MySQL database:
+The default `.env.example` uses SQLite, which needs no server:
 
 ```bash
-mysql -u root -p
-```
-
-```sql
-CREATE DATABASE my_resume;
-EXIT;
-```
-
-Update `.env` file:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=my_resume
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
-
-Run migrations:
-
-```bash
+touch database/database.sqlite
 php artisan migrate --seed
 ```
 
-### 4. Setup Storage
+To use MySQL or PostgreSQL instead, set `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` in `.env` before migrating.
+
+### 4. Create the owner account
+
+Registration is disabled by default (`AUTH_REGISTRATION_ENABLED=false`). The seeder creates the owner; to create one by hand:
 
 ```bash
-php artisan storage:link
-sudo chmod -R 775 storage bootstrap/cache
+php artisan tinker --execute="App\Models\User::factory()->owner()->create(['email' => 'you@example.com', 'password' => 'a-strong-password-123']);"
 ```
+
+### 5. Uploads and permissions
+
+Uploaded images live in `public/uploads` (the `uploads` disk); the directory is git-ignored.
+
+```bash
+mkdir -p public/uploads
+sudo chmod -R 775 storage bootstrap/cache public/uploads
+```
+
+### 6. Contact form and production settings
+
+- `CONTACT_EMAIL` receives contact-form messages. Use `MAIL_MAILER=resend` with `RESEND_KEY` and a verified `MAIL_FROM_ADDRESS` in production.
+- `TRUSTED_PROXIES` defaults to Cloudflare's ranges; set `*` only if the origin is reachable exclusively through the proxy.
+- `CSP_ENABLED=true` sends a nonce-based Content Security Policy.
 
 ## Running the Application
 
@@ -109,9 +106,11 @@ php artisan config:clear && php artisan cache:clear
 # Run tests
 composer test
 
-# Format code
-npm run format
-./vendor/bin/pint
+# Format, lint and type-check (what CI runs)
+./vendor/bin/pint --test
+npm run format:check
+npm run lint
+npm run typecheck
 
 # Fresh database
 php artisan migrate:fresh --seed
@@ -123,3 +122,4 @@ php artisan migrate:fresh --seed
 - Admin dashboard (requires login)
 - Manage: About, Work Experience, Education, Projects, Tech Stack, Notes
 - Dark/Light theme support
+- Single-owner admin: registration is off and every backend route requires the owner account

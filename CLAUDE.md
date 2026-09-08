@@ -133,7 +133,7 @@ php artisan inertia:start-ssr
     - `ui/` - ~120 UI components (ignored by ESLint, likely from shadcn-vue or similar)
     - `magicui/` - Special effect/animation components
   - `composables/` - Vue composables:
-    - `useAppearance.ts` - Theme management (light/dark/system)
+    - `useAppearance.ts` - Theme management (light/dark)
     - `useInitials.ts` - User initials helper
   - `lib/` - Utility functions:
     - `utils.ts` - Contains `cn()` helper for className merging (clsx + tailwind-merge)
@@ -144,24 +144,22 @@ php artisan inertia:start-ssr
 
 ### Route Organization
 
-Routes follow a consistent pattern:
-
 **Public Frontend Routes** (no auth required):
 - `/` - Home
-- `/about`, `/portfolio`, `/contact`, `/hobby`, `/more`, `/resume`, `/note`
-- `/api/popular-songs` - Public API endpoint
+- `/about`, `/portfolio`, `/portfolio/{project}`, `/contact`, `/hobby`, `/more`, `/resume`, `/note`, `/feeds`
+- `/sitemap.xml`
+- `POST /contact/send` (throttled, `throttle:contact`)
+- `POST /api/feeds/{feed}/view`, `POST /api/feeds/{feed}/like` (throttled, `throttle:feed-actions`)
+- `GET /api/popular-songs` - playlist for the music player
 
-**Authenticated Backend Routes** (require auth + verified middleware):
-- URL pattern: `/backend/{resource}/{action}` or shorthand route names
-- Index pages use short URLs: `/about-me`, `/work-experience`, `/eductions`, `/tech-stacks`, etc.
-- CRUD actions: `/backend/{resource}/create`, `/backend/{resource}/{id}/edit`, etc.
-- Example: About Me
-  - Index: `GET /about-me` ’ `backend.about-me.index`
-  - Create: `GET /backend/about-me/create` ’ `backend.about-me.create`
-  - Store: `POST /backend/about-me` ’ `backend.about-me.store`
-  - Edit: `GET /backend/about-me/{id}/edit` ’ `backend.about-me.edit`
-  - Update: `PUT /backend/about-me/{id}` ’ `backend.about-me.update`
-  - Delete: `DELETE /backend/about-me/{id}` ’ `backend.about-me.destroy`
+**Authenticated Backend Routes** (require `auth` + `owner` middleware; only the user with `is_owner = true` may enter):
+- Everything lives under `/backend/...` with route names prefixed `backend.`
+- Resources are registered with `Route::resource` (e.g. `backend.projects.index|create|store|edit|update|destroy`)
+- Extra actions: `backend.notes.toggle-featured`, `backend.notes.duplicate`, `backend.feeds.toggle-pinned`, `backend.users.delete` (confirmation page)
+- `/dashboard` and `/settings/*` sit outside the prefix but use the same middleware
+- Multipart update forms send `_method=put` via `form.transform()` because browsers cannot send multipart PUT
+
+**Registration** is disabled unless `AUTH_REGISTRATION_ENABLED=true`. Visitors never receive admin route names: Ziggy only shares the `public` group (see `config/ziggy.php`) with guests.
 
 ### Backend CRUD Resources
 
@@ -199,10 +197,18 @@ Each resource follows Laravel Resource Controller conventions with corresponding
 
 ### Theme System
 
-- Supports light, dark, and system themes via `useAppearance()` composable
-- Theme preference stored in localStorage and cookie (for SSR)
+- Light and dark themes via `useAppearance()` composable (`system` was removed)
+- Theme preference stored in localStorage and the `appearance` cookie (read server-side for SSR)
 - Theme initialized on app mount in `app.ts` via `initializeTheme()`
 - Dark mode toggled via `dark` class on `<html>` element
+
+### Security Conventions
+
+- `App\Http\Middleware\SecurityHeaders` adds a nonce-based CSP; inline scripts must carry `Vite::cspNonce()`
+- `App\Http\Middleware\TrustProxies` trusts Cloudflare ranges from `config/security.php`
+- Public pages only receive `User::publicColumns()`; never pass a raw `User` model to a public Inertia page
+- Uploads go through `App\Services\ImageUploadService` on the `uploads` disk; never `move()`/`unlink()` with `public_path()`
+- Validation lives in `App\Http\Requests\Backend\*Request`; statuses use the enums in `App\Enums`
 
 ### TypeScript Configuration
 
