@@ -16,7 +16,7 @@ class NoteController extends Controller
      */
     public function index()
     {
-        $notes      = Note::with('user')->latest()->get();
+        $notes      = Note::with('user:id,name,image')->latest()->get();
         $categories = Note::getCategories();
         
         return Inertia::render('backend/Note/Index', [
@@ -89,7 +89,7 @@ class NoteController extends Controller
      */
     public function show(Note $note)
     {
-        $note->load('user');
+        $note->load('user:id,name,image');
         
         return Inertia::render('backend/Note/Show', [
             'note' => $note

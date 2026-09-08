@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
             $seo = config('seo');
             $base = $seo['url'];
 
-            $image = optional(User::owner()->first())->image;
+            $image = User::owner()->value('image');
             $seo['person']['image'] = $image
                 ? (str_starts_with($image, 'http') ? $image : $base . '/' . ltrim($image, '/'))
                 : $base . $seo['default_image'];

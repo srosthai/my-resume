@@ -18,7 +18,7 @@ class FeedController extends Controller
      */
     public function index()
     {
-        $feeds         = Feed::with('user')->latest()->get();
+        $feeds         = Feed::with('user:id,name,image')->latest()->get();
         $activityTypes = Feed::getActivityTypes();
 
         return Inertia::render('backend/Feed/Index', [

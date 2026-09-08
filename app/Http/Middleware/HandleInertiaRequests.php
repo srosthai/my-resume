@@ -44,7 +44,15 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                // Only what the admin shell needs; never the full model (dob, phone, address...).
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'avatar' => $request->user()->image ? asset($request->user()->image) : null,
+                    'email_verified_at' => $request->user()->email_verified_at,
+                    'is_owner' => (bool) $request->user()->is_owner,
+                ] : null,
             ],
             'ziggy' => [
                 ...(new Ziggy)->toArray(),

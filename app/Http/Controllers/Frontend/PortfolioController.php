@@ -27,7 +27,7 @@ class PortfolioController extends Controller
      */
     public function home()
     {
-        $users = User::owner()->first();
+        $users = User::owner()->first(User::publicColumns());
 
         $techStacks = TechStack::orderBy('id')->get(['id', 'name', 'logo', 'type']);
 
@@ -54,7 +54,7 @@ class PortfolioController extends Controller
      */
     public function about()
     {
-        $user           = User::owner()->first();
+        $user           = User::owner()->first(User::publicColumns());
         $aboutMe        = AboutMe::latest()->first() ?? [];
         $workExperience = WorkExperience::orderByDesc('from')->orderByDesc('id')->get() ?? [];
         $education      = Education::orderByDesc('from')->orderByDesc('id')->get() ?? [];
@@ -186,7 +186,8 @@ class PortfolioController extends Controller
      */
     public function resume()
     {
-        $users          = User::owner()->first();
+        // The resume page intentionally shows the owner's contact details.
+        $users          = User::owner()->first([...User::publicColumns(), 'email', 'phone', 'address']);
         $aboutMe        = AboutMe::latest()->first() ?? [];
         $workExperience = WorkExperience::orderBy('id')->get() ?? [];
         $education      = Education::orderBy('id')->get() ?? [];
@@ -221,7 +222,7 @@ class PortfolioController extends Controller
     {
         $feeds = Feed::published()
             ->where('visibility', 'public')
-            ->with('user')
+            ->with('user:id,name,image')
             ->orderBy('is_pinned', 'desc')
             ->orderBy('published_at', 'desc')
             ->get()
