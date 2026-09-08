@@ -83,16 +83,26 @@ class PortfolioController extends Controller
      */
     public function portfolio(Request $request)
     {
+        $filters = $request->validate([
+            'type' => ['nullable', 'integer', 'exists:project_types,id'],
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $type = $filters['type'] ?? null;
+        $search = trim((string) ($filters['search'] ?? ''));
+
         $query = Project::with('projectType');
 
-        if ($request->has('type') && $request->type != '') {
-            $query->where('project_type_id', $request->type);
+        if ($type !== null) {
+            $query->where('project_type_id', $type);
         }
 
-        if ($request->has('search') && $request->search != '') {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
+        if ($search !== '') {
+            // Escape LIKE wildcards so a visitor cannot turn the search into a pattern scan.
+            $term = '%'.addcslashes($search, '%_\\').'%';
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'like', $term)
+                    ->orWhere('description', 'like', $term);
             });
         }
 
@@ -113,8 +123,8 @@ class PortfolioController extends Controller
             'projects' => $projects,
             'projectTypes' => $projectTypes,
             'filters' => [
-                'type' => $request->type ?? '',
-                'search' => $request->search ?? '',
+                'type' => $type !== null ? (string) $type : '',
+                'search' => $search,
             ],
         ]);
     }
