@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index(): Response
     {
-        $user = User::latest()->first();
+        $user = User::owner()->first();
 
         return Inertia::render('backend/users/Index', [
             'user' => $user,
@@ -58,7 +58,8 @@ class UserController extends Controller
             $userData['image'] = 'uploads/users/' . $imageName;
         }
 
-        User::create($userData);
+        $user = new User($userData);
+        $user->forceFill(['is_owner' => ! User::owner()->exists()])->save();
 
         return redirect()->route('backend.users.index')
             ->with('success', 'User created successfully.');

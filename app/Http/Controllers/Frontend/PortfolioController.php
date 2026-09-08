@@ -27,7 +27,7 @@ class PortfolioController extends Controller
      */
     public function home()
     {
-        $users = User::latest()->first();
+        $users = User::owner()->first();
 
         $techStacks = TechStack::orderBy('id')->get(['id', 'name', 'logo', 'type']);
 
@@ -54,7 +54,7 @@ class PortfolioController extends Controller
      */
     public function about()
     {
-        $user           = User::latest()->first();
+        $user           = User::owner()->first();
         $aboutMe        = AboutMe::latest()->first() ?? [];
         $workExperience = WorkExperience::orderByDesc('from')->orderByDesc('id')->get() ?? [];
         $education      = Education::orderByDesc('from')->orderByDesc('id')->get() ?? [];
@@ -186,7 +186,7 @@ class PortfolioController extends Controller
      */
     public function resume()
     {
-        $users          = User::latest()->first();
+        $users          = User::owner()->first();
         $aboutMe        = AboutMe::latest()->first() ?? [];
         $workExperience = WorkExperience::orderBy('id')->get() ?? [];
         $education      = Education::orderBy('id')->get() ?? [];

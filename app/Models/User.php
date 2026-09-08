@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -48,6 +49,26 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'dob'               => 'date',
+            'is_owner'          => 'boolean',
         ];
+    }
+
+    /**
+     * Scope a query to the single portfolio owner.
+     */
+    public function scopeOwner(Builder $query): Builder
+    {
+        return $query->where('is_owner', true);
+    }
+
+    /**
+     * Columns that are safe to expose on public pages.
+     *
+     * @return list<string>
+     */
+    public static function publicColumns(): array
+    {
+        return ['id', 'name', 'position', 'description', 'image'];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The portfolio owner is the only admin and may do everything.
+        Gate::before(fn (User $user) => $user->is_owner ? true : null);
+
         // Share resolved SEO identity (incl. absolute profile image) with the
         // root Blade view so server-rendered meta + JSON-LD are always present,
         // independent of client-side hydration.
@@ -28,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
             $seo = config('seo');
             $base = $seo['url'];
 
-            $image = optional(User::latest()->first())->image;
+            $image = optional(User::owner()->first())->image;
             $seo['person']['image'] = $image
                 ? (str_starts_with($image, 'http') ? $image : $base . '/' . ltrim($image, '/'))
                 : $base . $seo['default_image'];

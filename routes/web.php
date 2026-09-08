@@ -41,11 +41,11 @@ Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])
 
 // Dashboard Route
 Route::get('dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'owner'])
     ->name('dashboard');
 
 // Authenticated Routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'owner'])->group(function () {
     // Me Route
     Route::get('me', [UserController::class, 'index'])->name('backend.users.index');
     Route::get('backend/users/create', [UserController::class, 'create'])->name('backend.users.create');
