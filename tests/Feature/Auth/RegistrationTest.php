@@ -10,8 +10,8 @@ test('registration is disabled by default', function () {
     $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'password' => 'correct-horse-battery-9',
+        'password_confirmation' => 'correct-horse-battery-9',
     ])->assertNotFound();
 
     $this->assertGuest();
@@ -40,8 +40,8 @@ test('new users can register when enabled', function () {
     $response = $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'password' => 'correct-horse-battery-9',
+        'password_confirmation' => 'correct-horse-battery-9',
     ]);
 
     $this->assertAuthenticated();
@@ -54,8 +54,8 @@ test('a registered user is never the owner', function () {
     $this->post('/register', [
         'name' => 'Intruder',
         'email' => 'intruder@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'password' => 'correct-horse-battery-9',
+        'password_confirmation' => 'correct-horse-battery-9',
     ]);
 
     expect(User::where('email', 'intruder@example.com')->first()->is_owner)->toBeFalse();

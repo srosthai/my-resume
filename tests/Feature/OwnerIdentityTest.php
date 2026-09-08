@@ -26,8 +26,8 @@ test('a profile created while an owner already exists is not made owner', functi
     $this->post('/backend/users', [
         'name' => 'Profile',
         'email' => 'profile@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'strong-password-123',
+        'password_confirmation' => 'strong-password-123',
         'dob' => '1990-01-01',
         'phone' => '012345678',
         'address' => 'Phnom Penh',

@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
-        <style>
+        <style nonce="{{ Illuminate\Support\Facades\Vite::cspNonce() }}">
             html {
                 background-color: oklch(1 0 0);
             }
@@ -67,7 +67,7 @@
                         'author' => ['@id' => $seo['url'] . '/#person'],
                     ],
                 ],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         @endphp
         </script>
 
@@ -78,7 +78,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-        @routes
+        @routes(null, Illuminate\Support\Facades\Vite::cspNonce())
         @vite(['resources/css/app.css', 'resources/js/app.ts'])
         @inertiaHead
     </head>

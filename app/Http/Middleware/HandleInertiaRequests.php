@@ -55,7 +55,8 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'ziggy' => [
-                ...(new Ziggy)->toArray(),
+                // Guests only get the public route group; the owner gets everything.
+                ...(new Ziggy($request->user()?->is_owner ? null : 'public'))->toArray(),
                 'location' => $request->url(),
             ],
             'flash' => [

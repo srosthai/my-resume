@@ -7,8 +7,10 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +29,18 @@ class AppServiceProvider extends ServiceProvider
     {
         // The portfolio owner is the only admin and may do everything.
         Gate::before(fn (User $user) => $user->is_owner ? true : null);
+
+        if ($this->app->isProduction()) {
+            URL::forceScheme('https');
+        }
+
+        // Single-owner site: one strong password matters. The breach check
+        // needs network access, so it only runs in production.
+        Password::defaults(function () {
+            $rule = Password::min(12)->letters()->numbers();
+
+            return $this->app->isProduction() ? $rule->uncompromised() : $rule;
+        });
 
         // Public write endpoints: contact form and feed like/view counters.
         RateLimiter::for('contact', fn (Request $request) => Limit::perMinutes(5, 3)->by($request->ip()));
