@@ -87,6 +87,7 @@ const form = useForm({
     email: '',
     subject: '',
     message: '',
+    website: '',
 });
 
 let successTimer = null;
@@ -246,6 +247,11 @@ onBeforeUnmount(() => {
                     </div>
 
                     <form @submit.prevent="submitForm" class="mt-6 space-y-5 sm:mt-8">
+                        <!-- Honeypot: hidden from people, filled by bots -->
+                        <div class="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+                            <label for="website">Website</label>
+                            <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off" />
+                        </div>
                         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <div class="field">
                                 <label for="name" class="field-label">

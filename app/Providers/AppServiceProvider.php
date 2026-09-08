@@ -3,7 +3,10 @@
 namespace App\Providers;
 
 use App\Models\User;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // The portfolio owner is the only admin and may do everything.
         Gate::before(fn (User $user) => $user->is_owner ? true : null);
+
+        // Public write endpoints: contact form and feed like/view counters.
+        RateLimiter::for('contact', fn (Request $request) => Limit::perMinutes(5, 3)->by($request->ip()));
+        RateLimiter::for('feed-actions', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
 
         // Share resolved SEO identity (incl. absolute profile image) with the
         // root Blade view so server-rendered meta + JSON-LD are always present,

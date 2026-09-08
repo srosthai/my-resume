@@ -108,6 +108,17 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact Form Recipient
+    |--------------------------------------------------------------------------
+    |
+    | Messages sent through the public contact form are delivered here.
+    |
+    */
+
+    'contact_to' => env('CONTACT_EMAIL'),
+
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),

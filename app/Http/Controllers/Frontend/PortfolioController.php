@@ -14,9 +14,12 @@ use App\Models\PopularSong;
 use App\Models\ProjectType;
 use Illuminate\Http\Request;
 use App\Models\WorkExperience;
-use Resend\Laravel\Facades\Resend;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Frontend\ContactMessageRequest;
+use App\Mail\ContactMessage;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class PortfolioController extends Controller
 {
@@ -306,66 +309,30 @@ class PortfolioController extends Controller
     }
 
     /**
-     * Send contact message via Resend API
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Deliver a contact-form message to the site owner.
      */
-    public function sendContactMessage(Request $request)
+    public function sendContactMessage(ContactMessageRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name'    => 'required|string|max:255|min:2',
-            'email'   => 'required|email|max:255',
-            'subject' => 'required|string|max:255|min:5',
-            'message' => 'required|string|max:5000|min:10',
-        ]);
+        $recipient = config('mail.contact_to');
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        if (! $recipient) {
+            Log::error('Contact form: mail.contact_to (CONTACT_EMAIL) is not configured.');
 
-        $spamWords      = ['viagra', 'casino', 'lottery', 'winner', 'congratulations', 'click here', 'free money'];
-        $messageContent = strtolower($request->message . ' ' . $request->subject);
-        
-        foreach ($spamWords as $word) {
-            if (strpos($messageContent, $word) !== false) {
-                return redirect()->back()->withErrors(['message' => 'Message appears to be spam and was blocked.'])->withInput();
-            }
+            return back()->withErrors(['message' => 'The contact form is not available right now. Please email me directly.'])->withInput();
         }
-
-        $key = 'contact_form_' . $request->ip();
-        if (cache()->has($key)) {
-            return redirect()->back()->withErrors(['message' => 'Please wait before sending another message.'])->withInput();
-        }
-        cache()->put($key, true, 300);
 
         try {
-            if (!env('RESEND_KEY')) {
-                throw new \Exception('RESEND_KEY is not configured in .env file');
-            }
+            Mail::to($recipient)->send(new ContactMessage(
+                $request->safe()->only(['name', 'email', 'subject', 'message']),
+                $request->ip(),
+                $request->userAgent(),
+            ));
+        } catch (\Throwable $e) {
+            Log::error('Contact form: failed to send message.', ['exception' => $e]);
 
-            $result = Resend::emails()->send([
-                'from'     => 'Portfolio Contact <noreply@resend.dev>',
-                'reply_to' => $request->email,
-                'to'       => [env('CONTACT_EMAIL', 'srosthai00@gmail.com')],
-                'subject'  => '[Portfolio Contact] ' . $request->subject,
-                'html'     => view('emails.contact', [
-                    'name'           => $request->name,
-                    'email'          => $request->email,
-                    'subject'        => $request->subject,
-                    'messageContent' => $request->message,
-                    'userAgent'      => $request->userAgent(),
-                    'ipAddress'      => $request->ip(),
-                    'timestamp'      => now()->format('Y-m-d H:i:s'),
-                ])->render(),
-                'headers'  => [
-                    'X-Entity-Ref-ID' => uniqid(),
-                ],
-            ]);
-
-            return redirect()->back()->with('success', 'Message sent successfully! I\'ll get back to you soon.');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['message' => 'Failed to send message: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['message' => 'Failed to send your message. Please try again later or email me directly.'])->withInput();
         }
+
+        return back()->with('success', "Message sent successfully! I'll get back to you soon.");
     }
 }

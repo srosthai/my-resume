@@ -30,11 +30,13 @@ Route::get('/more', [PortfolioController::class, 'more'])->name('more');
 Route::get('/resume', [PortfolioController::class, 'resume'])->name('resume');
 Route::get('/note', [PortfolioController::class, 'note'])->name('note');
 Route::get('/feeds', [PortfolioController::class, 'feeds'])->name('feeds');
-Route::post('/contact/send', [PortfolioController::class, 'sendContactMessage'])->name('contact.send');
+Route::post('/contact/send', [PortfolioController::class, 'sendContactMessage'])->middleware('throttle:contact')->name('contact.send');
 
 // Feed public API (no auth needed)
-Route::post('/api/feeds/{feed}/view', [PortfolioController::class, 'incrementFeedView'])->name('api.feeds.view');
-Route::post('/api/feeds/{feed}/like', [PortfolioController::class, 'toggleFeedLike'])->name('api.feeds.like');
+Route::middleware('throttle:feed-actions')->group(function () {
+    Route::post('/api/feeds/{feed}/view', [PortfolioController::class, 'incrementFeedView'])->name('api.feeds.view');
+    Route::post('/api/feeds/{feed}/like', [PortfolioController::class, 'toggleFeedLike'])->name('api.feeds.like');
+});
 
 // API Routes for Frontend
 Route::get('/api/popular-songs', [PopularSongController::class, 'getForPlayer'])->name('api.popular-songs');
