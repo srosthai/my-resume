@@ -20,10 +20,14 @@ test('every response carries the defence-in-depth headers and a nonce-based CSP'
     $response->assertSee('nonce="'.$m[1].'"', false);
 });
 
-test('hsts is only sent over https', function () {
-    $this->get('/')->assertHeaderMissing('Strict-Transport-Security');
+test('hsts and upgrade-insecure-requests are only sent over https', function () {
+    $plain = $this->get('/');
+    $plain->assertHeaderMissing('Strict-Transport-Security');
+    expect($plain->headers->get('Content-Security-Policy'))->not->toContain('upgrade-insecure-requests');
 
-    $this->get('https://localhost/')->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    $secure = $this->get('https://localhost/');
+    $secure->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    expect($secure->headers->get('Content-Security-Policy'))->toContain('upgrade-insecure-requests');
 });
 
 test('guests only receive the public ziggy route group', function () {

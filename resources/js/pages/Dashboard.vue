@@ -60,7 +60,12 @@ const formatDuration = (song: any) => {
 };
 
 const initials = computed(() => props.summary.user?.name?.charAt(0)?.toUpperCase() || 'U');
-const experienceLabel = computed(() => `${props.summary.aboutMe?.year_experience || 0}+ years`);
+const experienceLabel = computed(() => {
+    // year_experience is free text ("5+ Years"); only bare numbers get a suffix.
+    const raw = String(props.summary.aboutMe?.year_experience ?? '').trim();
+    if (!raw) return '0+ years';
+    return /[a-z]/i.test(raw) ? raw : `${raw}+ years`;
+});
 const focusLabel = computed(() => props.summary.aboutMe?.focus_on || 'development');
 
 const statCards = computed(() => [

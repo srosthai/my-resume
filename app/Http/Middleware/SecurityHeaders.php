@@ -35,13 +35,13 @@ class SecurityHeaders
         }
 
         if (config('security.csp.enabled') && ! (app()->isLocal() && Vite::isRunningHot())) {
-            $headers->set('Content-Security-Policy', $this->contentSecurityPolicy($nonce));
+            $headers->set('Content-Security-Policy', $this->contentSecurityPolicy($nonce, $request->isSecure()));
         }
 
         return $response;
     }
 
-    private function contentSecurityPolicy(string $nonce): string
+    private function contentSecurityPolicy(string $nonce, bool $secure): string
     {
         $directives = [
             "default-src 'self'",
@@ -59,8 +59,14 @@ class SecurityHeaders
             "media-src 'self' https:",
             'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
             "connect-src 'self'",
-            'upgrade-insecure-requests',
         ];
+
+        // Only meaningful on https. Over plain http (local, or a proxy that
+        // terminates TLS without X-Forwarded-Proto) browsers would upgrade
+        // every redirect and XHR to https and break the site.
+        if ($secure) {
+            $directives[] = 'upgrade-insecure-requests';
+        }
 
         return implode('; ', $directives);
     }

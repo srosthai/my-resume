@@ -42,14 +42,6 @@ class Project extends Model
         return (string) $this->title;
     }
 
-    /**
-     * Slugs are the canonical public key; PortfolioController still resolves ids.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
     public function projectType(): BelongsTo
     {
         return $this->belongsTo(ProjectType::class);

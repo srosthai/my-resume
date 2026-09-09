@@ -140,6 +140,10 @@ const loadSongs = async () => {
             )
             .filter((song) => extractYouTubeId(song.src) !== null);
 
+        if (rows.length > 0 && musicLibrary.value.length === 0) {
+            libraryError.value = 'The playlist has no YouTube links yet.';
+        }
+
         currentSongIndex.value = 0;
     } catch {
         libraryError.value = 'Playlist is unavailable right now';
@@ -158,6 +162,7 @@ onMounted(() => {
                 <TooltipTrigger asChild>
                     <Button
                         @click="handleMusicButtonClick"
+                        :aria-label="isExpanded ? (isPlaying ? 'Pause music' : 'Play music') : 'Open music player'"
                         size="lg"
                         class="btn-3d h-14 w-14 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary active:bg-primary/80"
                         :class="{
@@ -189,6 +194,7 @@ onMounted(() => {
                                 </div>
                                 <Button
                                     @click="togglePlay"
+                                    :aria-label="isPlaying ? 'Pause' : 'Play'"
                                     size="sm"
                                     variant="ghost"
                                     class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -202,6 +208,7 @@ onMounted(() => {
                                     <TooltipTrigger asChild>
                                         <Button
                                             @click="toggleMinimize"
+                                            aria-label="Expand player"
                                             size="sm"
                                             variant="ghost"
                                             class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -218,6 +225,7 @@ onMounted(() => {
                                     <TooltipTrigger asChild>
                                         <Button
                                             @click="toggleExpand"
+                                            aria-label="Close player"
                                             size="sm"
                                             variant="ghost"
                                             class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -243,7 +251,9 @@ onMounted(() => {
                                         <Music class="h-5 w-5 text-primary" />
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <h3 class="truncate font-medium text-foreground">{{ currentSong?.title ?? 'No songs yet' }}</h3>
+                                        <h3 class="truncate font-medium text-foreground">
+                                            {{ currentSong?.title ?? (libraryError ? 'Nothing to play' : 'No songs yet') }}
+                                        </h3>
                                         <p class="truncate text-sm text-muted-foreground">
                                             {{ currentSong?.artist ?? 'Add songs in the admin panel to start listening' }}
                                         </p>
@@ -258,6 +268,7 @@ onMounted(() => {
                                         <TooltipTrigger asChild>
                                             <Button
                                                 @click="toggleMinimize"
+                                                aria-label="Minimize player"
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -274,6 +285,7 @@ onMounted(() => {
                                         <TooltipTrigger asChild>
                                             <Button
                                                 @click="toggleExpand"
+                                                aria-label="Close player"
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -311,6 +323,7 @@ onMounted(() => {
                                         <TooltipTrigger asChild>
                                             <Button
                                                 @click="previousSong"
+                                                aria-label="Previous song"
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -328,6 +341,7 @@ onMounted(() => {
                                         <TooltipTrigger asChild>
                                             <Button
                                                 @click="togglePlay"
+                                                :aria-label="isPlaying ? 'Pause' : 'Play'"
                                                 size="sm"
                                                 class="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80"
                                                 :disabled="!hasSongs"
@@ -344,6 +358,7 @@ onMounted(() => {
                                         <TooltipTrigger asChild>
                                             <Button
                                                 @click="nextSong"
+                                                aria-label="Next song"
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full hover:bg-accent active:bg-accent"
@@ -367,6 +382,7 @@ onMounted(() => {
                                         <TooltipTrigger asChild>
                                             <Button
                                                 @click="openCurrentSongYouTube"
+                                                aria-label="Open on YouTube"
                                                 size="sm"
                                                 variant="ghost"
                                                 class="h-8 w-8 rounded-full text-red-600 hover:bg-accent active:bg-accent"

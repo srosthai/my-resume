@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
             tabindex="-1"
             class="relative mx-auto w-full max-w-4xl px-3 py-6 outline-none sm:px-6 sm:py-8 lg:px-10"
             :class="{ 'is-visible': isVisible }"
-            :key="selectedNote.id"
+            :key="`note-${selectedNote.id}`"
         >
             <!-- Ambient + grain -->
             <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
