@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,34 +17,20 @@ class PopularSong extends Model
         'duration',
     ];
 
-    protected $casts = [
-        'duration' => 'integer',
-    ];
+    protected $appends = ['formatted_duration'];
 
-    /**
-     * Get the formatted duration in minutes:seconds
-     */
-    public function getFormattedDurationAttribute(): string
+    protected function casts(): array
     {
-        $minutes = floor($this->duration / 60);
-        $seconds = $this->duration % 60;
-        return sprintf('%d:%02d', $minutes, $seconds);
+        return [
+            'duration' => 'integer',
+        ];
     }
 
     /**
-     * Scope to get only active songs (if needed for future features)
+     * Duration as m:ss.
      */
-    public function scopeActive($query)
+    protected function formattedDuration(): Attribute
     {
-        return $query->whereNotNull('url');
-    }
-
-    /**
-     * Get the file extension from URL
-     */
-    public function getFileExtensionAttribute(): string
-    {
-        $path = parse_url($this->url, PHP_URL_PATH);
-        return pathinfo($path, PATHINFO_EXTENSION) ?: 'mp3';
+        return Attribute::get(fn () => sprintf('%d:%02d', intdiv((int) $this->duration, 60), ((int) $this->duration) % 60));
     }
 }

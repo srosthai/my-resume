@@ -2,200 +2,87 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\NoteRequest;
 use App\Models\Note;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
+use Inertia\Response;
 
 class NoteController extends Controller
 {
-    /**
-     * Display all data of Notes.
-     * @return \Inertia\Response
-     */
-    public function index()
+    public function index(): Response
     {
-        $notes      = Note::with('user')->latest()->get();
-        $categories = Note::getCategories();
-        
         return Inertia::render('backend/Note/Index', [
-            'notes'      => $notes,
-            'categories' => $categories
+            'notes' => Note::with('user:id,name,image')->latest()->get(),
+            'categories' => Note::getCategories(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new Note entry.
-     * @return \Inertia\Response
-     */
-    public function create()
+    public function create(): Response
     {
-        $categories = Note::getCategories();
-        
         return Inertia::render('backend/Note/Create', [
-            'categories' => $categories
+            'categories' => Note::getCategories(),
         ]);
     }
 
-    /**
-     * Store a newly created Note entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request)
+    public function store(NoteRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'                        => 'required|string|max:255',
-            'category'                     => 'required|string|max:100',
-            'description'                  => 'required|string|max:1000',
-            'tags'                         => 'nullable|array',
-            'tags.*'                       => 'string|max:50',
-            'content.overview'             => 'required|string',
-            'content.requirements'         => 'required|array|min:1',
-            'content.requirements.*'       => 'string|max:255',
-            'content.steps'                => 'required|array|min:1',
-            'content.steps.*.title'        => 'required|string|max:255',
-            'content.steps.*.description'  => 'required|string|max:500',
-            'content.steps.*.commands'     => 'required|array|min:1',
-            'content.steps.*.commands.*'   => 'string|max:500',
-            'status'                       => 'required|in:draft,published,archived',
-            'is_featured'                  => 'boolean',
-            'published_at'                 => 'nullable|date',
-        ]);
+        $request->user()->notes()->create($request->noteData());
 
-        if (isset($validated['tags'])) {
-            $validated['tags'] = array_filter($validated['tags'], function($tag) {
-                return !empty(trim($tag));
-            });
-        }
-
-        $validated['user_id'] = auth()->id();
-
-        if ($validated['status'] === 'published' && empty($validated['published_at'])) {
-            $validated['published_at'] = now();
-        }
-
-        Note::create($validated);
-
-        return redirect()->route('notes.index')->with('success', 'Note created successfully.');
+        return redirect()->route('backend.notes.index')->with('success', 'Note created successfully.');
     }
 
-    /**
-     * Display the specified Note.
-     * @param \App\Models\Note $note
-     * @return \Inertia\Response
-     */
-    public function show(Note $note)
+    public function show(Note $note): Response
     {
-        $note->load('user');
-        
         return Inertia::render('backend/Note/Show', [
-            'note' => $note
+            'note' => $note->load('user:id,name,image'),
         ]);
     }
 
-    /**
-     * Show the form for editing the specified Note.
-     * @param \App\Models\Note $note
-     * @return \Inertia\Response
-     */
-    public function edit(Note $note)
+    public function edit(Note $note): Response
     {
-        $categories = Note::getCategories();
         return Inertia::render('backend/Note/Edit', [
-            'note'       => $note,
-            'categories' => $categories
+            'note' => $note,
+            'categories' => Note::getCategories(),
         ]);
     }
 
-    /**
-     * Update the specified Note in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Note $note
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function update(Request $request, Note $note)
+    public function update(NoteRequest $request, Note $note): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'                        => 'required|string|max:255',
-            'category'                     => 'required|string|max:100',
-            'description'                  => 'required|string|max:1000',
-            'tags'                         => 'nullable|array',
-            'tags.*'                       => 'string|max:50',
-            'content.overview'             => 'required|string',
-            'content.requirements'         => 'required|array|min:1',
-            'content.requirements.*'       => 'string|max:255',
-            'content.steps'                => 'required|array|min:1',
-            'content.steps.*.title'        => 'required|string|max:255',
-            'content.steps.*.description'  => 'required|string|max:500',
-            'content.steps.*.commands'     => 'required|array|min:1',
-            'content.steps.*.commands.*'   => 'string|max:500',
-            'status'                       => 'required|in:draft,published,archived',
-            'is_featured'                  => 'boolean',
-            'published_at'                 => 'nullable|date',
-        ]);
+        $note->update($request->noteData());
 
-        if (isset($validated['tags'])) {
-            $validated['tags'] = array_filter($validated['tags'], function($tag) {
-                return !empty(trim($tag));
-            });
-        }
-
-        if ($validated['status'] === 'published' && empty($validated['published_at']) && $note->status !== 'published') {
-            $validated['published_at'] = now();
-        }
-
-        $note->update($validated);
-
-        return redirect()->route('notes.index')->with('success', 'Note updated successfully.');
+        return redirect()->route('backend.notes.index')->with('success', 'Note updated successfully.');
     }
 
-    /**
-     * Remove the specified Note from storage.
-     * @param \App\Models\Note $note
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(Note $note)
+    public function destroy(Note $note): RedirectResponse
     {
         $note->delete();
-        return redirect()->route('notes.index')->with('success', 'Note deleted successfully.');
+
+        return redirect()->route('backend.notes.index')->with('success', 'Note deleted successfully.');
     }
 
-    /**
-     * Toggle featured status of the note.
-     * @param \App\Models\Note $note
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function toggleFeatured(Note $note)
+    public function toggleFeatured(Note $note): RedirectResponse
     {
-        $note->update(['is_featured' => !$note->is_featured]);
+        $note->update(['is_featured' => ! $note->is_featured]);
 
         $status = $note->is_featured ? 'featured' : 'unfeatured';
-        
-        return redirect()->back()
-            ->with('success', "Note has been {$status} successfully.");
+
+        return redirect()->back()->with('success', "Note has been {$status} successfully.");
     }
 
-    /**
-     * Duplicate the specified note.
-     * @param \App\Models\Note $note
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function duplicate(Note $note)
+    public function duplicate(Request $request, Note $note): RedirectResponse
     {
-        $duplicated                = $note->replicate();
-        $duplicated->title         = $note->title . ' (Copy)';
-        $duplicated->slug          = null;
-        $duplicated->status        = 'draft';
-        $duplicated->published_at  = null;
-        $duplicated->views         = 0;
-        $duplicated->is_featured   = false;
-        $duplicated->user_id       = auth()->id();
-        $duplicated->save();
+        $duplicate = $note->replicate(['slug', 'views']);
+        $duplicate->title = $note->title.' (Copy)';
+        $duplicate->status = PublishStatus::Draft;
+        $duplicate->published_at = null;
+        $duplicate->is_featured = false;
+        $duplicate->user_id = $request->user()->id;
+        $duplicate->save();
 
-        return redirect()->route('notes.edit', $duplicated)->with('success', 'Note duplicated successfully.');
+        return redirect()->route('backend.notes.edit', $duplicate)->with('success', 'Note duplicated successfully.');
     }
 }

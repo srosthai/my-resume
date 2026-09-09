@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "srosthai/my-resume",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Portfolio and resume site for SROS THAI: Laravel 12, Vue 3, Inertia, Tailwind 4.",
     "keywords": [
         "laravel",
         "framework"

@@ -9,9 +9,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Work Experience', href: '/work-experience' },
-    { title: 'Create', href: '/backend/work-experience/create' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Work Experience', href: route('backend.work-experience.index') },
+    { title: 'Create', href: route('backend.work-experience.create') },
 ];
 
 const form = useForm({
@@ -35,13 +35,15 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/work-experience">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.work-experience.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="briefcase" class="size-6" />
                     </div>
                     <div>
@@ -100,7 +102,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/work-experience">
+                        <Link :href="route('backend.work-experience.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

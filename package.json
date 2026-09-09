@@ -7,7 +7,12 @@
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix"
+        "lint": "eslint .",
+        "typecheck": "vue-tsc --noEmit",
+        "lint:fix": "eslint . --fix"
+    },
+    "engines": {
+        "node": ">=22"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

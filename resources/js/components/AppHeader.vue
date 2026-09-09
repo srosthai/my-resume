@@ -51,7 +51,7 @@ const rightNavItems: NavItem[] = [];
                 <div class="lg:hidden">
                     <Sheet>
                         <SheetTrigger :as-child="true">
-                            <Button variant="ghost" size="icon" class="mr-2 h-9 w-9">
+                            <Button variant="ghost" size="icon" class="mr-2 h-9 w-9" aria-label="Open menu">
                                 <Menu class="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
@@ -91,7 +91,7 @@ const rightNavItems: NavItem[] = [];
                     </Sheet>
                 </div>
 
-                <Link :href="route('dashboard')" class="flex items-center gap-x-2">
+                <Link :href="route('dashboard')" class="flex items-center gap-x-2" aria-label="Dashboard">
                     <AppLogo />
                 </Link>
 
@@ -118,7 +118,7 @@ const rightNavItems: NavItem[] = [];
 
                 <div class="ml-auto flex items-center space-x-2">
                     <div class="relative flex items-center space-x-1">
-                        <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer">
+                        <Button variant="ghost" size="icon" class="group h-9 w-9 cursor-pointer" aria-label="Search">
                             <Search class="size-5 opacity-80 group-hover:opacity-100" />
                         </Button>
 

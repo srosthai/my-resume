@@ -1,30 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { TechStack } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-defineProps({
-    techStacks: {
-        type: Array,
-        required: true,
-    },
-});
+defineProps<{
+    techStacks: TechStack[];
+}>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Tech Stack', href: '/tech-stacks' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Tech Stack', href: route('backend.tech-stacks.index') },
 ];
 
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref(null);
+const itemToDelete = ref<TechStack | null>(null);
 const deleting = ref(false);
 
-const confirmDelete = (item) => {
+const confirmDelete = (item: TechStack) => {
     itemToDelete.value = item;
     showDeleteConfirm.value = true;
 };
@@ -41,7 +40,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 </script>
 
 <template>
@@ -52,7 +51,9 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="layers" class="size-6" />
                     </div>
                     <div>
@@ -60,7 +61,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                         <p class="text-sm text-muted-foreground">View and manage your technology stack</p>
                     </div>
                 </div>
-                <Link href="/backend/tech-stacks/create">
+                <Link :href="route('backend.tech-stacks.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Technology
@@ -73,7 +74,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Technology</th>
                                 <th class="px-6 py-4 text-left font-medium">Type</th>
@@ -83,13 +84,11 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in techStacks"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in techStacks" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>
@@ -113,7 +112,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/tech-stacks/${item.id}/edit`">
+                                        <Link :href="route('backend.tech-stacks.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -138,7 +137,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                                             <Icon name="layers" class="size-6" />
                                         </div>
                                         <p class="text-sm">No tech stack records found</p>
-                                        <Link href="/backend/tech-stacks/create">
+                                        <Link :href="route('backend.tech-stacks.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first technology

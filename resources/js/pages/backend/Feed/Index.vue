@@ -1,33 +1,34 @@
-<script setup>
+<script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { Feed } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
-    feeds: {
-        type: Array,
-        required: true,
+withDefaults(
+    defineProps<{
+        feeds: Feed[];
+        activityTypes?: string[];
+    }>(),
+    {
+        activityTypes: () => [],
     },
-    activityTypes: {
-        type: Array,
-        default: () => [],
-    },
-});
+);
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Feeds', href: '/feeds-management' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Feeds', href: route('backend.feeds.index') },
 ];
 
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref(null);
+const itemToDelete = ref<Feed | null>(null);
 const deleting = ref(false);
 
-const confirmDelete = (item) => {
+const confirmDelete = (item: Feed) => {
     itemToDelete.value = item;
     showDeleteConfirm.value = true;
 };
@@ -44,7 +45,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 </script>
 
 <template>
@@ -55,7 +56,9 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="rss" class="size-6" />
                     </div>
                     <div>
@@ -76,7 +79,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Title</th>
                                 <th class="px-6 py-4 text-left font-medium">Activity</th>
@@ -89,13 +92,11 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in feeds"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in feeds" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>

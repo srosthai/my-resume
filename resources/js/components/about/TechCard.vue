@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Props {
-    name: string
-    logo?: string | null
-    type: string
-    description: string
+    name: string;
+    logo?: string | null;
+    type: string;
+    description: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const getInitials = (name: string): string => {
-    return name.slice(0, 2).toUpperCase()
-}
+    return name.slice(0, 2).toUpperCase();
+};
 </script>
 
 <template>
@@ -22,16 +22,12 @@ const getInitials = (name: string): string => {
         <div class="mb-2.5 flex items-center gap-2.5">
             <Avatar class="size-8 shrink-0 rounded-lg">
                 <AvatarImage v-if="logo" :src="logo" :alt="name" class="object-contain p-1" />
-                <AvatarFallback
-                    class="rounded-lg bg-muted/60 text-[10px] font-semibold text-muted-foreground"
-                >
+                <AvatarFallback class="rounded-lg bg-muted/60 text-[10px] font-semibold text-muted-foreground">
                     {{ getInitials(name) }}
                 </AvatarFallback>
             </Avatar>
 
-            <h3
-                class="truncate text-sm font-semibold text-foreground"
-            >
+            <h3 class="truncate text-sm font-semibold text-foreground">
                 {{ name }}
             </h3>
         </div>

@@ -3,141 +3,75 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\ProjectRequest;
 use App\Models\Project;
 use App\Models\ProjectType;
-use Illuminate\Http\Request;
+use App\Services\ImageUploadService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display all data of Projects.
-     * @return \Inertia\Response
-     */
-    public function index()
+    public function __construct(private readonly ImageUploadService $images) {}
+
+    public function index(): Response
     {
-        $projects = Project::with('projectType')->latest()->get();
         return Inertia::render('backend/Project/Index', [
-            'projects' => $projects
+            'projects' => Project::with('projectType')->latest()->get(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new Project entry.
-     * @return \Inertia\Response
-     */
-    public function create()
+    public function create(): Response
     {
-        $projectTypes = ProjectType::all();
         return Inertia::render('backend/Project/Create', [
-            'projectTypes' => $projectTypes
+            'projectTypes' => ProjectType::orderBy('name')->get(),
         ]);
     }
 
-    /**
-     * Store a newly created Project entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request)
+    public function store(ProjectRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'           => 'required|string|max:255',
-            'description'     => 'nullable|string',
-            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'project_type_id' => 'nullable|exists:project_types,id',
-            'technologies'    => 'nullable|array',
-            'created_date'    => 'nullable|date',
-            'status'          => 'required|in:processing,completed',
-            'links'           => 'nullable|array',
-        ]);
+        $data = $request->projectData();
 
         if ($request->hasFile('image')) {
-            $image      = $request->file('image');
-            $imageName  = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/projects'), $imageName);
-            $validated['image'] = 'uploads/projects/' . $imageName;
+            $data['image'] = $this->images->store($request->file('image'), 'projects');
         }
 
-        Project::create($validated);
+        Project::create($data);
 
-        return redirect()->route('projects')->with('success', 'Project created successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified Project entry.
-     * @param \App\Models\Project $project
-     * @return \Inertia\Response
-     */
-    public function edit(Project $project)
+    public function edit(Project $project): Response
     {
-        $projectTypes = ProjectType::all();
         return Inertia::render('backend/Project/Edit', [
-            'project'      => $project,
-            'projectTypes' => $projectTypes
+            'project' => $project,
+            'projectTypes' => ProjectType::orderBy('name')->get(),
         ]);
     }
 
-    /**
-     * Update the specified Project entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Project $project
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function update(Request $request, $id)
+    public function update(ProjectRequest $request, Project $project): RedirectResponse
     {
-        $project = Project::findOrFail($id);
-
-        $validated = $request->validate([
-            'title'           => 'required|string|max:255',
-            'description'     => 'nullable|string',
-            'image'           => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'project_type_id' => 'nullable|exists:project_types,id',
-            'technologies'    => 'nullable|array',
-            'created_date'    => 'nullable|date',
-            'status'          => 'required|in:processing,completed',
-            'links'           => 'nullable|array',
-        ]);
+        $data = $request->projectData();
 
         if ($request->hasFile('image')) {
-            if ($project->image && file_exists(public_path($project->image))) {
-                unlink(public_path($project->image));
-            }
-            $image = $request->file('image');
-            $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('uploads/projects'), $imageName);
-
-            $validated['image'] = 'uploads/projects/' . $imageName;
-        } elseif ($request->filled('image') && $request->input('image') === null) {
-            if ($project->image && file_exists(public_path($project->image))) {
-                unlink(public_path($project->image));
-            }
-            $validated['image'] = null;
-        } else {
-            $validated['image'] = $project->image;
+            $this->images->delete($project->image);
+            $data['image'] = $this->images->store($request->file('image'), 'projects');
+        } elseif ($request->boolean('remove_image')) {
+            $this->images->delete($project->image);
+            $data['image'] = null;
         }
 
+        $project->update($data);
 
-        $project->update($validated);
-
-        return redirect()->route('projects')->with('success', 'Project updated successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project updated successfully.');
     }
 
-    /**
-     * Remove the specified Project entry from storage.
-     * @param \App\Models\Project $project
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(Project $project)
+    public function destroy(Project $project): RedirectResponse
     {
-        if ($project->image && file_exists(public_path($project->image))) {
-            unlink(public_path($project->image));
-        }
-
+        $this->images->delete($project->image);
         $project->delete();
 
-        return redirect()->route('projects')->with('success', 'Project deleted successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project deleted successfully.');
     }
 }

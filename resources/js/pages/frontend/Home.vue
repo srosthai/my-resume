@@ -1,35 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { PublicOwner, TechStack } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Book, Github, Linkedin, Mail, MapPin, Rss } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    users: {
-        type: Object,
-        required: true,
+interface HomeStats {
+    projects: number;
+    techStacks: number;
+    experience: number;
+    notes: number;
+}
+
+const props = withDefaults(
+    defineProps<{
+        users: PublicOwner;
+        techStacks?: TechStack[];
+        stats?: HomeStats;
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        techStacks: () => [],
+        stats: () => ({ projects: 0, techStacks: 0, experience: 0, notes: 0 }),
+        title: 'Home',
+        description: 'Welcome to my portfolio',
     },
-    techStacks: {
-        type: Array,
-        default: () => [],
-    },
-    stats: {
-        type: Object,
-        default: () => ({ projects: 0, techStacks: 0, experience: 0, notes: 0 }),
-    },
-    title: {
-        type: String,
-        default: 'Home',
-    },
-    description: {
-        type: String,
-        default: 'Welcome to my portfolio',
-    },
-});
+);
 
 const { isLoading, isVisible } = usePageReveal();
 const { time: timeInPhnomPenh, date: dateInPhnomPenh } = usePhnomPenhClock();
@@ -67,14 +68,15 @@ const doubledStacks = computed(() => {
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton state -->
-        <section v-if="isLoading" class="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section
+            v-if="isLoading"
+            aria-busy="true"
+            aria-hidden="true"
+            class="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center px-3 py-6 sm:px-6 sm:py-8 lg:px-10"
+        >
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-[22rem] rounded-3xl sm:h-[24rem] md:col-span-8 md:h-[28rem]" />
                 <Skeleton class="col-span-2 hidden h-[28rem] rounded-3xl md:col-span-4 md:block" />
@@ -140,7 +142,11 @@ const doubledStacks = computed(() => {
                             <img
                                 v-if="users.image"
                                 :src="users.image.startsWith('http') ? users.image : `/${users.image}`"
-                                :alt="users.name"
+                                alt=""
+                                width="80"
+                                height="80"
+                                fetchpriority="high"
+                                decoding="async"
                                 class="h-full w-full object-cover object-[center_25%]"
                             />
                         </div>
@@ -224,7 +230,16 @@ const doubledStacks = computed(() => {
                     </div>
 
                     <div class="relative mx-auto mt-5 aspect-[3/4] overflow-hidden rounded-2xl border border-border/50">
-                        <img v-if="imageSrc" :src="imageSrc" :alt="users?.name" class="h-full w-full object-cover object-[center_25%]" />
+                        <img
+                            v-if="imageSrc"
+                            :src="imageSrc"
+                            :alt="users?.name"
+                            width="600"
+                            height="800"
+                            fetchpriority="high"
+                            decoding="async"
+                            class="h-full w-full object-cover object-[center_25%]"
+                        />
                         <div v-else class="flex h-full w-full items-center justify-center bg-muted font-serif text-6xl text-muted-foreground italic">
                             {{ firstName.charAt(0) }}
                         </div>
@@ -373,8 +388,17 @@ const doubledStacks = computed(() => {
                     </div>
                     <div class="marquee-viewport group relative py-4 sm:py-6">
                         <div class="marquee-track">
-                            <div v-for="(tech, i) in doubledStacks" :key="`${tech.id}-${i}`" class="marquee-item" :title="tech.name">
-                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name" class="marquee-logo" loading="lazy" />
+                            <div v-for="(tech, i) in doubledStacks" :key="`${tech.id}-${i}`" class="marquee-item" :title="tech.name ?? undefined">
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    :alt="tech.name ?? undefined"
+                                    width="18"
+                                    height="18"
+                                    class="marquee-logo"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <span
                                     v-else
                                     class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-muted font-mono text-[10px] font-semibold text-muted-foreground sm:h-7 sm:w-7 sm:text-xs"

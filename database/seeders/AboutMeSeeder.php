@@ -17,7 +17,7 @@ class AboutMeSeeder extends Seeder
             'description' => 'I am a passionate Full Stack Developer with a strong focus on building modern, scalable web applications. With expertise in Laravel, Vue.js, and cloud technologies, I create elegant solutions that solve real-world problems. I believe in writing clean, maintainable code and continuously learning new technologies to stay at the forefront of web development.',
             'location' => 'Phnom Penh, Cambodia',
             'year_experience' => '5+ Years',
-            'fucus_on' => 'Web Development',
+            'focus_on' => 'Web Development',
         ]);
     }
 }

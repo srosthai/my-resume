@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
@@ -7,45 +7,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { Feed, FeedVisibility, PublishStatus } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const props = defineProps({
-    feed: {
-        type: Object,
-        required: true,
+const props = withDefaults(
+    defineProps<{
+        feed: Feed;
+        activityTypes?: string[];
+    }>(),
+    {
+        activityTypes: () => [],
     },
-    activityTypes: {
-        type: Array,
-        default: () => [],
-    },
-});
+);
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Feeds', href: '/feeds-management' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Feeds', href: route('backend.feeds.index') },
     { title: 'Edit Feed', href: '' },
 ];
 
 const form = useForm({
     title: props.feed.title || '',
     body: props.feed.body || '',
-    images: [],
-    existing_images: props.feed.images || [],
+    images: [] as File[],
+    existing_images: (props.feed.images || []) as string[],
     location: props.feed.location || '',
     mood: props.feed.mood || '',
     activity_type: props.feed.activity_type || '',
-    tags: props.feed.tags || [],
-    visibility: props.feed.visibility || 'public',
-    status: props.feed.status || 'draft',
+    tags: (props.feed.tags || []) as string[],
+    visibility: (props.feed.visibility || 'public') as FeedVisibility,
+    status: (props.feed.status || 'draft') as PublishStatus,
     is_pinned: props.feed.is_pinned || false,
     likes_count: props.feed.likes_count || 0,
-    published_at: props.feed.published_at ? new Date(props.feed.published_at).toISOString().slice(0, 16) : null,
+    published_at: (props.feed.published_at ? new Date(props.feed.published_at).toISOString().slice(0, 16) : null) as string | null,
+});
+
+/** Bridges the nullable form field to <Input>, whose v-model only accepts string | number. */
+const publishedAt = computed({
+    get: () => form.published_at ?? undefined,
+    set: (value: string | number) => {
+        form.published_at = String(value);
+    },
 });
 
 const newTag = ref('');
 const newActivityType = ref('');
-const newImagePreviews = ref([]);
+const newImagePreviews = ref<string[]>([]);
 
 const moods = [
     { value: 'happy', label: 'Happy', emoji: '😊' },
@@ -68,12 +76,13 @@ const addTag = () => {
     }
 };
 
-const removeTag = (index) => {
+const removeTag = (index: number) => {
     form.tags.splice(index, 1);
 };
 
-const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
+const handleImageUpload = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
     const currentCount = form.existing_images.length + form.images.length;
 
     if (currentCount + files.length > 10) {
@@ -85,19 +94,22 @@ const handleImageUpload = (event) => {
         form.images.push(file);
         const reader = new FileReader();
         reader.onload = (e) => {
-            newImagePreviews.value.push(e.target.result);
+            const result = e.target?.result;
+            if (typeof result === 'string') {
+                newImagePreviews.value.push(result);
+            }
         };
         reader.readAsDataURL(file);
     });
 
-    event.target.value = '';
+    input.value = '';
 };
 
-const removeExistingImage = (index) => {
+const removeExistingImage = (index: number) => {
     form.existing_images.splice(index, 1);
 };
 
-const removeNewImage = (index) => {
+const removeNewImage = (index: number) => {
     form.images.splice(index, 1);
     newImagePreviews.value.splice(index, 1);
 };
@@ -105,7 +117,8 @@ const removeNewImage = (index) => {
 const submit = () => {
     form.tags = form.tags.filter((tag) => tag.trim());
 
-    form.post(route('backend.feeds.update', props.feed.id), {
+    // Browsers cannot send multipart PUT, so spoof the method on a POST.
+    form.transform((data) => ({ ...data, _method: 'put' })).post(route('backend.feeds.update', props.feed.id), {
         forceFormData: true,
     });
 };
@@ -118,7 +131,7 @@ const availableActivityTypes = computed(() => {
     return existing;
 });
 
-const selectActivityType = (type) => {
+const selectActivityType = (type: string) => {
     form.activity_type = type;
     newActivityType.value = '';
 };
@@ -131,13 +144,15 @@ const selectActivityType = (type) => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link :href="route('feeds.index')">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.feeds.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="rss" class="size-6" />
                     </div>
                     <div>
@@ -170,7 +185,10 @@ const selectActivityType = (type) => {
                             <Input
                                 v-model="newActivityType"
                                 placeholder="Enter new activity type"
-                                @keyup.enter="form.activity_type = newActivityType; newActivityType = ''"
+                                @keyup.enter="
+                                    form.activity_type = newActivityType;
+                                    newActivityType = '';
+                                "
                             />
                             <div v-if="availableActivityTypes.length > 0" class="flex flex-wrap gap-2">
                                 <Button
@@ -226,13 +244,22 @@ const selectActivityType = (type) => {
                                 <Label class="mb-2 block">Current Images</Label>
                                 <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                                     <div v-for="(image, index) in form.existing_images" :key="'existing-' + index" class="group relative">
-                                        <img :src="'/' + image" class="h-32 w-full rounded-lg object-cover" />
+                                        <img
+                                            :src="'/' + image"
+                                            :alt="`Image ${index + 1}`"
+                                            class="h-32 w-full rounded-lg object-cover"
+                                            width="256"
+                                            height="128"
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
                                         <Button
                                             type="button"
                                             variant="destructive"
                                             size="sm"
                                             class="absolute top-1 right-1 size-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                                             @click="removeExistingImage(index)"
+                                            aria-label="Remove image"
                                         >
                                             <Icon name="x" class="size-3" />
                                         </Button>
@@ -256,13 +283,22 @@ const selectActivityType = (type) => {
                             <!-- New Image Previews -->
                             <div v-if="newImagePreviews.length > 0" class="grid grid-cols-2 gap-4 md:grid-cols-4">
                                 <div v-for="(preview, index) in newImagePreviews" :key="'new-' + index" class="group relative">
-                                    <img :src="preview" class="h-32 w-full rounded-lg object-cover" />
+                                    <img
+                                        :src="preview"
+                                        :alt="`Selected image ${index + 1}`"
+                                        class="h-32 w-full rounded-lg object-cover"
+                                        width="256"
+                                        height="128"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
                                     <Button
                                         type="button"
                                         variant="destructive"
                                         size="sm"
                                         class="absolute top-1 right-1 size-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                                         @click="removeNewImage(index)"
+                                        aria-label="Remove image"
                                     >
                                         <Icon name="x" class="size-3" />
                                     </Button>
@@ -276,14 +312,14 @@ const selectActivityType = (type) => {
                             <p class="text-sm text-muted-foreground">Add tags to help categorize your post</p>
                             <div class="flex gap-2">
                                 <Input v-model="newTag" placeholder="Add a tag" @keyup.enter="addTag" />
-                                <Button type="button" variant="outline" @click="addTag">
+                                <Button type="button" variant="outline" aria-label="Add tag" @click="addTag">
                                     <Icon name="plus" class="size-4" />
                                 </Button>
                             </div>
                             <div v-if="form.tags.length > 0" class="flex flex-wrap gap-2">
                                 <Badge v-for="(tag, index) in form.tags" :key="index" variant="secondary" class="flex items-center gap-1">
                                     {{ tag }}
-                                    <button type="button" class="ml-1 hover:text-destructive" @click="removeTag(index)">
+                                    <button type="button" class="ml-1 hover:text-destructive" @click="removeTag(index)" aria-label="Remove tag">
                                         <Icon name="trash2" class="size-3" />
                                     </button>
                                 </Badge>
@@ -331,7 +367,7 @@ const selectActivityType = (type) => {
                             <!-- Published At -->
                             <div v-if="form.status === 'published'" class="space-y-2">
                                 <Label for="published_at">Publish Date</Label>
-                                <Input id="published_at" v-model="form.published_at" type="datetime-local" />
+                                <Input id="published_at" v-model="publishedAt" type="datetime-local" />
                                 <p class="text-sm text-muted-foreground">Leave empty to publish immediately</p>
                                 <InputError :message="form.errors.published_at" />
                             </div>
@@ -339,7 +375,12 @@ const selectActivityType = (type) => {
 
                         <!-- Pinned -->
                         <div class="flex items-center space-x-2">
-                            <input id="is_pinned" v-model="form.is_pinned" type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary" />
+                            <input
+                                id="is_pinned"
+                                v-model="form.is_pinned"
+                                type="checkbox"
+                                class="rounded border-gray-300 text-primary focus:ring-primary"
+                            />
                             <Label for="is_pinned" class="flex items-center gap-2">
                                 <Icon name="pin" class="size-4" />
                                 Pin to top
@@ -349,7 +390,7 @@ const selectActivityType = (type) => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link :href="route('feeds.index')">
+                        <Link :href="route('backend.feeds.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

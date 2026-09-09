@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,9 @@ const props = defineProps({
 });
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Project Types', href: '/project-types' },
-    { title: 'Edit', href: `/backend/project-types/${props.projectType.id}/edit` },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Project Types', href: route('backend.project-types.index') },
+    { title: 'Edit', href: route('backend.project-types.edit', props.projectType.id) },
 ];
 
 const form = useForm({
@@ -36,13 +36,15 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/project-types">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.project-types.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="tag" class="size-6" />
                     </div>
                     <div>
@@ -57,20 +59,14 @@ const submit = () => {
                     <div class="space-y-6 p-6 sm:p-8">
                         <div class="space-y-2">
                             <Label for="name">Name *</Label>
-                            <Input
-                                id="name"
-                                v-model="form.name"
-                                type="text"
-                                placeholder="Enter project type name"
-                                required
-                            />
+                            <Input id="name" v-model="form.name" type="text" placeholder="Enter project type name" required />
                             <InputError :message="form.errors.name" />
                         </div>
                     </div>
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/project-types">
+                        <Link :href="route('backend.project-types.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

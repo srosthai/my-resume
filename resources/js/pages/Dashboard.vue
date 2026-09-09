@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { BriefcaseBusiness, CalendarDays, Code2, ExternalLink, GraduationCap, Layers3, Music4, Sparkles } from 'lucide-vue-next';
@@ -42,22 +43,11 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: route('dashboard'),
     },
 ];
 
-const formatDate = (date?: string | null) => {
-    if (!date) return 'Present';
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) return 'Present';
-
-    return parsedDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-    });
-};
+const formatDate = (date?: string | null) => formatSharedDate(date, { month: 'short', day: undefined }) || 'Present';
 
 const formatDuration = (song: any) => {
     if (song.formatted_duration) return song.formatted_duration;
@@ -70,8 +60,13 @@ const formatDuration = (song: any) => {
 };
 
 const initials = computed(() => props.summary.user?.name?.charAt(0)?.toUpperCase() || 'U');
-const experienceLabel = computed(() => `${props.summary.aboutMe?.year_experience || 0}+ years`);
-const focusLabel = computed(() => props.summary.aboutMe?.fucus_on || 'development');
+const experienceLabel = computed(() => {
+    // year_experience is free text ("5+ Years"); only bare numbers get a suffix.
+    const raw = String(props.summary.aboutMe?.year_experience ?? '').trim();
+    if (!raw) return '0+ years';
+    return /[a-z]/i.test(raw) ? raw : `${raw}+ years`;
+});
+const focusLabel = computed(() => props.summary.aboutMe?.focus_on || 'development');
 
 const statCards = computed(() => [
     {
@@ -267,7 +262,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/projects">
+                                    <Link :href="route('backend.projects.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>
@@ -311,7 +306,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/work-experience">
+                                    <Link :href="route('backend.work-experience.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>
@@ -360,7 +355,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/eductions">
+                                    <Link :href="route('backend.education.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>
@@ -395,7 +390,7 @@ const projectTypePreview = computed(() => props.summary.projects.byType.slice(0,
                             </div>
                             <CardAction>
                                 <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link href="/popular-songs">
+                                    <Link :href="route('backend.popular-songs.index')">
                                         View all
                                         <ExternalLink class="size-4" />
                                     </Link>

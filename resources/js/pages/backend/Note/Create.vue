@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,19 +6,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { NoteContentForm, PublishStatus } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const props = defineProps({
-    categories: {
-        type: Array,
-        default: () => [],
+const props = withDefaults(
+    defineProps<{
+        categories?: string[];
+    }>(),
+    {
+        categories: () => [],
     },
-});
+);
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Notes', href: '/notes' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Notes', href: route('backend.notes.index') },
     { title: 'Create Note', href: '' },
 ];
 
@@ -26,7 +29,7 @@ const form = useForm({
     title: '',
     category: '',
     description: '',
-    tags: [],
+    tags: [] as string[],
     content: {
         overview: '',
         requirements: [''],
@@ -37,10 +40,21 @@ const form = useForm({
                 commands: [''],
             },
         ],
-    },
-    status: 'draft',
+    } as NoteContentForm,
+    status: 'draft' as PublishStatus,
     is_featured: false,
-    published_at: null,
+    published_at: null as string | null,
+});
+
+/** Validation errors for nested array fields (e.g. `content.steps.0.title`) that Inertia's key type cannot express. */
+const errorFor = (key: string): string | undefined => (form.errors as Record<string, string | undefined>)[key];
+
+/** Bridges the nullable form field to <Input>, whose v-model only accepts string | number. */
+const publishedAt = computed({
+    get: () => form.published_at ?? undefined,
+    set: (value: string | number) => {
+        form.published_at = String(value);
+    },
 });
 
 const newTag = ref('');
@@ -54,7 +68,7 @@ const addTag = () => {
     }
 };
 
-const removeTag = (index) => {
+const removeTag = (index: number) => {
     form.tags.splice(index, 1);
 };
 
@@ -62,7 +76,7 @@ const addRequirement = () => {
     form.content.requirements.push('');
 };
 
-const removeRequirement = (index) => {
+const removeRequirement = (index: number) => {
     if (form.content.requirements.length > 1) {
         form.content.requirements.splice(index, 1);
     }
@@ -76,17 +90,17 @@ const addStep = () => {
     });
 };
 
-const removeStep = (index) => {
+const removeStep = (index: number) => {
     if (form.content.steps.length > 1) {
         form.content.steps.splice(index, 1);
     }
 };
 
-const addCommand = (stepIndex) => {
+const addCommand = (stepIndex: number) => {
     form.content.steps[stepIndex].commands.push('');
 };
 
-const removeCommand = (stepIndex, commandIndex) => {
+const removeCommand = (stepIndex: number, commandIndex: number) => {
     if (form.content.steps[stepIndex].commands.length > 1) {
         form.content.steps[stepIndex].commands.splice(commandIndex, 1);
     }
@@ -104,7 +118,7 @@ const submit = () => {
         }))
         .filter((step) => step.title.trim() && step.description.trim() && step.commands.length > 0);
 
-    form.post(route('notes.store'));
+    form.post(route('backend.notes.store'));
 };
 
 const availableCategories = computed(() => {
@@ -115,7 +129,7 @@ const availableCategories = computed(() => {
     return existing;
 });
 
-const selectCategory = (category) => {
+const selectCategory = (category: string) => {
     form.category = category;
     newCategory.value = '';
 };
@@ -128,13 +142,15 @@ const selectCategory = (category) => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link :href="route('notes.index')">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.notes.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="stickyNote" class="size-6" />
                     </div>
                     <div>
@@ -173,7 +189,10 @@ const selectCategory = (category) => {
                                 <Input
                                     v-model="newCategory"
                                     placeholder="Enter new category"
-                                    @keyup.enter="form.category = newCategory; newCategory = ''"
+                                    @keyup.enter="
+                                        form.category = newCategory;
+                                        newCategory = '';
+                                    "
                                 />
                                 <div v-if="availableCategories.length > 0" class="flex flex-wrap gap-2">
                                     <Button
@@ -226,7 +245,7 @@ const selectCategory = (category) => {
                             <div class="space-y-2">
                                 <div class="flex gap-2">
                                     <Input v-model="newTag" placeholder="Add a tag" @keyup.enter="addTag" />
-                                    <Button type="button" variant="outline" class="rounded-xl" @click="addTag">
+                                    <Button type="button" variant="outline" class="rounded-xl" aria-label="Add tag" @click="addTag">
                                         <Icon name="plus" class="size-4" />
                                     </Button>
                                 </div>
@@ -238,7 +257,7 @@ const selectCategory = (category) => {
                                         class="flex items-center gap-1 rounded-full font-normal"
                                     >
                                         {{ tag }}
-                                        <button type="button" class="ml-1 hover:text-red-500" @click="removeTag(index)">
+                                        <button type="button" class="ml-1 hover:text-red-500" @click="removeTag(index)" aria-label="Remove tag">
                                             <Icon name="trash2" class="size-3" />
                                         </button>
                                     </Badge>
@@ -282,7 +301,7 @@ const selectCategory = (category) => {
                                     <Input
                                         v-model="form.content.requirements[index]"
                                         placeholder="e.g., PHP >= 8.1"
-                                        :class="{ 'border-red-500': form.errors[`content.requirements.${index}`] }"
+                                        :class="{ 'border-red-500': errorFor(`content.requirements.${index}`) }"
                                     />
                                     <Button
                                         type="button"
@@ -291,6 +310,7 @@ const selectCategory = (category) => {
                                         class="rounded-lg px-2"
                                         :disabled="form.content.requirements.length === 1"
                                         @click="removeRequirement(index)"
+                                        aria-label="Remove requirement"
                                     >
                                         <Icon name="trash2" class="size-3" />
                                     </Button>
@@ -321,6 +341,7 @@ const selectCategory = (category) => {
                                             class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                             :disabled="form.content.steps.length === 1"
                                             @click="removeStep(stepIndex)"
+                                            aria-label="Remove step"
                                         >
                                             <Icon name="trash2" class="size-3" />
                                         </Button>
@@ -331,7 +352,7 @@ const selectCategory = (category) => {
                                         <Input
                                             v-model="step.title"
                                             placeholder="e.g., Install Composer"
-                                            :class="{ 'border-red-500': form.errors[`content.steps.${stepIndex}.title`] }"
+                                            :class="{ 'border-red-500': errorFor(`content.steps.${stepIndex}.title`) }"
                                         />
                                     </div>
 
@@ -341,7 +362,7 @@ const selectCategory = (category) => {
                                             v-model="step.description"
                                             placeholder="Describe what this step does"
                                             rows="2"
-                                            :class="{ 'border-red-500': form.errors[`content.steps.${stepIndex}.description`] }"
+                                            :class="{ 'border-red-500': errorFor(`content.steps.${stepIndex}.description`) }"
                                         />
                                     </div>
 
@@ -359,7 +380,7 @@ const selectCategory = (category) => {
                                                     v-model="step.commands[commandIndex]"
                                                     placeholder="e.g., composer install"
                                                     class="font-mono text-sm"
-                                                    :class="{ 'border-red-500': form.errors[`content.steps.${stepIndex}.commands.${commandIndex}`] }"
+                                                    :class="{ 'border-red-500': errorFor(`content.steps.${stepIndex}.commands.${commandIndex}`) }"
                                                 />
                                                 <Button
                                                     type="button"
@@ -368,6 +389,7 @@ const selectCategory = (category) => {
                                                     class="rounded-lg px-2"
                                                     :disabled="step.commands.length === 1"
                                                     @click="removeCommand(stepIndex, commandIndex)"
+                                                    aria-label="Remove command"
                                                 >
                                                     <Icon name="trash2" class="size-3" />
                                                 </Button>
@@ -394,7 +416,7 @@ const selectCategory = (category) => {
                             <select
                                 id="status"
                                 v-model="form.status"
-                                class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
                                 :class="{ 'border-red-500': form.errors.status }"
                             >
                                 <option value="draft">Draft</option>
@@ -421,7 +443,7 @@ const selectCategory = (category) => {
                             <Label for="published_at">Publish Date</Label>
                             <Input
                                 id="published_at"
-                                v-model="form.published_at"
+                                v-model="publishedAt"
                                 type="datetime-local"
                                 :class="{ 'border-red-500': form.errors.published_at }"
                             />
@@ -432,7 +454,7 @@ const selectCategory = (category) => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link :href="route('notes.index')">
+                        <Link :href="route('backend.notes.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

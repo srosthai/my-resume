@@ -1,70 +1,74 @@
 <script setup lang="ts">
-import Icon from '@/components/Icon.vue'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import type { BreadcrumbItemType } from '@/types'
+import Icon from '@/components/Icon.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItemType } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 interface PopularSong {
-    id: number
-    title: string
-    artist: string
-    url: string
-    duration: number
+    id: number;
+    title: string;
+    artist: string;
+    url: string;
+    duration: number;
 }
 
 interface Props {
-    popularSong: PopularSong
+    popularSong: PopularSong;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Popular Songs', href: '/popular-songs' },
-    { title: 'Edit', href: `/backend/popular-songs/${props.popularSong.id}/edit` },
-]
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Popular Songs', href: route('backend.popular-songs.index') },
+    { title: 'Edit', href: route('backend.popular-songs.edit', props.popularSong.id) },
+];
 
 const form = useForm({
     title: props.popularSong.title,
     artist: props.popularSong.artist,
     url: props.popularSong.url,
     duration: props.popularSong.duration,
-})
+});
 
 const isValidYouTubeUrl = (url: string): boolean => {
-    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/
-    return youtubeRegex.test(url)
-}
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
+    return youtubeRegex.test(url);
+};
 
 const extractYouTubeId = (url: string): string | null => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)
-    return match ? match[1] : null
-}
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+};
 
 const validateYouTubeUrl = () => {
     if (form.url && !isValidYouTubeUrl(form.url)) {
         if (form.url.includes('youtube.com') || form.url.includes('youtu.be')) {
-            const videoId = extractYouTubeId(form.url)
+            const videoId = extractYouTubeId(form.url);
             if (videoId) {
-                form.url = `https://www.youtube.com/watch?v=${videoId}`
+                form.url = `https://www.youtube.com/watch?v=${videoId}`;
             }
         }
     }
-}
+};
 
 const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-}
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const openSongUrl = () => {
+    window.open(props.popularSong.url, '_blank');
+};
 
 const submit = () => {
-    form.put(route('backend.popular-songs.update', props.popularSong.id))
-}
+    form.put(route('backend.popular-songs.update', props.popularSong.id));
+};
 </script>
 
 <template>
@@ -74,13 +78,15 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/popular-songs">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.popular-songs.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="music" class="size-6" />
                     </div>
                     <div>
@@ -104,12 +110,7 @@ const submit = () => {
                                     <p class="font-medium">{{ popularSong.title }}</p>
                                     <p class="text-sm text-muted-foreground">{{ popularSong.artist }}</p>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    class="flex items-center gap-2"
-                                    @click="() => window.open(popularSong.url, '_blank')"
-                                >
+                                <Button variant="outline" size="sm" class="flex items-center gap-2" @click="openSongUrl">
                                     <Icon name="externalLink" class="size-4" />
                                     View on YouTube
                                 </Button>
@@ -130,9 +131,7 @@ const submit = () => {
                             <p class="text-sm text-muted-foreground">
                                 Enter a YouTube video URL. Supported formats: youtube.com/watch?v=, youtu.be/, youtube.com/embed/
                             </p>
-                            <div v-if="form.url && !isValidYouTubeUrl(form.url)" class="text-sm text-red-600">
-                                Please enter a valid YouTube URL
-                            </div>
+                            <div v-if="form.url && !isValidYouTubeUrl(form.url)" class="text-sm text-red-600">Please enter a valid YouTube URL</div>
                             <InputError :message="form.errors.url" />
                         </div>
 
@@ -208,7 +207,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/popular-songs">
+                        <Link :href="route('backend.popular-songs.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing || !isValidYouTubeUrl(form.url)" class="rounded-xl shadow-sm">

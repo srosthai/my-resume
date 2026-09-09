@@ -106,7 +106,7 @@
     --destructive-foreground: hsl(0 0% 98%);
     --border: hsl(0 0% 92.8%);
     --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
+    --ring: hsl(8 72% 46%);
     --chart-1: hsl(12 76% 61%);
     --chart-2: hsl(173 58% 39%);
     --chart-3: hsl(197 37% 24%);
@@ -130,7 +130,7 @@
     --card: hsl(0 0% 3.9%);
     --card-foreground: hsl(0 0% 98%);
     --popover: hsl(0 0% 3.9%);
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: hsl(0 0% 98%);
     --primary: hsl(0 0% 98%);
     --primary-foreground: hsl(0 0% 9%);
     --secondary: hsl(0 0% 14.9%);
@@ -143,7 +143,7 @@
     --destructive-foreground: hsl(0 0% 98%);
     --border: hsl(0 0% 14.9%);
     --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
+    --ring: hsl(8 78% 62%);
     --chart-1: hsl(220 70% 50%);
     --chart-2: hsl(160 60% 45%);
     --chart-3: hsl(30 80% 55%);
@@ -151,7 +151,7 @@
     --chart-5: hsl(340 75% 55%);
     --sidebar-background: hsl(0 0% 7%);
     --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
+    --sidebar-primary: hsl(0 0% 100%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
     --sidebar-accent: hsl(0 0% 15.9%);
     --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
@@ -168,132 +168,14 @@
         @apply bg-background text-foreground;
     }
 
-    /* Touch-friendly mobile enhancements */
+    /* Touch devices: prevent iOS from zooming into form fields. Hover-only
+       effects are already gated by Tailwind v4's (hover: hover) media query,
+       and touch targets are sized per component (dock, buttons), not globally. */
     @media (hover: none) and (pointer: coarse) {
-        /* Disable hover effects on touch devices */
-        .hover\:scale-105:hover {
-            transform: none;
-        }
-        .hover\:-translate-y-1:hover {
-            transform: none;
-        }
-        .hover\:-translate-y-2:hover {
-            transform: none;
-        }
-        .hover\:translate-x-1:hover {
-            transform: none;
-        }
-        .hover\:translate-y-1:hover {
-            transform: none;
-        }
-        .hover\:shadow-lg:hover {
-            box-shadow: none;
-        }
-        .hover\:shadow-xl:hover {
-            box-shadow: none;
-        }
-
-        /* Larger touch targets */
-        button,
-        a,
-        [role='button'] {
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        /* Prevent text selection on touch */
-        .select-none {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* Improve scrolling on iOS */
-        .overflow-auto,
-        .overflow-y-auto {
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Prevent zoom on input focus */
         input,
         textarea,
         select {
             font-size: 16px;
-        }
-
-        /* Better touch feedback */
-        button:active,
-        a:active,
-        [role='button']:active {
-            transform: scale(0.95);
-        }
-    }
-
-    /* Enhanced active states for better mobile feedback */
-    .active\:scale-102:active {
-        transform: scale(1.02);
-    }
-
-    .active\:translate-y-0:active {
-        transform: translateY(0);
-    }
-
-    .group-active\:scale-115.group:active {
-        transform: scale(1.15);
-    }
-
-    .group-active\:scale-130.group:active {
-        transform: scale(1.3);
-    }
-
-    .group-active\:scale-102.group:active {
-        transform: scale(1.02);
-    }
-
-    .group-active\:from-primary\/15.group:active {
-        --tw-gradient-from: hsl(var(--primary) / 0.15);
-    }
-
-    .group-active\:to-primary\/8.group:active {
-        --tw-gradient-to: hsl(var(--primary) / 0.08);
-    }
-
-    .group-active\:opacity-100.group:active {
-        opacity: 1;
-    }
-
-    /* Mobile-specific improvements */
-    @media (max-width: 767px) {
-        /* Ensure dock navigation doesn't overflow */
-        .dock-container {
-            max-width: calc(100vw - 1rem);
-            overflow-x: auto;
-        }
-
-        /* Improve card spacing on mobile */
-        .card-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        /* Better spacing for hero sections */
-        .hero-section {
-            padding: 2rem 1rem;
-        }
-
-        /* Ensure avatars don't get too large */
-        .avatar-container {
-            max-width: 280px;
-            max-height: 280px;
-        }
-    }
-
-    /* Tablet optimizations */
-    @media (min-width: 768px) and (max-width: 1023px) {
-        .card-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
         }
     }
 
@@ -314,7 +196,9 @@
             scroll-behavior: auto;
         }
     }
+}
 
+@layer components {
     /* Music player specific styles */
     .music-player {
         backdrop-filter: blur(20px);
@@ -354,6 +238,9 @@
    ============================================================ */
 :root {
     --card-ink: hsl(0 0% 9%);
+    /* One accent for the whole site: a red-pencil mark on the drafting sheet.
+       Used for focus rings, the active dock item and pinned markers only. */
+    --accent-ink: hsl(8 72% 46%);
     --card-lift: 6px;
     --card-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -361,6 +248,7 @@
 .dark {
     /* Full-strength white at this offset reads as glare, not depth. */
     --card-ink: hsl(0 0% 58%);
+    --accent-ink: hsl(8 78% 62%);
 }
 
 .card-3d {
@@ -383,6 +271,12 @@
             calc(var(--card-lift) - 3px) calc(var(--card-lift) - 3px) 0 0 var(--card-ink),
             0 10px 22px -20px color-mix(in oklab, var(--card-ink) 70%, transparent);
     }
+}
+
+/* Keyboard focus: the accent ring, offset so it never hides the ink shadow. */
+.card-3d:focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 3px;
 }
 
 /* Cards that are themselves links get a full press on click. */
@@ -459,7 +353,7 @@
 }
 
 .btn-3d:focus-visible {
-    outline: 2px solid var(--card-ink);
+    outline: 2px solid var(--accent-ink);
     outline-offset: 2px;
 }
 
@@ -484,41 +378,4 @@
 .dark {
     --grid-line: hsl(0 0% 98% / 0.075);
     --grid-cell: hsl(0 0% 98% / 0.04);
-}
-
-/* Meteors — ink streaks over the graph paper. Light mode draws them in
-   pencil, dark mode in chalk; both fade to nothing along the tail. */
-:root {
-    --meteor-ink: hsl(0 0% 9% / 0.55);
-    --meteor-glow: hsl(0 0% 9% / 0.08);
-}
-
-.dark {
-    --meteor-ink: hsl(0 0% 98% / 0.75);
-    --meteor-glow: hsl(0 0% 98% / 0.1);
-}
-
-@keyframes meteor {
-    0% {
-        transform: rotate(var(--angle)) translateX(0);
-        opacity: 1;
-    }
-    70% {
-        opacity: 1;
-    }
-    100% {
-        transform: rotate(var(--angle)) translateX(var(--travel));
-        opacity: 0;
-    }
-}
-
-.animate-meteor {
-    animation: meteor var(--duration, 5s) linear infinite;
-    animation-delay: var(--delay, 0s);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .animate-meteor {
-        display: none;
-    }
 }

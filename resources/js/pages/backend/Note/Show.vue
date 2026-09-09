@@ -1,27 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate } from '@/lib/date';
+import type { Note } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
-    note: {
-        type: Object,
-        required: true,
-    },
-});
+const props = defineProps<{
+    note: Note;
+}>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Notes', href: '/notes' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Notes', href: route('backend.notes.index') },
     { title: props.note.title, href: '' },
 ];
 
-const copiedCommands = ref(new Set());
+const copiedCommands = ref(new Set<string>());
 
-const copyCommand = async (command, stepIndex, commandIndex) => {
+const copyCommand = async (command: string, stepIndex: number, commandIndex: number) => {
     try {
         await navigator.clipboard.writeText(command);
         const key = `${stepIndex}-${commandIndex}`;
@@ -29,17 +28,17 @@ const copyCommand = async (command, stepIndex, commandIndex) => {
         setTimeout(() => {
             copiedCommands.value.delete(key);
         }, 2000);
-    } catch (err) {
-        console.error('Failed to copy command:', err);
+    } catch {
+        // Clipboard access can be denied; silently keep the "copy" state.
     }
 };
 
-const isCopied = (stepIndex, commandIndex) => {
+const isCopied = (stepIndex: number, commandIndex: number) => {
     return copiedCommands.value.has(`${stepIndex}-${commandIndex}`);
 };
 
-const getStatusColor = (status) => {
-    const colors = {
+const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
         draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
         published: 'bg-green-500/10 text-green-500 border-green-500/20',
         archived: 'bg-red-500/10 text-red-500 border-red-500/20',
@@ -56,13 +55,15 @@ const getStatusColor = (status) => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('notes.index')">
-                        <Button variant="outline" size="icon" class="rounded-xl">
+                    <Link :href="route('backend.notes.index')">
+                        <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                             <Icon name="arrowLeft" class="size-4" />
                         </Button>
                     </Link>
                     <div class="flex items-center gap-4">
-                        <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                        <div
+                            class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                        >
                             <Icon name="stickyNote" class="size-6" />
                         </div>
                         <div>
@@ -71,7 +72,7 @@ const getStatusColor = (status) => {
                         </div>
                     </div>
                 </div>
-                <Link :href="route('notes.edit', note.id)">
+                <Link :href="route('backend.notes.edit', note.id)">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="squarePen" class="size-4" />
                         Edit Note
@@ -104,7 +105,7 @@ const getStatusColor = (status) => {
 
                     <!-- Tags -->
                     <div v-if="note.tags && note.tags.length" class="space-y-2">
-                        <h4 class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Tags</h4>
+                        <h4 class="text-xs font-medium tracking-wider text-muted-foreground uppercase">Tags</h4>
                         <div class="flex flex-wrap gap-2">
                             <Badge v-for="tag in note.tags" :key="tag" variant="secondary" class="rounded-full font-normal">
                                 {{ tag }}
@@ -120,11 +121,11 @@ const getStatusColor = (status) => {
                         </div>
                         <div class="flex items-center gap-2">
                             <Icon name="calendar" class="size-4" />
-                            <span>Created: {{ new Date(note.created_at).toLocaleDateString() }}</span>
+                            <span>Created: {{ formatDate(note.created_at, { month: 'numeric', day: 'numeric' }) }}</span>
                         </div>
                         <div v-if="note.published_at" class="flex items-center gap-2">
                             <Icon name="calendar" class="size-4" />
-                            <span>Published: {{ new Date(note.published_at).toLocaleDateString() }}</span>
+                            <span>Published: {{ formatDate(note.published_at, { month: 'numeric', day: 'numeric' }) }}</span>
                         </div>
                     </div>
                 </div>
@@ -151,11 +152,7 @@ const getStatusColor = (status) => {
                         Requirements
                     </h2>
                     <ul class="space-y-2">
-                        <li
-                            v-for="requirement in note.content.requirements"
-                            :key="requirement"
-                            class="flex items-center gap-2 text-muted-foreground"
-                        >
+                        <li v-for="requirement in note.content.requirements" :key="requirement" class="flex items-center gap-2 text-muted-foreground">
                             <div class="size-2 flex-shrink-0 rounded-full bg-primary"></div>
                             {{ requirement }}
                         </li>
@@ -170,14 +167,12 @@ const getStatusColor = (status) => {
                     Installation Steps
                 </h2>
 
-                <div
-                    v-for="(step, stepIndex) in note.content.steps"
-                    :key="stepIndex"
-                    class="rounded-2xl border bg-card shadow-sm"
-                >
+                <div v-for="(step, stepIndex) in note.content.steps" :key="stepIndex" class="rounded-2xl border bg-card shadow-sm">
                     <div class="space-y-4 p-6 sm:p-8">
                         <div class="flex items-start gap-3">
-                            <span class="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                            <span
+                                class="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+                            >
                                 {{ stepIndex + 1 }}
                             </span>
                             <div class="space-y-1">
@@ -187,19 +182,18 @@ const getStatusColor = (status) => {
                         </div>
 
                         <div class="space-y-3">
-                            <div
-                                v-for="(command, commandIndex) in step.commands"
-                                :key="commandIndex"
-                                class="group relative"
-                            >
-                                <div class="rounded-xl border border-border/50 bg-muted/50 p-3 pr-12 font-mono text-sm transition-all duration-300 hover:border-primary/50">
+                            <div v-for="(command, commandIndex) in step.commands" :key="commandIndex" class="group relative">
+                                <div
+                                    class="rounded-xl border border-border/50 bg-muted/50 p-3 pr-12 font-mono text-sm transition-all duration-300 hover:border-primary/50"
+                                >
                                     <code class="break-all text-foreground">{{ command }}</code>
                                 </div>
                                 <Button
                                     size="sm"
                                     variant="ghost"
-                                    class="absolute right-2 top-2 size-8 rounded-lg p-0 opacity-0 transition-opacity hover:bg-primary/10 group-hover:opacity-100"
+                                    class="absolute top-2 right-2 size-8 rounded-lg p-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-primary/10"
                                     @click="copyCommand(command, stepIndex, commandIndex)"
+                                    :aria-label="isCopied(stepIndex, commandIndex) ? 'Copied' : 'Copy command'"
                                 >
                                     <Icon v-if="isCopied(stepIndex, commandIndex)" name="check" class="size-4 text-green-500" />
                                     <Icon v-else name="copy" class="size-4" />

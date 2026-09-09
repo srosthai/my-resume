@@ -3,105 +3,51 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\WorkExperienceRequest;
 use App\Models\WorkExperience;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class WorkExperienceController extends Controller
 {
-    /**
-     * Display a listing of the work experiences.
-     *
-     * @return \Inertia\Response
-     */
-    public function index()
+    public function index(): Response
     {
-        $workExperiences = WorkExperience::latest()->get();
         return Inertia::render('backend/WorkExperience/Index', [
-            'workExperiences' => $workExperiences
+            'workExperiences' => WorkExperience::latest()->get(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new work experience.
-     *
-     * @return \Inertia\Response
-     */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('backend/WorkExperience/Create');
     }
 
-    /**
-     * Store a newly created work experience in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request)
+    public function store(WorkExperienceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'       => 'nullable|string|max:255',
-            'position'    => 'nullable|string|max:255',
-            'company'     => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'from'        => 'nullable|string|max:255',
-            'to'          => 'nullable|string|max:255',
-        ]);
+        WorkExperience::create($request->validated());
 
-        WorkExperience::create($validated);
-
-        return redirect()->route('work-experience')->with('success', 'Work Experience created successfully.');
+        return redirect()->route('backend.work-experience.index')->with('success', 'Work Experience created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified work experience.
-     *
-     * @param \App\Models\WorkExperience $workExperience
-     * @return \Inertia\Response
-     */
-    public function edit(WorkExperience $workExperience)
+    public function edit(WorkExperience $workExperience): Response
     {
         return Inertia::render('backend/WorkExperience/Edit', [
-            'workExperience' => $workExperience
+            'workExperience' => $workExperience,
         ]);
     }
 
-    /**
-     * Update the specified work experience in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\WorkExperience $workExperience
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function update(Request $request, WorkExperience $workExperience)
+    public function update(WorkExperienceRequest $request, WorkExperience $workExperience): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'       => 'nullable|string|max:255',
-            'position'    => 'nullable|string|max:255',
-            'company'     => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'from'        => 'nullable|string|max:255',
-            'to'          => 'nullable|string|max:255',
-        ]);
+        $workExperience->update($request->validated());
 
-        $workExperience->update($validated);
-
-        return redirect()->route('work-experience')->with('success', 'Work Experience updated successfully.');
+        return redirect()->route('backend.work-experience.index')->with('success', 'Work Experience updated successfully.');
     }
 
-    /**
-     * Remove the specified work experience from storage.
-     *
-     * @param \App\Models\WorkExperience $workExperience
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(WorkExperience $workExperience)
+    public function destroy(WorkExperience $workExperience): RedirectResponse
     {
         $workExperience->delete();
 
-        return redirect()->route('work-experience')->with('success', 'Work Experience deleted successfully.');
+        return redirect()->route('backend.work-experience.index')->with('success', 'Work Experience deleted successfully.');
     }
 }

@@ -10,57 +10,57 @@ import AppLogo from './AppLogo.vue';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: route('dashboard'),
         icon: LayoutGrid,
     },
     {
         title: 'ME',
-        href: '/me',
+        href: route('backend.users.index'),
         icon: Users,
     },
     {
         title: 'About Me',
-        href: '/about-me',
+        href: route('backend.about-me.index'),
         icon: BookUser,
     },
     {
         title: 'Work Experience',
-        href: '/work-experience',
+        href: route('backend.work-experience.index'),
         icon: Briefcase,
     },
     {
         title: 'Education',
-        href: '/eductions',
+        href: route('backend.education.index'),
         icon: GraduationCap,
     },
     {
         title: 'Tech Stack',
-        href: '/tech-stacks',
+        href: route('backend.tech-stacks.index'),
         icon: Layers,
     },
     {
         title: 'Project Types',
-        href: '/project-types',
+        href: route('backend.project-types.index'),
         icon: Boxes,
     },
     {
         title: 'Projects',
-        href: '/projects',
+        href: route('backend.projects.index'),
         icon: FolderOpenDot,
     },
     {
         title: 'Music',
-        href: '/popular-songs',
+        href: route('backend.popular-songs.index'),
         icon: Music4,
     },
     {
         title: 'Notes',
-        href: '/notes',
+        href: route('backend.notes.index'),
         icon: BookUser,
     },
     {
         title: 'Feeds',
-        href: '/feeds-management',
+        href: route('backend.feeds.index'),
         icon: Rss,
     },
 ];

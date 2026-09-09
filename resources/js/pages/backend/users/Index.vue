@@ -1,66 +1,59 @@
 <script setup lang="ts">
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import Icon from '@/components/Icon.vue'
-import { Button } from '@/components/ui/button'
-import AppLayout from '@/layouts/AppLayout.vue'
-import type { BreadcrumbItemType } from '@/types'
-import { Link, router } from '@inertiajs/vue3'
-import { computed, ref } from 'vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import Icon from '@/components/Icon.vue';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { BreadcrumbItemType } from '@/types';
+import { Link, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface User {
-    id: number
-    name: string
-    email: string
-    dob: string | null
-    phone: string | null
-    address: string | null
-    position: string | null
-    description: string | null
-    image: string | null
-    created_at: string | null
+    id: number;
+    name: string;
+    email: string;
+    dob: string | null;
+    phone: string | null;
+    address: string | null;
+    position: string | null;
+    description: string | null;
+    image: string | null;
+    created_at: string | null;
 }
 
 interface Props {
-    user: User | null
+    user: User | null;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'ME', href: '/me' },
-]
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'ME', href: route('backend.users.index') },
+];
 
-const profile = computed(() => props.user)
+const profile = computed(() => props.user);
 
 const imageSrc = computed(() => {
-    const image = profile.value?.image
+    const image = profile.value?.image;
 
-    if (!image) return null
+    if (!image) return null;
 
-    return image.startsWith('http') || image.startsWith('/') ? image : `/${image}`
-})
+    return image.startsWith('http') || image.startsWith('/') ? image : `/${image}`;
+});
 
 const initials = computed(() => {
-    const name = profile.value?.name || 'Me'
+    const name = profile.value?.name || 'Me';
 
     return name
         .split(' ')
         .map((part) => part[0])
         .join('')
         .slice(0, 2)
-        .toUpperCase()
-})
+        .toUpperCase();
+});
 
-const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not set'
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-    }).format(new Date(dateString))
-}
+const formatDate = (dateString: string | null) => formatSharedDate(dateString) || 'Not set';
 
 const detailItems = computed(() => [
     { label: 'Email', value: profile.value?.email || 'Not set', icon: 'mail' },
@@ -69,25 +62,25 @@ const detailItems = computed(() => [
     { label: 'Address', value: profile.value?.address || 'Not set', icon: 'mapPin' },
     { label: 'Position', value: profile.value?.position || 'Not set', icon: 'briefcase' },
     { label: 'Created', value: formatDate(profile.value?.created_at || null), icon: 'clock' },
-])
+]);
 
-const showDeleteConfirm = ref(false)
-const deleting = ref(false)
+const showDeleteConfirm = ref(false);
+const deleting = ref(false);
 
 const confirmDelete = () => {
-    showDeleteConfirm.value = true
-}
+    showDeleteConfirm.value = true;
+};
 
 const deleteItem = () => {
-    if (!profile.value) return
+    if (!profile.value) return;
     router.delete(route('backend.users.destroy', profile.value.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
-            deleting.value = false
-            showDeleteConfirm.value = false
+            deleting.value = false;
+            showDeleteConfirm.value = false;
         },
-    })
-}
+    });
+};
 </script>
 
 <template>
@@ -96,7 +89,9 @@ const deleteItem = () => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="users" class="size-6" />
                     </div>
                     <div>
@@ -104,7 +99,7 @@ const deleteItem = () => {
                         <p class="text-sm text-muted-foreground">View and manage your profile record</p>
                     </div>
                 </div>
-                <Link v-if="!profile" href="/backend/users/create">
+                <Link v-if="!profile" :href="route('backend.users.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Profile
@@ -121,6 +116,10 @@ const deleteItem = () => {
                             :src="imageSrc"
                             :alt="profile.name"
                             class="size-20 rounded-2xl object-cover ring-1 ring-border"
+                            width="80"
+                            height="80"
+                            loading="lazy"
+                            decoding="async"
                         />
                         <div
                             v-else
@@ -136,13 +135,13 @@ const deleteItem = () => {
                     </div>
 
                     <div class="flex items-center gap-1">
-                        <Link :href="`/backend/users/${profile.id}/edit`">
+                        <Link :href="route('backend.users.edit', profile.id)">
                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                 <Icon name="squarePen" class="size-4" />
                                 Edit
                             </Button>
                         </Link>
-                        <Link :href="`/backend/users/${profile.id}`">
+                        <Link :href="route('backend.users.show', profile.id)">
                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                 <Icon name="eye" class="size-4" />
                                 View
@@ -166,16 +165,12 @@ const deleteItem = () => {
                     </p>
 
                     <div class="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        <div
-                            v-for="item in detailItems"
-                            :key="item.label"
-                            class="rounded-2xl border bg-background p-4"
-                        >
-                            <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        <div v-for="item in detailItems" :key="item.label" class="rounded-2xl border bg-background p-4">
+                            <div class="flex items-center gap-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                 <Icon :name="item.icon" class="size-3.5" />
                                 {{ item.label }}
                             </div>
-                            <div class="mt-3 break-words text-sm font-medium leading-6">
+                            <div class="mt-3 text-sm leading-6 font-medium break-words">
                                 {{ item.value }}
                             </div>
                         </div>
@@ -190,7 +185,7 @@ const deleteItem = () => {
                         <Icon name="users" class="size-6" />
                     </div>
                     <p class="text-sm">No profile record yet</p>
-                    <Link href="/backend/users/create">
+                    <Link :href="route('backend.users.create')">
                         <Button variant="outline" size="sm" class="rounded-lg">
                             <Icon name="plus" class="size-4" />
                             Create your profile

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'About Me', href: '/about-me' },
-    { title: 'Create', href: '/backend/about-me/create' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'About Me', href: route('backend.about-me.index') },
+    { title: 'Create', href: route('backend.about-me.create') },
 ];
 
 const form = useForm({
@@ -19,7 +19,7 @@ const form = useForm({
     description: '',
     location: '',
     year_experience: '',
-    fucus_on: '',
+    focus_on: '',
 });
 
 const submit = () => {
@@ -34,13 +34,15 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/about-me">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.about-me.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="user" class="size-6" />
                     </div>
                     <div>
@@ -73,22 +75,27 @@ const submit = () => {
                                 <InputError :message="form.errors.year_experience" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="fucus_on">Focus area</Label>
-                                <Input id="fucus_on" v-model="form.fucus_on" type="text" placeholder="Web Development" />
-                                <InputError :message="form.errors.fucus_on" />
+                                <Label for="focus_on">Focus area</Label>
+                                <Input id="focus_on" v-model="form.focus_on" type="text" placeholder="Web Development" />
+                                <InputError :message="form.errors.focus_on" />
                             </div>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="description">Description</Label>
-                            <Textarea id="description" v-model="form.description" placeholder="Tell visitors what you build and why it matters." :rows="6" />
+                            <Textarea
+                                id="description"
+                                v-model="form.description"
+                                placeholder="Tell visitors what you build and why it matters."
+                                :rows="6"
+                            />
                             <InputError :message="form.errors.description" />
                         </div>
                     </div>
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/about-me">
+                        <Link :href="route('backend.about-me.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

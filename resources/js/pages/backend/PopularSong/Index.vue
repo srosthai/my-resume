@@ -1,66 +1,67 @@
 <script setup lang="ts">
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import Icon from '@/components/Icon.vue'
-import { Button } from '@/components/ui/button'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, Link, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
-import type { BreadcrumbItemType } from '@/types'
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import Icon from '@/components/Icon.vue';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { BreadcrumbItemType } from '@/types';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 interface PopularSong {
-    id: number
-    title: string
-    artist: string
-    url: string
-    duration: number
-    formatted_duration: string
-    created_at: string
-    updated_at: string
+    id: number;
+    title: string;
+    artist: string;
+    url: string;
+    duration: number;
+    formatted_duration: string;
+    created_at: string;
+    updated_at: string;
 }
 
 interface Props {
     popularSongs: {
-        data: PopularSong[]
-        links: any[]
-        meta: any
-    }
+        data: PopularSong[];
+        links: any[];
+        meta: any;
+    };
 }
 
-const props = defineProps<Props>()
+defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Popular Songs', href: '/popular-songs' },
-]
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Popular Songs', href: route('backend.popular-songs.index') },
+];
 
-const showDeleteConfirm = ref(false)
-const itemToDelete = ref<PopularSong | null>(null)
-const deleting = ref(false)
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref<PopularSong | null>(null);
+const deleting = ref(false);
 
 const confirmDelete = (item: PopularSong) => {
-    itemToDelete.value = item
-    showDeleteConfirm.value = true
-}
+    itemToDelete.value = item;
+    showDeleteConfirm.value = true;
+};
 
 const deleteItem = () => {
-    if (!itemToDelete.value) return
+    if (!itemToDelete.value) return;
     router.delete(route('backend.popular-songs.destroy', itemToDelete.value.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
-            deleting.value = false
-            showDeleteConfirm.value = false
-            itemToDelete.value = null
+            deleting.value = false;
+            showDeleteConfirm.value = false;
+            itemToDelete.value = null;
         },
-    })
-}
+    });
+};
 
-const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString()
+const formatDate = (dateString: string) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 
 const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-}
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 </script>
 
 <template>
@@ -71,7 +72,9 @@ const formatDuration = (seconds: number): string => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="music" class="size-6" />
                     </div>
                     <div>
@@ -79,7 +82,7 @@ const formatDuration = (seconds: number): string => {
                         <p class="text-sm text-muted-foreground">Manage songs for your portfolio music player</p>
                     </div>
                 </div>
-                <Link href="/backend/popular-songs/create">
+                <Link :href="route('backend.popular-songs.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add New Song
@@ -92,7 +95,7 @@ const formatDuration = (seconds: number): string => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Song</th>
                                 <th class="px-6 py-4 text-left font-medium">Artist</th>
@@ -102,13 +105,11 @@ const formatDuration = (seconds: number): string => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(song, index) in popularSongs.data"
-                                :key="song.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(song, index) in popularSongs.data" :key="song.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>
@@ -125,13 +126,13 @@ const formatDuration = (seconds: number): string => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(song.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/popular-songs/${song.id}`">
+                                        <Link :href="route('backend.popular-songs.show', song.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="eye" class="size-4" />
                                                 View
                                             </Button>
                                         </Link>
-                                        <Link :href="`/backend/popular-songs/${song.id}/edit`">
+                                        <Link :href="route('backend.popular-songs.edit', song.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -156,7 +157,7 @@ const formatDuration = (seconds: number): string => {
                                             <Icon name="music" class="size-6" />
                                         </div>
                                         <p class="text-sm">No songs found</p>
-                                        <Link href="/backend/popular-songs/create">
+                                        <Link :href="route('backend.popular-songs.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add Your First Song

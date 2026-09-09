@@ -23,7 +23,7 @@ class TechStackSeeder extends Seeder
             ['name' => 'React', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg', 'type' => 'Frontend', 'description' => 'JavaScript library for building user interfaces'],
             ['name' => 'TypeScript', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg', 'type' => 'Frontend', 'description' => 'Typed superset of JavaScript for scalable apps'],
             ['name' => 'JavaScript', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png', 'type' => 'Frontend', 'description' => 'Programming language of the web'],
-            ['name' => 'Tailwind CSS', 'logo' => 'https://tailwindcss.com/_next/static/media/tailwindcss-mark.3c5441fc7a190f9e5f1a9eee.svg', 'type' => 'Frontend', 'description' => 'Utility-first CSS framework for rapid UI development'],
+            ['name' => 'Tailwind CSS', 'logo' => 'https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/tailwindcss/tailwindcss-original.svg', 'type' => 'Frontend', 'description' => 'Utility-first CSS framework for rapid UI development'],
             ['name' => 'Inertia.js', 'logo' => 'https://avatars.githubusercontent.com/u/47703742', 'type' => 'Frontend', 'description' => 'Modern monolith approach for SPAs'],
             ['name' => 'Vite', 'logo' => 'https://vitejs.dev/logo.svg', 'type' => 'Frontend', 'description' => 'Next generation frontend build tool'],
 

@@ -3,101 +3,51 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\TechStackRequest;
 use App\Models\TechStack;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class TechStackController extends Controller
 {
-    /**
-     * Display a listing of the tech stacks.
-     *
-     * @return \Inertia\Response
-     */
-    public function index()
+    public function index(): Response
     {
-        $techStacks = TechStack::latest()->get();
         return Inertia::render('backend/TechStack/Index', [
-            'techStacks' => $techStacks
+            'techStacks' => TechStack::latest()->get(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new tech stack.
-     *
-     * @return \Inertia\Response
-     */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('backend/TechStack/Create');
     }
 
-    /**
-     * Store a newly created tech stack in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request)
+    public function store(TechStackRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name'        => 'nullable|string|max:255',
-            'logo'        => 'nullable|string|max:255',
-            'type'        => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        TechStack::create($request->validated());
 
-        TechStack::create($validated);
-
-        return redirect()->route('tech-stacks')->with('success', 'Tech Stack created successfully.');
+        return redirect()->route('backend.tech-stacks.index')->with('success', 'Tech Stack created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified tech stack.
-     *
-     * @param \App\Models\TechStack $techStack
-     * @return \Inertia\Response
-     */
-    public function edit(TechStack $techStack)
+    public function edit(TechStack $techStack): Response
     {
         return Inertia::render('backend/TechStack/Edit', [
-            'techStack' => $techStack
+            'techStack' => $techStack,
         ]);
     }
 
-    /**
-     * Update the specified tech stack in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\TechStack $techStack
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function update(Request $request, TechStack $techStack)
+    public function update(TechStackRequest $request, TechStack $techStack): RedirectResponse
     {
-        $validated = $request->validate([
-            'name'        => 'nullable|string|max:255',
-            'logo'        => 'nullable|string|max:255',
-            'type'        => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $techStack->update($request->validated());
 
-        $techStack->update($validated);
-
-        return redirect()->route('tech-stacks')->with('success', 'Tech Stack updated successfully.');
+        return redirect()->route('backend.tech-stacks.index')->with('success', 'Tech Stack updated successfully.');
     }
 
-    /**
-     * Remove the specified tech stack from storage.
-     *
-     * @param \App\Models\TechStack $techStack
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(TechStack $techStack)
+    public function destroy(TechStack $techStack): RedirectResponse
     {
         $techStack->delete();
 
-        return redirect()->route('tech-stacks')->with('success', 'Tech Stack deleted successfully.');
+        return redirect()->route('backend.tech-stacks.index')->with('success', 'Tech Stack deleted successfully.');
     }
 }

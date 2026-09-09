@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+
 return [
 
     /*
@@ -62,7 +64,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => env('AUTH_MODEL', User::class),
         ],
 
         // 'users' => [
@@ -111,5 +113,18 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public Registration
+    |--------------------------------------------------------------------------
+    |
+    | This is a single-owner portfolio. Registration is disabled by default so
+    | that visitors cannot create accounts. Enable it only while bootstrapping
+    | a fresh install, then turn it off again.
+    |
+    */
+
+    'registration_enabled' => (bool) env('AUTH_REGISTRATION_ENABLED', false),
 
 ];

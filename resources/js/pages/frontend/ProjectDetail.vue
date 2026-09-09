@@ -1,19 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import { formatDate } from '@/lib/date';
+import type { LegacyProject, ProjectNeighbour } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Github, Laptop } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    title: { type: String, default: 'Project' },
-    description: { type: String, default: '' },
-    project: { type: Object, required: true },
-    previousProject: { type: Object, default: null },
-    nextProject: { type: Object, default: null },
-});
+const props = withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+        project: LegacyProject;
+        previousProject?: ProjectNeighbour | null;
+        nextProject?: ProjectNeighbour | null;
+    }>(),
+    {
+        title: 'Project',
+        description: '',
+        previousProject: null,
+        nextProject: null,
+    },
+);
 
 const { isVisible } = usePageReveal(300);
 
@@ -24,7 +34,8 @@ const { date: dateString } = usePhnomPenhClock(60000);
 const { pointer } = usePointerGlow();
 
 const statusMeta = computed(() => {
-    const s = props.project?.status;
+    // Widened: legacy rows may carry statuses outside the current ProjectStatus union.
+    const s = props.project?.status as string | undefined;
     switch (s) {
         case 'completed':
             return { label: 'Completed', color: '#10b981' };
@@ -41,15 +52,7 @@ const statusMeta = computed(() => {
 const formattedDate = computed(() => {
     const raw = props.project?.created_date || props.project?.created_at;
     if (!raw) return null;
-    try {
-        return new Date(raw).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    } catch {
-        return null;
-    }
+    return formatDate(raw, { month: 'long', day: 'numeric' }) || null;
 });
 
 const year = computed(() => {
@@ -69,14 +72,14 @@ const technologies = computed(() => {
     if (props.project?.tech_stack) {
         return props.project.tech_stack
             .split(',')
-            .map((t) => t.trim())
+            .map((t: string) => t.trim())
             .filter(Boolean);
     }
     return [];
 });
 
 const projectLinks = computed(() => {
-    const out = [];
+    const out: { name: string; url: string; isGithub: boolean }[] = [];
     if (Array.isArray(props.project?.links)) {
         for (const l of props.project.links) {
             const name = Object.keys(l)[0];
@@ -96,8 +99,8 @@ const entryNumber = computed(() => {
 const goBack = () => {
     router.visit(route('portfolio'));
 };
-const goToProject = (id) => {
-    router.visit(route('portfolio.show', id));
+const goToProject = (target: ProjectNeighbour) => {
+    router.visit(route('portfolio.show', target.slug ?? target.id));
 };
 </script>
 
@@ -110,10 +113,6 @@ const goToProject = (id) => {
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="article" />
             <meta name="robots" content="index, follow" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <section
@@ -199,7 +198,9 @@ const goToProject = (id) => {
                     <img
                         v-if="project.image"
                         :src="project.image"
-                        :alt="project.title"
+                        :alt="project.title ?? undefined"
+                        width="1600"
+                        height="900"
                         loading="lazy"
                         decoding="async"
                         class="h-full w-full object-cover"
@@ -307,7 +308,7 @@ const goToProject = (id) => {
             <!-- PAGINATION -->
             <nav class="mobile-pager reveal mt-8 border-t border-border/50 pt-6 sm:mt-10 sm:pt-8" style="--d: 500ms">
                 <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-4">
-                    <button v-if="previousProject" @click="goToProject(previousProject.id)" class="btn-3d pager-btn group pager-prev">
+                    <button v-if="previousProject" @click="goToProject(previousProject)" class="btn-3d pager-btn group pager-prev">
                         <ChevronLeft class="h-4 w-4 shrink-0 opacity-60 transition-transform duration-300 group-hover:-translate-x-0.5" />
                         <div class="min-w-0 text-left">
                             <p class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">← Previous</p>
@@ -325,7 +326,7 @@ const goToProject = (id) => {
                         All entries
                     </button>
 
-                    <button v-if="nextProject" @click="goToProject(nextProject.id)" class="btn-3d pager-btn group pager-next">
+                    <button v-if="nextProject" @click="goToProject(nextProject)" class="btn-3d pager-btn group pager-next">
                         <div class="min-w-0 text-right">
                             <p class="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase sm:text-[10px]">Next →</p>
                             <p class="mt-1 truncate font-serif text-base text-foreground sm:text-lg">

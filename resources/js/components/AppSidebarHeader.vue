@@ -47,7 +47,7 @@ const showAvatar = computed(() => user.avatar && user.avatar !== '');
                         class="flex h-10 items-center gap-2 rounded-lg border bg-background px-2 text-sm font-medium shadow-xs transition-colors hover:bg-muted"
                     >
                         <Avatar class="size-7 rounded-md">
-                            <AvatarImage v-if="showAvatar" :src="user.avatar" :alt="user.name" />
+                            <AvatarImage v-if="showAvatar" :src="user.avatar ?? ''" :alt="user.name" />
                             <AvatarFallback class="rounded-md text-xs">
                                 {{ getInitials(user.name) }}
                             </AvatarFallback>

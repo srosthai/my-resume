@@ -1,29 +1,28 @@
-<script setup>
+<script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { Project } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
-    projects: {
-        type: Array,
-        required: true,
-    },
-});
+defineProps<{
+    projects: Project[];
+}>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Projects', href: '/projects' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Projects', href: route('backend.projects.index') },
 ];
 
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref(null);
+const itemToDelete = ref<Project | null>(null);
 const deleting = ref(false);
 
-const confirmDelete = (item) => {
+const confirmDelete = (item: Project) => {
     itemToDelete.value = item;
     showDeleteConfirm.value = true;
 };
@@ -40,9 +39,9 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString: string) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 
-const getStatusBadgeVariant = (status) => {
+const getStatusBadgeVariant = (status: string) => {
     return status === 'completed' ? 'default' : 'secondary';
 };
 </script>
@@ -55,7 +54,9 @@ const getStatusBadgeVariant = (status) => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="folderKanban" class="size-6" />
                     </div>
                     <div>
@@ -63,7 +64,7 @@ const getStatusBadgeVariant = (status) => {
                         <p class="text-sm text-muted-foreground">View and manage your projects</p>
                     </div>
                 </div>
-                <Link href="/backend/projects/create">
+                <Link :href="route('backend.projects.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Project
@@ -76,7 +77,7 @@ const getStatusBadgeVariant = (status) => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Image</th>
                                 <th class="px-6 py-4 text-left font-medium">Title</th>
@@ -87,13 +88,11 @@ const getStatusBadgeVariant = (status) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in projects"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in projects" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>
@@ -102,8 +101,12 @@ const getStatusBadgeVariant = (status) => {
                                         <img
                                             v-if="item.image"
                                             :src="`/${item.image}`"
-                                            :alt="item.title"
+                                            :alt="item.title ?? undefined"
                                             class="size-full object-cover"
+                                            width="56"
+                                            height="56"
+                                            loading="lazy"
+                                            decoding="async"
                                         />
                                         <div v-else class="flex size-full items-center justify-center text-muted-foreground">
                                             <Icon name="image" class="size-5" />
@@ -122,7 +125,7 @@ const getStatusBadgeVariant = (status) => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.created_date ? formatDate(item.created_date) : '-' }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/projects/${item.id}/edit`">
+                                        <Link :href="route('backend.projects.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -147,7 +150,7 @@ const getStatusBadgeVariant = (status) => {
                                             <Icon name="folderKanban" class="size-6" />
                                         </div>
                                         <p class="text-sm">No projects found</p>
-                                        <Link href="/backend/projects/create">
+                                        <Link :href="route('backend.projects.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first project

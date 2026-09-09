@@ -30,12 +30,7 @@ const patternId = computed(() => `grid-pattern-${useId()}`);
 <template>
     <svg
         aria-hidden="true"
-        :class="
-            cn(
-                'pointer-events-none absolute inset-0 h-full w-full fill-foreground/[0.045] stroke-foreground/[0.07]',
-                props.class,
-            )
-        "
+        :class="cn('pointer-events-none absolute inset-0 h-full w-full fill-foreground/[0.045] stroke-foreground/[0.07]', props.class)"
     >
         <defs>
             <pattern :id="patternId" :width="width" :height="height" patternUnits="userSpaceOnUse" :x="x" :y="y">

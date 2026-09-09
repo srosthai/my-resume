@@ -3,89 +3,51 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\ProjectTypeRequest;
 use App\Models\ProjectType;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectTypeController extends Controller
 {
-    /**
-     * Display all data of Project Types.
-     * @return \Inertia\Response
-     */
-    public function index()
+    public function index(): Response
     {
-        $projectTypes = ProjectType::latest()->get();
         return Inertia::render('backend/ProjectType/Index', [
-            'projectTypes' => $projectTypes
+            'projectTypes' => ProjectType::latest()->get(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new Project Type entry.
-     * @return \Inertia\Response
-     */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('backend/ProjectType/Create');
     }
 
-    /**
-     * Store a newly created Project Type entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request)
+    public function store(ProjectTypeRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+        ProjectType::create($request->validated());
 
-        ProjectType::create($validated);
-
-        return redirect()->route('project-types')->with('success', 'Project Type created successfully.');
+        return redirect()->route('backend.project-types.index')->with('success', 'Project Type created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified Project Type entry.
-     * @param \App\Models\ProjectType $projectType
-     * @return \Inertia\Response
-     */
-    public function edit(ProjectType $projectType)
+    public function edit(ProjectType $projectType): Response
     {
         return Inertia::render('backend/ProjectType/Edit', [
-            'projectType' => $projectType
+            'projectType' => $projectType,
         ]);
     }
 
-    /**
-     * Update the specified Project Type entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\ProjectType $projectType
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function update(Request $request, ProjectType $projectType)
+    public function update(ProjectTypeRequest $request, ProjectType $projectType): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+        $projectType->update($request->validated());
 
-        $projectType->update($validated);
-
-        return redirect()->route('project-types')->with('success', 'Project Type updated successfully.');
+        return redirect()->route('backend.project-types.index')->with('success', 'Project Type updated successfully.');
     }
 
-    /**
-     * Remove the specified Project Type entry from storage.
-     * @param \App\Models\ProjectType $projectType
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(ProjectType $projectType)
+    public function destroy(ProjectType $projectType): RedirectResponse
     {
         $projectType->delete();
 
-        return redirect()->route('project-types')->with('success', 'Project Type deleted successfully.');
+        return redirect()->route('backend.project-types.index')->with('success', 'Project Type deleted successfully.');
     }
 }

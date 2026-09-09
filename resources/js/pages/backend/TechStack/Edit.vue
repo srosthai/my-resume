@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,9 @@ const props = defineProps({
 });
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Tech Stack', href: '/tech-stacks' },
-    { title: 'Edit', href: `/backend/tech-stacks/${props.techStack.id}/edit` },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Tech Stack', href: route('backend.tech-stacks.index') },
+    { title: 'Edit', href: route('backend.tech-stacks.edit', props.techStack.id) },
 ];
 
 const form = useForm({
@@ -40,13 +40,15 @@ const submit = () => {
         <div class="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
-                <Link href="/tech-stacks">
-                    <Button variant="outline" size="icon" class="rounded-xl">
+                <Link :href="route('backend.tech-stacks.index')">
+                    <Button variant="outline" size="icon" class="rounded-xl" aria-label="Back">
                         <Icon name="arrowLeft" class="size-4" />
                     </Button>
                 </Link>
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="layers" class="size-6" />
                     </div>
                     <div>
@@ -62,41 +64,22 @@ const submit = () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="name">Technology Name</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    placeholder="Enter technology name"
-                                    required
-                                    autofocus
-                                />
+                                <Input id="name" v-model="form.name" type="text" placeholder="Enter technology name" required autofocus />
                                 <InputError :message="form.errors.name" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="type">Type/Category</Label>
-                                <Input
-                                    id="type"
-                                    v-model="form.type"
-                                    type="text"
-                                    placeholder="e.g., Frontend, Backend, Database"
-                                />
+                                <Input id="type" v-model="form.type" type="text" placeholder="e.g., Frontend, Backend, Database" />
                                 <InputError :message="form.errors.type" />
                             </div>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="logo">Logo URL</Label>
-                            <Input
-                                id="logo"
-                                v-model="form.logo"
-                                type="url"
-                                placeholder="Enter logo URL (optional)"
-                            />
+                            <Input id="logo" v-model="form.logo" type="url" placeholder="Enter logo URL (optional)" />
                             <InputError :message="form.errors.logo" />
-                            <p class="text-xs text-muted-foreground">
-                                You can use CDN URLs like devicons or upload your own logo
-                            </p>
+                            <p class="text-xs text-muted-foreground">You can use CDN URLs like devicons or upload your own logo</p>
                         </div>
 
                         <div class="space-y-2">
@@ -113,7 +96,7 @@ const submit = () => {
 
                     <!-- Footer actions -->
                     <div class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8">
-                        <Link href="/tech-stacks">
+                        <Link :href="route('backend.tech-stacks.index')">
                             <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
                         </Link>
                         <Button type="submit" :disabled="form.processing" class="rounded-xl shadow-sm">

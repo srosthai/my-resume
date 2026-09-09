@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Enums\ProjectStatus;
+use App\Models\Concerns\HasSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     protected $table = 'projects';
 
@@ -24,18 +27,22 @@ class Project extends Model
 
     protected $casts = [
         'technologies' => 'array',
-        'links'        => 'array',
+        'links' => 'array',
         'created_date' => 'date',
-        'created_at'   => 'datetime',
-        'updated_at'   => 'datetime',
+        'status' => ProjectStatus::class,
     ];
 
     /**
      * Get the project type associated with this project.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
-    public function projectType()
+    protected function slugSource(): string
+    {
+        return (string) $this->title;
+    }
+
+    public function projectType(): BelongsTo
     {
         return $this->belongsTo(ProjectType::class);
     }

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
@@ -8,10 +8,16 @@ import { Head } from '@inertiajs/vue3';
 import { ArrowUpRight, Book, Camera, Code2, Coffee, Dumbbell, Gamepad2, Heart, Music, Palette, Plane, Terminal } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-defineProps({
-    title: { type: String, default: 'Hobbies' },
-    description: { type: String, default: '' },
-});
+withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        title: 'Hobbies',
+        description: '',
+    },
+);
 
 const hobbies = [
     {
@@ -102,7 +108,7 @@ const dateString = computed(() => {
 const { pointer } = usePointerGlow();
 
 const countByCategory = computed(() => {
-    const map = { All: hobbies.length };
+    const map: Record<string, number> = { All: hobbies.length };
     for (const cat of categories) {
         if (cat === 'All') continue;
         map[cat] = hobbies.filter((h) => h.category === cat).length;
@@ -125,14 +131,10 @@ const filteredHobbies = computed(() => {
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-56 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-16 rounded-2xl md:col-span-12" />

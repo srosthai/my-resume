@@ -8,45 +8,19 @@ use Illuminate\Database\Seeder;
 class PopularSongSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * The public music player only plays YouTube links, so seed real ones.
      */
     public function run(): void
     {
         $songs = [
-            [
-                'title' => 'Lofi Coding Beats',
-                'artist' => 'ChilledCow',
-                'url' => 'https://example.com/songs/lofi-coding.mp3',
-                'duration' => 180,
-            ],
-            [
-                'title' => 'Focus Flow',
-                'artist' => 'Productivity Music',
-                'url' => 'https://example.com/songs/focus-flow.mp3',
-                'duration' => 240,
-            ],
-            [
-                'title' => 'Deep Work Ambience',
-                'artist' => 'Ambient Sounds',
-                'url' => 'https://example.com/songs/deep-work.mp3',
-                'duration' => 300,
-            ],
-            [
-                'title' => 'Coding in the Rain',
-                'artist' => 'Nature Beats',
-                'url' => 'https://example.com/songs/coding-rain.mp3',
-                'duration' => 210,
-            ],
-            [
-                'title' => 'Synthwave Dreams',
-                'artist' => 'Retro Wave',
-                'url' => 'https://example.com/songs/synthwave.mp3',
-                'duration' => 195,
-            ],
+            ['title' => 'បងក្រ', 'artist' => 'Tena feat. YCN Rakhie', 'url' => 'https://www.youtube.com/watch?v=-IQcA1jmb3I', 'duration' => 250],
+            ['title' => '360', 'artist' => 'VannDa', 'url' => 'https://www.youtube.com/watch?v=VangtodgL0Y', 'duration' => 221],
+            ['title' => 'យប់ស្ងាត់ (Quiet Night)', 'artist' => 'TEPPISETH', 'url' => 'https://www.youtube.com/watch?v=JLevKPoa6BI', 'duration' => 146],
+            ['title' => 'រៀនចប់', 'artist' => 'All3rgy & Chan Sreykhouch', 'url' => 'https://www.youtube.com/watch?v=8oLi5b4w4PQ', 'duration' => 227],
         ];
 
         foreach ($songs as $song) {
-            PopularSong::create($song);
+            PopularSong::firstOrCreate(['url' => $song['url']], $song);
         }
     }
 }

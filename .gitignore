@@ -22,3 +22,8 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Database dumps never belong in the repository. New uploads are ignored too;
+# the files already tracked stay until they are moved off git on the server.
+*.sql
+/public/uploads/

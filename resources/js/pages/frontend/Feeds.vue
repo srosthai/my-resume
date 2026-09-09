@@ -1,10 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { Feed } from '@/types';
+import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
     Briefcase,
@@ -15,6 +17,7 @@ import {
     Compass,
     Eye,
     Heart,
+    type LucideIcon,
     MapPin,
     Pin,
     ScanSearch,
@@ -24,27 +27,45 @@ import {
     Utensils,
     X,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
-const props = defineProps({
-    title: { type: String, default: 'My Feeds' },
-    description: { type: String, default: 'Follow my lifestyle, hangouts, and adventures' },
-    feeds: { type: Array, default: () => [] },
-    activityTypes: { type: Array, default: () => [] },
-});
+const props = withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+        feeds?: Feed[];
+        activityTypes?: string[];
+    }>(),
+    {
+        title: 'My Feeds',
+        description: 'Follow my lifestyle, hangouts, and adventures',
+        feeds: () => [],
+        activityTypes: () => [],
+    },
+);
+
+/** A feed whose `images` array is present — the lightbox is only ever opened for these. */
+type FeedWithImages = Feed & { images: string[] };
+
+interface FeedStat {
+    likes_count: number;
+    views: number;
+}
 
 const { isLoading, isVisible } = usePageReveal(400);
 const searchQuery = ref('');
 const selectedFilter = ref('All');
 const searchFocused = ref(false);
-const expandedImages = ref(null);
+const expandedImages = ref<FeedWithImages | null>(null);
 const currentImageIndex = ref(0);
+const lightbox = ref<HTMLElement | null>(null);
+let lightboxTrigger: HTMLElement | null = null;
 const currentYear = new Date().getFullYear();
 
 // Like / view tracking
-const likedFeeds = ref(new Set(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liked_feeds') || '[]') : []));
-const feedStats = reactive({});
-const likingInProgress = ref(new Set());
+const likedFeeds = ref<Set<number>>(new Set<number>(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liked_feeds') || '[]') : []));
+const feedStats = reactive<Record<number, FeedStat>>({});
+const likingInProgress = ref<Set<number>>(new Set());
 
 // Clock for meta strip (date only — 60s tick); `date` format matches former dateString
 const { now, date: dateString } = usePhnomPenhClock(60000);
@@ -61,11 +82,11 @@ const initFeedStats = () => {
     });
 };
 
-const getLikes = (feed) => feedStats[feed.id]?.likes_count ?? feed.likes_count;
-const getViews = (feed) => feedStats[feed.id]?.views ?? feed.views;
-const isLiked = (feedId) => likedFeeds.value.has(feedId);
+const getLikes = (feed: Feed) => feedStats[feed.id]?.likes_count ?? feed.likes_count;
+const getViews = (feed: Feed) => feedStats[feed.id]?.views ?? feed.views;
+const isLiked = (feedId: number) => likedFeeds.value.has(feedId);
 
-const toggleLike = async (feed) => {
+const toggleLike = async (feed: Feed) => {
     if (likingInProgress.value.has(feed.id)) return;
     likingInProgress.value.add(feed.id);
 
@@ -80,7 +101,7 @@ const toggleLike = async (feed) => {
     localStorage.setItem('liked_feeds', JSON.stringify([...likedFeeds.value]));
 
     try {
-        const { data } = await axios.post(`/api/feeds/${feed.id}/like`);
+        const { data } = await axios.post<{ likes_count: number; liked: boolean }>(`/api/feeds/${feed.id}/like`);
         if (feedStats[feed.id]) {
             feedStats[feed.id].likes_count = data.likes_count;
         }
@@ -104,12 +125,12 @@ const toggleLike = async (feed) => {
     }
 };
 
-const trackView = async (feed) => {
+const trackView = async (feed: Feed) => {
     const viewedKey = `feed_viewed_${feed.id}`;
     if (sessionStorage.getItem(viewedKey)) return;
     sessionStorage.setItem(viewedKey, '1');
     try {
-        const { data } = await axios.post(`/api/feeds/${feed.id}/view`);
+        const { data } = await axios.post<{ views: number }>(`/api/feeds/${feed.id}/view`);
         if (feedStats[feed.id]) {
             feedStats[feed.id].views = data.views;
         }
@@ -118,7 +139,7 @@ const trackView = async (feed) => {
     }
 };
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent) => {
     if (!expandedImages.value) return;
     if (e.key === 'Escape') closeImageViewer();
     if (e.key === 'ArrowRight') nextImage();
@@ -131,7 +152,7 @@ const activities = computed(() => {
 });
 
 const countByActivity = computed(() => {
-    const m = { All: props.feeds.length };
+    const m: Record<string, number> = { All: props.feeds.length };
     for (const t of props.activityTypes || []) {
         m[t] = props.feeds.filter((f) => f.activity_type === t).length;
     }
@@ -156,8 +177,8 @@ const filteredFeeds = computed(() => {
     return filtered;
 });
 
-const getActivityIcon = (type) => {
-    const icons = {
+const getActivityIcon = (type: string | null) => {
+    const icons: Record<string, LucideIcon> = {
         hangout: Users,
         travel: Compass,
         food: Utensils,
@@ -165,11 +186,11 @@ const getActivityIcon = (type) => {
         work: Briefcase,
         event: CalendarHeart,
     };
-    return icons[type] || Sparkles;
+    return (type && icons[type]) || Sparkles;
 };
 
-const getMoodEmoji = (mood) => {
-    const emojis = {
+const getMoodEmoji = (mood: string | null) => {
+    const emojis: Record<string, string> = {
         happy: '😊',
         excited: '🎉',
         relaxed: '😌',
@@ -179,12 +200,13 @@ const getMoodEmoji = (mood) => {
         creative: '🎨',
         energetic: '⚡',
     };
-    return emojis[mood] || '';
+    return (mood && emojis[mood]) || '';
 };
 
-const timeAgo = (date) => {
-    const past = new Date(date);
-    const diffMs = now.value - past;
+const timeAgo = (date: string | null) => {
+    // `new Date(null)` is the epoch, exactly like `new Date(0)`.
+    const past = new Date(date ?? 0);
+    const diffMs = now.value.getTime() - past.getTime();
     const diffSecs = Math.floor(diffMs / 1000);
     const diffMins = Math.floor(diffSecs / 60);
     const diffHours = Math.floor(diffMins / 60);
@@ -198,31 +220,27 @@ const timeAgo = (date) => {
     if (diffDays < 7) return `${diffDays}d ago`;
     if (diffWeeks < 4) return `${diffWeeks}w ago`;
     if (diffMonths < 12) return `${diffMonths}mo ago`;
-    return past.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
+    return formatSharedDate(date, { month: 'short', day: 'numeric' });
 };
 
-const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-    });
-};
+const formatDate = (date: string | null) => formatSharedDate(date, { weekday: 'short', month: 'short', day: 'numeric', year: undefined });
 
-const openImageViewer = (feed, index) => {
-    expandedImages.value = feed;
+const openImageViewer = (feed: Feed, index: number) => {
+    // Only reachable from the template inside `v-if="feed.images && feed.images.length > 0"`.
+    expandedImages.value = feed as FeedWithImages;
     currentImageIndex.value = index;
     document.body.style.overflow = 'hidden';
+    lightboxTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    void nextTick(() => lightbox.value?.focus());
 };
 
 const closeImageViewer = () => {
     expandedImages.value = null;
     currentImageIndex.value = 0;
     document.body.style.overflow = '';
+    const trigger = lightboxTrigger;
+    lightboxTrigger = null;
+    void nextTick(() => trigger?.focus());
 };
 
 const nextImage = () => {
@@ -264,14 +282,10 @@ onBeforeUnmount(() => {
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-8">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-8">
             <Skeleton class="mb-5 h-56 w-full rounded-3xl" />
             <Skeleton class="mb-6 h-16 w-full rounded-2xl" />
             <div class="space-y-6">
@@ -452,7 +466,13 @@ onBeforeUnmount(() => {
                                             </span>
                                         </div>
                                         <div class="mt-1 ml-[34px] font-mono text-[9px] tracking-[0.22em] text-muted-foreground/60 uppercase">
-                                            {{ formatDate(feed.published_at || feed.created_at) }}
+                                            <Link
+                                                :href="route('feeds.show', feed.slug)"
+                                                class="transition-colors hover:text-foreground"
+                                                :aria-label="`Open entry from ${formatDate(feed.published_at || feed.created_at)}`"
+                                            >
+                                                {{ formatDate(feed.published_at || feed.created_at) }}
+                                            </Link>
                                         </div>
                                     </div>
 
@@ -462,7 +482,9 @@ onBeforeUnmount(() => {
                                             v-if="feed.title"
                                             class="mt-1 font-serif text-2xl leading-tight tracking-tight text-foreground sm:text-[28px]"
                                         >
-                                            {{ feed.title }}
+                                            <Link :href="route('feeds.show', feed.slug)" class="transition-colors hover:text-foreground/80">
+                                                {{ feed.title }}
+                                            </Link>
                                         </h3>
                                         <p class="mt-2.5 text-sm leading-relaxed whitespace-pre-line text-muted-foreground sm:text-[15px]">
                                             {{ feed.body }}
@@ -475,11 +497,17 @@ onBeforeUnmount(() => {
                                         <div
                                             v-if="feed.images.length === 1"
                                             class="group/img cursor-pointer overflow-hidden rounded-2xl"
+                                            role="button"
+                                            tabindex="0"
                                             @click="openImageViewer(feed, 0)"
+                                            @keydown.enter.prevent="openImageViewer(feed, 0)"
+                                            @keydown.space.prevent="openImageViewer(feed, 0)"
                                         >
                                             <img
                                                 :src="feed.images[0]"
                                                 :alt="feed.title || 'Feed photo'"
+                                                width="1200"
+                                                height="800"
                                                 class="max-h-[420px] w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.03]"
                                                 loading="lazy"
                                                 decoding="async"
@@ -495,11 +523,17 @@ onBeforeUnmount(() => {
                                                 v-for="(img, idx) in feed.images"
                                                 :key="idx"
                                                 class="group/img cursor-pointer overflow-hidden"
+                                                role="button"
+                                                tabindex="0"
                                                 @click="openImageViewer(feed, idx)"
+                                                @keydown.enter.prevent="openImageViewer(feed, idx)"
+                                                @keydown.space.prevent="openImageViewer(feed, idx)"
                                             >
                                                 <img
                                                     :src="img"
                                                     :alt="`Photo ${idx + 1}`"
+                                                    width="800"
+                                                    height="600"
                                                     class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                     loading="lazy"
                                                     decoding="async"
@@ -509,20 +543,38 @@ onBeforeUnmount(() => {
 
                                         <!-- Three or more -->
                                         <div v-else class="flex h-56 gap-1 overflow-hidden rounded-2xl sm:h-72">
-                                            <div class="group/img flex-[2] cursor-pointer overflow-hidden" @click="openImageViewer(feed, 0)">
+                                            <div
+                                                class="group/img flex-[2] cursor-pointer overflow-hidden"
+                                                role="button"
+                                                tabindex="0"
+                                                @click="openImageViewer(feed, 0)"
+                                                @keydown.enter.prevent="openImageViewer(feed, 0)"
+                                                @keydown.space.prevent="openImageViewer(feed, 0)"
+                                            >
                                                 <img
                                                     :src="feed.images[0]"
                                                     alt="Photo 1"
+                                                    width="800"
+                                                    height="600"
                                                     class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.04]"
                                                     loading="lazy"
                                                     decoding="async"
                                                 />
                                             </div>
                                             <div class="flex flex-[1] flex-col gap-1">
-                                                <div class="group/img flex-1 cursor-pointer overflow-hidden" @click="openImageViewer(feed, 1)">
+                                                <div
+                                                    class="group/img flex-1 cursor-pointer overflow-hidden"
+                                                    role="button"
+                                                    tabindex="0"
+                                                    @click="openImageViewer(feed, 1)"
+                                                    @keydown.enter.prevent="openImageViewer(feed, 1)"
+                                                    @keydown.space.prevent="openImageViewer(feed, 1)"
+                                                >
                                                     <img
                                                         :src="feed.images[1]"
                                                         alt="Photo 2"
+                                                        width="800"
+                                                        height="600"
                                                         class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                         loading="lazy"
                                                         decoding="async"
@@ -530,11 +582,17 @@ onBeforeUnmount(() => {
                                                 </div>
                                                 <div
                                                     class="group/img relative flex-1 cursor-pointer overflow-hidden"
+                                                    role="button"
+                                                    tabindex="0"
                                                     @click="openImageViewer(feed, 2)"
+                                                    @keydown.enter.prevent="openImageViewer(feed, 2)"
+                                                    @keydown.space.prevent="openImageViewer(feed, 2)"
                                                 >
                                                     <img
                                                         :src="feed.images[2]"
                                                         alt="Photo 3"
+                                                        width="800"
+                                                        height="600"
                                                         class="h-full w-full object-cover transition-transform duration-700 group-hover/img:scale-[1.05]"
                                                         loading="lazy"
                                                         decoding="async"
@@ -610,7 +668,16 @@ onBeforeUnmount(() => {
         <!-- IMAGE LIGHTBOX -->
         <Teleport to="body">
             <Transition name="lightbox">
-                <div v-if="expandedImages" class="fixed inset-0 z-[100] flex items-center justify-center" @click.self="closeImageViewer">
+                <div
+                    v-if="expandedImages"
+                    ref="lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Image viewer"
+                    tabindex="-1"
+                    class="fixed inset-0 z-[100] flex items-center justify-center outline-none"
+                    @click.self="closeImageViewer"
+                >
                     <div class="absolute inset-0 bg-black/90 backdrop-blur-xl sm:bg-black/85"></div>
 
                     <button
@@ -636,7 +703,10 @@ onBeforeUnmount(() => {
                         <img
                             :src="expandedImages.images[currentImageIndex]"
                             :alt="`Photo ${currentImageIndex + 1}`"
-                            class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl sm:max-h-[88vh]"
+                            width="1600"
+                            height="1200"
+                            decoding="async"
+                            class="h-auto max-h-[80vh] w-auto max-w-full rounded-lg object-contain shadow-2xl sm:max-h-[88vh]"
                             :key="currentImageIndex"
                         />
                     </div>
@@ -836,18 +906,15 @@ h3,
     gap: 0.3rem;
     padding: 0.2rem 0.55rem;
     border-radius: 9999px;
-    border: 1px solid color-mix(in oklab, #f59e0b 40%, var(--color-border));
-    background: color-mix(in oklab, #f59e0b 10%, transparent);
-    color: #b45309;
+    border: 1px solid color-mix(in oklab, var(--accent-ink) 45%, var(--color-border));
+    background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+    color: var(--accent-ink);
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     flex-shrink: 0;
-}
-:global(.dark) .pinned-chip {
-    color: #fbbf24;
 }
 
 /* Tag chips */

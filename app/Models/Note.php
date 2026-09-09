@@ -2,13 +2,19 @@
 
 namespace App\Models;
 
+use App\Enums\PublishStatus;
+use App\Models\Concerns\HasSlug;
+use App\Models\Concerns\Publishable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class Note extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug, Publishable;
 
     protected $fillable = [
         'title',
@@ -16,108 +22,56 @@ class Note extends Model
         'description',
         'tags',
         'content',
-        'slug',
         'status',
-        'user_id',
-        'views',
         'is_featured',
         'published_at',
     ];
 
-    protected $casts = [
-        'tags' => 'array',
-        'content' => 'array',
-        'is_featured' => 'boolean',
-        'published_at' => 'datetime',
-    ];
-
-    protected static function boot()
+    protected function casts(): array
     {
-        parent::boot();
-
-        static::creating(function ($note) {
-            if (empty($note->slug)) {
-                $note->slug   = Str::slug($note->title);
-                $originalSlug = $note->slug;
-                $counter      = 1;
-                while (static::where('slug', $note->slug)->exists()) {
-                    $note->slug = $originalSlug . '-' . $counter;
-                    $counter++;
-                }
-            }
-        });
-
-        static::updating(function ($note) {
-            if ($note->isDirty('title')) {
-                $note->slug   = Str::slug($note->title);
-                $originalSlug = $note->slug;
-                $counter      = 1;
-                while (static::where('slug', $note->slug)->where('id', '!=', $note->id)->exists()) {
-                    $note->slug = $originalSlug . '-' . $counter;
-                    $counter++;
-                }
-            }
-        });
+        return [
+            'tags' => 'array',
+            'content' => 'array',
+            'is_featured' => 'boolean',
+            'status' => PublishStatus::class,
+            'published_at' => 'datetime',
+        ];
     }
 
-    /**
-     * Get the user that owns the note.
-     */
-    public function user()
+    protected function slugSource(): string
+    {
+        return (string) $this->title;
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Scope a query to only include published notes.
-     */
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published')
-                    ->whereNotNull('published_at');
-    }
-
-    /**
-     * Scope a query to only include featured notes.
-     */
-    public function scopeFeatured($query)
+    public function scopeFeatured(Builder $query): Builder
     {
         return $query->where('is_featured', true);
     }
 
-    /**
-     * Scope a query to filter by category.
-     */
-    public function scopeCategory($query, $category)
+    public function scopeCategory(Builder $query, string $category): Builder
     {
         return $query->where('category', $category);
     }
 
-    /**
-     * Increment views count.
-     */
-    public function incrementViews()
+    protected function tagsString(): Attribute
     {
-        $this->increment('views');
+        return Attribute::get(fn () => is_array($this->tags) ? implode(', ', $this->tags) : '');
     }
 
     /**
-     * Get formatted tags as string.
+     * @return Collection<int, string>
      */
-    public function getTagsStringAttribute()
+    public static function getCategories(): Collection
     {
-        return is_array($this->tags) ? implode(', ', $this->tags) : '';
-    }
-
-    /**
-     * Get all unique categories.
-     */
-    public static function getCategories()
-    {
-        return static::distinct('category')
-                    ->whereNotNull('category')
-                    ->pluck('category')
-                    ->sort()
-                    ->values();
+        return static::query()
+            ->whereNotNull('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
     }
 }

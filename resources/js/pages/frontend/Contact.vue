@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
@@ -55,10 +55,16 @@ const socialLinks = [
 
 const currentYear = new Date().getFullYear();
 
-defineProps({
-    title: { type: String, default: 'Contact' },
-    description: { type: String, default: '' },
-});
+withDefaults(
+    defineProps<{
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        title: 'Contact',
+        description: '',
+    },
+);
 
 const showSuccessMessage = ref(false);
 const showErrorMessage = ref(false);
@@ -87,10 +93,11 @@ const form = useForm({
     email: '',
     subject: '',
     message: '',
+    website: '',
 });
 
-let successTimer = null;
-let errorTimer = null;
+let successTimer: ReturnType<typeof setTimeout> | null = null;
+let errorTimer: ReturnType<typeof setTimeout> | null = null;
 
 const submitForm = () => {
     form.post(route('contact.send'), {
@@ -115,7 +122,7 @@ const submitForm = () => {
     });
 };
 
-const openLink = (url) => {
+const openLink = (url: string) => {
     if (typeof window !== 'undefined') {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
@@ -136,14 +143,10 @@ onBeforeUnmount(() => {
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="website" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-64 rounded-3xl md:col-span-12" />
                 <Skeleton class="col-span-2 h-[34rem] rounded-3xl md:col-span-8" />
@@ -246,6 +249,11 @@ onBeforeUnmount(() => {
                     </div>
 
                     <form @submit.prevent="submitForm" class="mt-6 space-y-5 sm:mt-8">
+                        <!-- Honeypot: hidden from people, filled by bots -->
+                        <div class="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+                            <label for="website">Website</label>
+                            <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off" />
+                        </div>
                         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <div class="field">
                                 <label for="name" class="field-label">

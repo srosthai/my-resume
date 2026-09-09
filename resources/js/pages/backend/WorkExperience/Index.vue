@@ -4,6 +4,7 @@ import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -17,28 +18,20 @@ interface WorkExperience {
     created_at?: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     workExperiences: WorkExperience[];
 }>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Work Experience', href: '/work-experience' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Work Experience', href: route('backend.work-experience.index') },
 ];
 
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref<WorkExperience | null>(null);
 const deleting = ref(false);
 
-const formatDate = (dateString?: string | null) => {
-    if (!dateString) return '-';
-
-    const parsedDate = new Date(dateString);
-
-    if (Number.isNaN(parsedDate.getTime())) return dateString;
-
-    return parsedDate.toLocaleDateString();
-};
+const formatDate = (dateString?: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' }) || '-';
 
 const confirmDelete = (item: WorkExperience) => {
     itemToDelete.value = item;
@@ -67,7 +60,9 @@ const deleteItem = () => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="briefcase" class="size-6" />
                     </div>
                     <div>
@@ -75,7 +70,7 @@ const deleteItem = () => {
                         <p class="text-sm text-muted-foreground">View and manage your work experience records</p>
                     </div>
                 </div>
-                <Link href="/backend/work-experience/create">
+                <Link :href="route('backend.work-experience.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Experience
@@ -88,7 +83,7 @@ const deleteItem = () => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Role</th>
                                 <th class="px-6 py-4 text-left font-medium">Position</th>
@@ -99,13 +94,11 @@ const deleteItem = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in workExperiences"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in workExperiences" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>
@@ -118,7 +111,7 @@ const deleteItem = () => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/work-experience/${item.id}/edit`">
+                                        <Link :href="route('backend.work-experience.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -143,7 +136,7 @@ const deleteItem = () => {
                                             <Icon name="briefcase" class="size-6" />
                                         </div>
                                         <p class="text-sm">No work experience records found</p>
-                                        <Link href="/backend/work-experience/create">
+                                        <Link :href="route('backend.work-experience.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first record

@@ -1,36 +1,35 @@
-<script setup>
+<script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { Education } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-const props = defineProps({
-    educations: {
-        type: Array,
-        required: true,
-    },
-});
+defineProps<{
+    educations: Education[];
+}>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Education', href: '/eductions' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Education', href: route('backend.education.index') },
 ];
 
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref(null);
+const itemToDelete = ref<Education | null>(null);
 const deleting = ref(false);
 
-const confirmDelete = (item) => {
+const confirmDelete = (item: Education) => {
     itemToDelete.value = item;
     showDeleteConfirm.value = true;
 };
 
 const deleteItem = () => {
     if (!itemToDelete.value) return;
-    router.delete(route('backend.eductions.destroy', itemToDelete.value.id), {
+    router.delete(route('backend.education.destroy', itemToDelete.value.id), {
         onStart: () => (deleting.value = true),
         onFinish: () => {
             deleting.value = false;
@@ -40,7 +39,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+const formatDate = (dateString: string | null) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 </script>
 
 <template>
@@ -51,7 +50,9 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="graduationCap" class="size-6" />
                     </div>
                     <div>
@@ -59,7 +60,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                         <p class="text-sm text-muted-foreground">View and manage your education records</p>
                     </div>
                 </div>
-                <Link href="/backend/eductions/create">
+                <Link :href="route('backend.education.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add Education
@@ -72,7 +73,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Title</th>
                                 <th class="px-6 py-4 text-left font-medium">Major</th>
@@ -83,13 +84,11 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in educations"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in educations" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>
@@ -102,7 +101,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/eductions/${item.id}/edit`">
+                                        <Link :href="route('backend.education.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -127,7 +126,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
                                             <Icon name="graduationCap" class="size-6" />
                                         </div>
                                         <p class="text-sm">No education records found</p>
-                                        <Link href="/backend/eductions/create">
+                                        <Link :href="route('backend.education.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first record

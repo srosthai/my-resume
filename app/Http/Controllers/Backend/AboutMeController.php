@@ -3,95 +3,51 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\AboutMeRequest;
 use App\Models\AboutMe;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class AboutMeController extends Controller
 {
-    /**
-     * Display all data of About Me.
-     */
-    public function index()
+    public function index(): Response
     {
-        $aboutMes = AboutMe::latest()->get();
         return Inertia::render('backend/AboutMe/Index', [
-            'aboutMes' => $aboutMes
+            'aboutMes' => AboutMe::latest()->get(),
         ]);
     }
 
-    /**
-     * Show the form for creating a new About Me entry.
-     */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('backend/AboutMe/Create');
     }
 
-    /**
-     * Srore a newly created About Me entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request)
+    public function store(AboutMeRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'           => 'nullable|string|max:255',
-            'description'     => 'nullable|string',
-            'location'        => 'nullable|string',
-            'year_experience' => 'nullable|string|max:255',
-            'fucus_on'        => 'nullable|string|max:255',
-        ]);
+        AboutMe::create($request->validated());
 
-        AboutMe::create($validated);
-
-        return redirect()->route('about-me')->with('success', 'About Me created successfully.');
+        return redirect()->route('backend.about-me.index')->with('success', 'About Me created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified About Me entry.
-     * @param \App\Models\AboutMe $aboutMe
-     * @return \Inertia\Response
-     */
-    public function edit(AboutMe $aboutMe)
+    public function edit(AboutMe $aboutMe): Response
     {
         return Inertia::render('backend/AboutMe/Edit', [
-            'aboutMe' => $aboutMe
+            'aboutMe' => $aboutMe,
         ]);
     }
 
-    /**
-     * Update the specified About Me entry in storage.
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\AboutMe $aboutMe
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function update(Request $request, AboutMe $aboutMe)
+    public function update(AboutMeRequest $request, AboutMe $aboutMe): RedirectResponse
     {
-        $validated = $request->validate([
-            'title'           => 'nullable|string|max:255',
-            'description'     => 'nullable|string',
-            'location'        => 'nullable|string',
-            'year_experience' => 'nullable|string|max:255',
-            'fucus_on'        => 'nullable|string|max:255',
-        ]);
+        $aboutMe->update($request->validated());
 
-        $aboutMe->update($validated);
-
-        return redirect()->route('about-me')->with('success', 'About Me updated successfully.');
+        return redirect()->route('backend.about-me.index')->with('success', 'About Me updated successfully.');
     }
 
-    /**
-     * Remove the specified About Me entry from storage.
-     * @param \App\Models\AboutMe $aboutMe
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(AboutMe $aboutMe)
+    public function destroy(AboutMe $aboutMe): RedirectResponse
     {
         $aboutMe->delete();
 
-        return redirect()->route('about-me')->with('success', 'About Me deleted successfully.');
+        return redirect()->route('backend.about-me.index')->with('success', 'About Me deleted successfully.');
     }
 }

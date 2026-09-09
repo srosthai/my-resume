@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
+import type { Component } from 'vue';
 
 interface Props {
-    title: string
-    subtitle?: string
-    icon?: Component
-    centered?: boolean
+    title: string;
+    subtitle?: string;
+    icon?: Component;
+    centered?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
     centered: false,
-})
+});
 </script>
 
 <template>
@@ -23,13 +23,7 @@ withDefaults(defineProps<Props>(), {
                 {{ title }}
             </h2>
         </div>
-        <p
-            v-if="subtitle"
-            :class="[
-                'mt-2 text-sm text-muted-foreground',
-                centered && 'mx-auto max-w-2xl text-center',
-            ]"
-        >
+        <p v-if="subtitle" :class="['mt-2 text-sm text-muted-foreground', centered && 'mx-auto max-w-2xl text-center']">
             {{ subtitle }}
         </p>
         <div :class="['mt-4 h-px w-12 bg-border/60', centered && 'mx-auto']"></div>

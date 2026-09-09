@@ -1,31 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate as formatSharedDate } from '@/lib/date';
+import type { AboutMe } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const props = defineProps({
-    aboutMes: {
-        type: Array,
-        required: true,
-    },
-});
+const props = defineProps<{
+    aboutMes: AboutMe[];
+}>();
 
 const breadcrumbs = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'About Me', href: '/about-me' },
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'About Me', href: route('backend.about-me.index') },
 ];
 
 const aboutMe = computed(() => props.aboutMes?.[0] || null);
 
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref(null);
+const itemToDelete = ref<AboutMe | null>(null);
 const deleting = ref(false);
 
-const confirmDelete = (item) => {
+const confirmDelete = (item: AboutMe) => {
     itemToDelete.value = item;
     showDeleteConfirm.value = true;
 };
@@ -43,15 +42,7 @@ const deleteItem = () => {
     });
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return 'Not set';
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-    }).format(new Date(dateString));
-};
+const formatDate = (dateString: string | null) => formatSharedDate(dateString) || 'Not set';
 </script>
 
 <template>
@@ -62,7 +53,9 @@ const formatDate = (dateString) => {
             <!-- Page header -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+                    <div
+                        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm"
+                    >
                         <Icon name="user" class="size-6" />
                     </div>
                     <div>
@@ -70,7 +63,7 @@ const formatDate = (dateString) => {
                         <p class="text-sm text-muted-foreground">View and manage your about me content</p>
                     </div>
                 </div>
-                <Link v-if="!aboutMe" href="/backend/about-me/create">
+                <Link v-if="!aboutMe" :href="route('backend.about-me.create')">
                     <Button class="rounded-xl shadow-sm">
                         <Icon name="plus" class="size-4" />
                         Add About Me
@@ -83,7 +76,7 @@ const formatDate = (dateString) => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr class="border-b bg-muted/40 text-xs tracking-wider text-muted-foreground uppercase">
                                 <th class="w-16 px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Title</th>
                                 <th class="px-6 py-4 text-left font-medium">Focus</th>
@@ -94,26 +87,24 @@ const formatDate = (dateString) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr
-                                v-for="(item, index) in aboutMes"
-                                :key="item.id"
-                                class="group transition-colors hover:bg-muted/40"
-                            >
+                            <tr v-for="(item, index) in aboutMes" :key="item.id" class="group transition-colors hover:bg-muted/40">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                    <span
+                                        class="inline-flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 font-medium">{{ item.title || '-' }}</td>
                                 <td class="px-6 py-4">
-                                    <Badge variant="secondary" class="rounded-full font-normal">{{ item.fucus_on || '-' }}</Badge>
+                                    <Badge variant="secondary" class="rounded-full font-normal">{{ item.focus_on || '-' }}</Badge>
                                 </td>
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.location || '-' }}</td>
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.year_experience || '-' }}</td>
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(item.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="`/backend/about-me/${item.id}/edit`">
+                                        <Link :href="route('backend.about-me.edit', item.id)">
                                             <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
                                                 <Icon name="squarePen" class="size-4" />
                                                 Edit
@@ -138,7 +129,7 @@ const formatDate = (dateString) => {
                                             <Icon name="user" class="size-6" />
                                         </div>
                                         <p class="text-sm">No about me content found</p>
-                                        <Link href="/backend/about-me/create">
+                                        <Link :href="route('backend.about-me.create')">
                                             <Button variant="outline" size="sm" class="rounded-lg">
                                                 <Icon name="plus" class="size-4" />
                                                 Add your first record

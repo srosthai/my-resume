@@ -1,22 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageReveal } from '@/composables/usePageReveal';
 import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
+import type { AboutMe, AboutMeProp, Education, PublicOwner, TechStack, WorkExperience } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, Briefcase, Code2, GraduationCap, MapPin, Target } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps({
-    user: { type: Object, default: () => ({}) },
-    aboutMe: { type: Object, default: () => ({}) },
-    workExperience: { type: Array, default: () => [] },
-    education: { type: Array, default: () => [] },
-    techStacks: { type: Array, default: () => [] },
-    title: { type: String, default: 'About' },
-    description: { type: String, default: '' },
-});
+const props = withDefaults(
+    defineProps<{
+        user: PublicOwner;
+        aboutMe?: AboutMeProp;
+        workExperience?: WorkExperience[];
+        education?: Education[];
+        techStacks?: TechStack[];
+        title?: string;
+        description?: string;
+    }>(),
+    {
+        aboutMe: () => [],
+        workExperience: () => [],
+        education: () => [],
+        techStacks: () => [],
+        title: 'About',
+        description: '',
+    },
+);
+
+// The backend sends `[]` when no AboutMe row exists; normalise to a nullable record.
+const about = computed<AboutMe | null>(() => (Array.isArray(props.aboutMe) ? null : props.aboutMe));
 
 const { isLoading, isVisible } = usePageReveal(400);
 
@@ -27,11 +41,11 @@ const { pointer } = usePointerGlow();
 const currentYear = new Date().getFullYear();
 
 const firstName = computed(() => {
-    const parts = (props.user?.name || props.aboutMe?.title || 'About').trim().split(/\s+/);
+    const parts = (props.user?.name || about.value?.title || 'About').trim().split(/\s+/);
     return parts[0] || 'About';
 });
 const lastName = computed(() => {
-    const parts = (props.user?.name || props.aboutMe?.title || '').trim().split(/\s+/);
+    const parts = (props.user?.name || about.value?.title || '').trim().split(/\s+/);
     return parts.slice(1).join(' ');
 });
 
@@ -43,8 +57,8 @@ const imageSrc = computed(() => {
 
 // Group tech stacks by type
 const groupedTechStacks = computed(() => {
-    const groups = {};
-    const order = [];
+    const groups: Record<string, TechStack[]> = {};
+    const order: string[] = [];
     (props.techStacks || []).forEach((tech) => {
         const type = tech.type || 'Other';
         if (!groups[type]) {
@@ -60,17 +74,17 @@ const stats = computed(() => [
     {
         icon: MapPin,
         label: 'Location',
-        value: props.aboutMe?.location || 'Phnom Penh, Cambodia',
+        value: about.value?.location || 'Phnom Penh, Cambodia',
     },
     {
         icon: Briefcase,
         label: 'Experience',
-        value: props.aboutMe?.year_experience || '5+ Years',
+        value: about.value?.year_experience || '5+ Years',
     },
     {
         icon: Target,
         label: 'Focus',
-        value: props.aboutMe?.fucus_on || 'Web Development',
+        value: about.value?.focus_on || 'Web Development',
     },
 ]);
 </script>
@@ -84,14 +98,10 @@ const stats = computed(() => [
             <meta property="og:title" :content="title" />
             <meta property="og:description" :content="description" />
             <meta property="og:type" content="profile" />
-            <link
-                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
         </Head>
 
         <!-- Skeleton -->
-        <section v-if="isLoading" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <section v-if="isLoading" aria-busy="true" aria-hidden="true" class="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-8 lg:px-10">
             <div class="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-12 md:gap-5">
                 <Skeleton class="col-span-2 h-80 rounded-3xl md:col-span-8" />
                 <Skeleton class="col-span-2 h-80 rounded-3xl md:col-span-4" />
@@ -143,7 +153,15 @@ const stats = computed(() => [
                         <div
                             class="relative h-20 w-20 overflow-hidden rounded-[1.25rem] border border-border/60 bg-muted shadow-xl ring-1 ring-foreground/5 sm:h-28 sm:w-28 xs:h-24 xs:w-24"
                         >
-                            <img v-if="imageSrc" :src="imageSrc" :alt="user?.name" class="h-full w-full object-cover object-[center_25%]" />
+                            <img
+                                v-if="imageSrc"
+                                :src="imageSrc"
+                                alt=""
+                                width="80"
+                                height="80"
+                                decoding="async"
+                                class="h-full w-full object-cover object-[center_25%]"
+                            />
                             <div
                                 v-else
                                 class="flex h-full w-full items-center justify-center bg-muted font-serif text-4xl text-muted-foreground italic"
@@ -183,7 +201,7 @@ const stats = computed(() => [
                             </span>
                         </div>
                         <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[15px] md:text-base">
-                            {{ aboutMe?.description || 'Passionate about building crafted, maintainable, and meaningful software.' }}
+                            {{ about?.description || 'Passionate about building crafted, maintainable, and meaningful software.' }}
                         </p>
                     </div>
 
@@ -225,7 +243,15 @@ const stats = computed(() => [
                     </div>
 
                     <div class="relative mx-auto mt-5 aspect-[3/4] overflow-hidden rounded-2xl border border-border/50">
-                        <img v-if="imageSrc" :src="imageSrc" :alt="user?.name" class="h-full w-full object-cover object-[center_25%]" />
+                        <img
+                            v-if="imageSrc"
+                            :src="imageSrc"
+                            :alt="user?.name"
+                            width="600"
+                            height="800"
+                            decoding="async"
+                            class="h-full w-full object-cover object-[center_25%]"
+                        />
                         <div v-else class="flex h-full w-full items-center justify-center bg-muted font-serif text-6xl text-muted-foreground italic">
                             {{ firstName.charAt(0) }}
                         </div>
@@ -425,13 +451,22 @@ const stats = computed(() => [
                         </div>
 
                         <ul class="mt-4 flex flex-wrap gap-2">
-                            <li v-for="tech in group.items" :key="tech.id" class="tech-chip" :title="tech.description">
-                                <img v-if="tech.logo" :src="tech.logo" :alt="tech.name" class="tech-chip-logo" loading="lazy" />
+                            <li v-for="tech in group.items" :key="tech.id" class="tech-chip" :title="tech.description ?? undefined">
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    :alt="tech.name ?? undefined"
+                                    width="18"
+                                    height="18"
+                                    class="tech-chip-logo"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <span
                                     v-else
                                     class="inline-flex h-4 w-4 items-center justify-center rounded-md bg-muted font-mono text-[9px] font-semibold text-muted-foreground"
                                 >
-                                    {{ tech.name.charAt(0) }}
+                                    {{ tech.name?.charAt(0) }}
                                 </span>
                                 <span class="tech-chip-name">{{ tech.name }}</span>
                             </li>

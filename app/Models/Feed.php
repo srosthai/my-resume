@@ -2,13 +2,21 @@
 
 namespace App\Models;
 
+use App\Enums\FeedVisibility;
+use App\Enums\PublishStatus;
+use App\Models\Concerns\HasSlug;
+use App\Models\Concerns\Publishable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class Feed extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug, Publishable;
 
     protected $fillable = [
         'title',
@@ -18,91 +26,69 @@ class Feed extends Model
         'mood',
         'activity_type',
         'tags',
-        'slug',
         'visibility',
         'status',
-        'user_id',
         'likes_count',
-        'views',
         'is_pinned',
         'published_at',
     ];
 
-    protected $casts = [
-        'images' => 'array',
-        'tags' => 'array',
-        'is_pinned' => 'boolean',
-        'published_at' => 'datetime',
-    ];
-
-    protected static function boot()
+    protected function casts(): array
     {
-        parent::boot();
-
-        static::creating(function ($feed) {
-            if (empty($feed->slug)) {
-                $source       = $feed->title ?: Str::limit($feed->body, 50, '');
-                $feed->slug   = Str::slug($source);
-                $originalSlug = $feed->slug;
-                $counter      = 1;
-                while (static::where('slug', $feed->slug)->exists()) {
-                    $feed->slug = $originalSlug . '-' . $counter;
-                    $counter++;
-                }
-            }
-        });
-
-        static::updating(function ($feed) {
-            if ($feed->isDirty('title')) {
-                $source       = $feed->title ?: Str::limit($feed->body, 50, '');
-                $feed->slug   = Str::slug($source);
-                $originalSlug = $feed->slug;
-                $counter      = 1;
-                while (static::where('slug', $feed->slug)->where('id', '!=', $feed->id)->exists()) {
-                    $feed->slug = $originalSlug . '-' . $counter;
-                    $counter++;
-                }
-            }
-        });
+        return [
+            'images' => 'array',
+            'tags' => 'array',
+            'is_pinned' => 'boolean',
+            'status' => PublishStatus::class,
+            'visibility' => FeedVisibility::class,
+            'published_at' => 'datetime',
+        ];
     }
 
-    public function user()
+    protected function slugSource(): string
+    {
+        return $this->title ?: Str::limit((string) $this->body, 50, '');
+    }
+
+    protected function slugSourceAttributes(): array
+    {
+        return ['title'];
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published')
-                    ->whereNotNull('published_at');
-    }
-
-    public function scopePinned($query)
+    public function scopePinned(Builder $query): Builder
     {
         return $query->where('is_pinned', true);
     }
 
-    public function scopeActivityType($query, $type)
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->where('visibility', FeedVisibility::Public);
+    }
+
+    public function scopeActivityType(Builder $query, string $type): Builder
     {
         return $query->where('activity_type', $type);
     }
 
-    public function incrementViews()
+    protected function tagsString(): Attribute
     {
-        $this->increment('views');
+        return Attribute::get(fn () => is_array($this->tags) ? implode(', ', $this->tags) : '');
     }
 
-    public function getTagsStringAttribute()
+    /**
+     * @return Collection<int, string>
+     */
+    public static function getActivityTypes(): Collection
     {
-        return is_array($this->tags) ? implode(', ', $this->tags) : '';
-    }
-
-    public static function getActivityTypes()
-    {
-        return static::distinct('activity_type')
-                    ->whereNotNull('activity_type')
-                    ->pluck('activity_type')
-                    ->sort()
-                    ->values();
+        return static::query()
+            ->whereNotNull('activity_type')
+            ->distinct()
+            ->orderBy('activity_type')
+            ->pluck('activity_type');
     }
 }
