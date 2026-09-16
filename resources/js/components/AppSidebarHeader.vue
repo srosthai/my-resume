@@ -28,10 +28,10 @@ const showAvatar = computed(() => user.avatar && user.avatar !== '');
 
 <template>
     <header
-        class="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-sidebar-border/70 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-5"
+        class="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border/70 bg-card/70 px-4 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-5"
     >
         <div class="flex min-w-0 items-center gap-2">
-            <SidebarTrigger class="-ml-1" />
+            <SidebarTrigger class="-ml-1 rounded-xl" />
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
@@ -44,7 +44,7 @@ const showAvatar = computed(() => user.avatar && user.avatar !== '');
                 <DropdownMenuTrigger as-child>
                     <button
                         type="button"
-                        class="flex h-10 items-center gap-2 rounded-lg border bg-background px-2 text-sm font-medium shadow-xs transition-colors hover:bg-muted"
+                        class="flex h-10 items-center gap-2 rounded-xl border border-border/80 bg-card px-2 text-sm font-medium shadow-xs transition-colors hover:bg-accent"
                     >
                         <Avatar class="size-7 rounded-md">
                             <AvatarImage v-if="showAvatar" :src="user.avatar ?? ''" :alt="user.name" />

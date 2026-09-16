@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatDate as formatSharedDate } from '@/lib/date';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { BriefcaseBusiness, CalendarDays, Code2, ExternalLink, GraduationCap, Layers3, Music4, Sparkles } from 'lucide-vue-next';
+import {
+    ArrowUpRight,
+    CalendarDays,
+    Code2,
+    ExternalLink,
+    FolderOpenDot,
+    GraduationCap,
+    Layers3,
+    Music4,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -59,7 +66,6 @@ const formatDuration = (song: any) => {
     return `${minutes}:${seconds}`;
 };
 
-const initials = computed(() => props.summary.user?.name?.charAt(0)?.toUpperCase() || 'U');
 const experienceLabel = computed(() => {
     // year_experience is free text ("5+ Years"); only bare numbers get a suffix.
     const raw = String(props.summary.aboutMe?.year_experience ?? '').trim();
@@ -68,30 +74,66 @@ const experienceLabel = computed(() => {
 });
 const focusLabel = computed(() => props.summary.aboutMe?.focus_on || 'development');
 
+// One denominator for every ring so the shares stay comparable.
+const contentTotal = computed(
+    () => props.summary.projects.total + props.summary.techStacks.total + props.summary.workExperience.total + props.summary.education.total + props.summary.songs.total,
+);
+
+const shareOf = (value: number) => (contentTotal.value ? Math.round((value / contentTotal.value) * 100) : 0);
+
 const statCards = computed(() => [
     {
         title: 'Projects',
         value: props.summary.projects.total,
         caption: `${props.summary.projects.byType.length} categories tracked`,
-        icon: BriefcaseBusiness,
+        tag: 'Portfolio',
+        tone: 'mint',
+        icon: FolderOpenDot,
     },
     {
-        title: 'Tech Stack',
+        title: 'Tech stack',
         value: props.summary.techStacks.total,
         caption: 'Grouped by discipline',
+        tag: 'Skills',
+        tone: 'lavender',
         icon: Code2,
     },
     {
         title: 'Experience',
         value: props.summary.workExperience.total,
         caption: `${props.summary.education.total} education records`,
+        tag: 'Career',
+        tone: 'butter',
         icon: CalendarDays,
     },
     {
-        title: 'Popular Songs',
+        title: 'Popular songs',
         value: props.summary.songs.total,
         caption: 'Music collection',
+        tag: 'Archive',
+        tone: 'peach',
         icon: Music4,
+    },
+]);
+
+const ringCards = computed(() => [
+    {
+        label: 'Projects',
+        share: shareOf(props.summary.projects.total),
+        caption: `${props.summary.projects.total} of ${contentTotal.value} records`,
+        color: 'var(--tone-mint-ink)',
+    },
+    {
+        label: 'Tech stack',
+        share: shareOf(props.summary.techStacks.total),
+        caption: `${props.summary.techStacks.total} of ${contentTotal.value} records`,
+        color: 'var(--tone-lavender-ink)',
+    },
+    {
+        label: 'Music',
+        share: shareOf(props.summary.songs.total),
+        caption: `${props.summary.songs.total} of ${contentTotal.value} records`,
+        color: 'var(--tone-peach-ink)',
     },
 ]);
 
@@ -99,476 +141,338 @@ const techStackRows = computed(() =>
     Object.entries(props.summary.techStacks.byType || {}).map(([type, count]) => ({
         type,
         count,
-        width: props.summary.techStacks.total ? Math.max(8, Math.round((Number(count) / props.summary.techStacks.total) * 100)) : 0,
+        width: props.summary.techStacks.total ? Math.max(6, Math.round((Number(count) / props.summary.techStacks.total) * 100)) : 0,
     })),
 );
 
-const projectTypePreview = computed(() => props.summary.projects.byType.slice(0, 5));
+// Fixed slice palette: ordered so the largest category always reads greenest.
+const mixPalette = ['hsl(158 58% 34%)', 'hsl(250 44% 58%)', 'hsl(42 72% 52%)', 'hsl(8 62% 60%)', 'hsl(196 56% 46%)'];
+
+const projectMix = computed(() => {
+    const total = props.summary.projects.total || 1;
+
+    const rows = props.summary.projects.byType.slice(0, 5).map((type, index) => ({
+        id: type.id,
+        name: type.name,
+        count: Number(type.projects_count),
+        share: Math.round((Number(type.projects_count) / total) * 100),
+        color: mixPalette[index % mixPalette.length],
+    }));
+
+    const gradient =
+        rows.length === 0
+            ? 'conic-gradient(var(--ring-track) 0 100%)'
+            : `conic-gradient(${rows
+                  .map((row, index) => {
+                      const from = rows.slice(0, index).reduce((sum, item) => sum + item.share, 0);
+                      return `${row.color} ${from}% ${from + row.share}%`;
+                  })
+                  .join(', ')})`;
+
+    return { rows, gradient };
+});
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="dashboard-surface min-h-full">
-            <div class="mx-auto flex w-full max-w-[1720px] flex-1 flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-                <section class="dashboard-hero reveal-panel overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
-                    <div class="hero-grid px-5 py-5 sm:px-6 lg:px-7">
-                        <div class="flex min-w-0 flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-                            <div class="flex min-w-0 items-start gap-4">
-                                <Avatar class="size-16 border border-white/15 shadow-sm ring-4 ring-white/10">
-                                    <AvatarFallback class="bg-foreground text-xl font-semibold text-background">
-                                        {{ initials }}
-                                    </AvatarFallback>
-                                </Avatar>
+        <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
+            <!-- Page header: eyebrow, greeting, the one-line thesis about the person. -->
+            <header class="reveal flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div class="min-w-0">
+                    <p class="b-eyebrow">Dashboard</p>
+                    <h1 class="mt-2 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
+                        Welcome back, {{ summary.user?.name || 'User' }}
+                    </h1>
+                    <p class="mt-2 max-w-2xl text-sm text-muted-foreground">
+                        {{ experienceLabel }} building {{ focusLabel }} products &middot; {{ contentTotal }} records across the portfolio.
+                    </p>
+                </div>
 
-                                <div class="min-w-0 space-y-3">
-                                    <div class="flex flex-wrap items-center gap-2 text-white/80">
-                                        <Badge variant="outline" class="border-white/15 bg-white/10 text-white shadow-none backdrop-blur">
-                                            Portfolio command
-                                        </Badge>
-                                        <span class="text-xs font-medium tracking-[0.18em] text-white/45 uppercase">Dashboard</span>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <h1 class="text-3xl font-semibold tracking-tight text-balance text-white sm:text-4xl">
-                                            Welcome back, {{ summary.user?.name || 'User' }}
-                                        </h1>
-                                        <p class="text-sm font-medium text-white/68 sm:text-base">
-                                            {{ summary.aboutMe?.title || summary.user?.position || 'Developer' }}
-                                        </p>
-                                    </div>
-                                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <Button as-child variant="outline" class="rounded-xl">
+                        <Link :href="route('portfolio')">
+                            View portfolio
+                            <ArrowUpRight class="size-4" />
+                        </Link>
+                    </Button>
+                    <Button as-child class="rounded-xl">
+                        <Link :href="route('backend.projects.create')">
+                            New project
+                            <FolderOpenDot class="size-4" />
+                        </Link>
+                    </Button>
+                </div>
+            </header>
+
+            <!-- Pastel slabs: the four counts that describe the whole portfolio. -->
+            <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <article v-for="card in statCards" :key="card.title" class="b-kpi reveal" :data-tone="card.tone">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="b-kpi-tile">
+                            <component :is="card.icon" class="size-4" />
+                        </div>
+                        <span class="b-kpi-caption text-xs font-medium">{{ card.tag }}</span>
+                    </div>
+                    <p class="b-kpi-label b-eyebrow mt-4">{{ card.title }}</p>
+                    <p class="b-metric b-kpi-label mt-1 text-4xl font-semibold">{{ card.value }}</p>
+                    <p class="b-kpi-caption mt-1.5 text-xs">{{ card.caption }}</p>
+                </article>
+            </section>
+
+            <!-- Share rings: how the portfolio weight is distributed. -->
+            <section class="grid gap-4 sm:grid-cols-3">
+                <article v-for="ring in ringCards" :key="ring.label" class="b-panel b-panel-lift reveal flex items-center gap-4 p-5">
+                    <div class="b-ring size-16 shrink-0" :style="{ '--value': ring.share, '--ring-color': ring.color }" />
+                    <div class="min-w-0">
+                        <p class="b-metric text-2xl font-semibold">{{ ring.share }}%</p>
+                        <p class="b-eyebrow mt-0.5">{{ ring.label }}</p>
+                        <p class="mt-1 truncate text-xs text-muted-foreground">{{ ring.caption }}</p>
+                    </div>
+                </article>
+            </section>
+
+            <section class="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+                <!-- Stack signal -->
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Stack signal</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">Skill weight by discipline</p>
+                        </div>
+                        <span class="b-tile size-10">
+                            <Layers3 class="size-4" />
+                        </span>
+                    </div>
+
+                    <div class="mt-6 space-y-4">
+                        <div v-for="row in techStackRows" :key="row.type" class="space-y-2">
+                            <div class="flex items-center justify-between gap-3 text-sm">
+                                <span class="font-medium capitalize">{{ row.type }}</span>
+                                <span class="b-metric text-muted-foreground">{{ row.count }}</span>
                             </div>
+                            <div class="b-bar">
+                                <div class="b-bar-fill" :style="{ width: `${row.width}%` }" />
+                            </div>
+                        </div>
+                        <div v-if="techStackRows.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+                            No tech stacks yet
+                        </div>
+                    </div>
+                </article>
 
-                            <div
-                                class="hero-metrics grid gap-2 rounded-lg border border-white/10 bg-white/[0.07] p-2 text-white shadow-sm backdrop-blur md:min-w-[420px] md:grid-cols-3"
-                            >
-                                <div class="rounded-md bg-white/[0.08] px-4 py-3">
-                                    <p class="text-2xl font-semibold">{{ summary.projects.total }}</p>
-                                    <p class="mt-1 text-[11px] font-medium tracking-[0.16em] text-white/45 uppercase">Projects</p>
-                                </div>
-                                <div class="rounded-md bg-white/[0.08] px-4 py-3">
-                                    <p class="text-2xl font-semibold">{{ summary.techStacks.total }}</p>
-                                    <p class="mt-1 text-[11px] font-medium tracking-[0.16em] text-white/45 uppercase">Stacks</p>
-                                </div>
-                                <div class="rounded-md bg-white/[0.08] px-4 py-3">
-                                    <p class="text-2xl font-semibold">{{ summary.workExperience.total }}</p>
-                                    <p class="mt-1 text-[11px] font-medium tracking-[0.16em] text-white/45 uppercase">Roles</p>
-                                </div>
+                <!-- Project mix -->
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div>
+                        <h2 class="text-lg font-semibold tracking-tight">Project mix</h2>
+                        <p class="mt-1 text-sm text-muted-foreground">Share of work by category</p>
+                    </div>
+
+                    <div class="mt-5 grid place-items-center">
+                        <div class="relative grid size-40 place-items-center">
+                            <div class="b-ring absolute inset-0" :style="{ background: projectMix.gradient }" />
+                            <div class="relative text-center">
+                                <p class="b-metric text-3xl font-semibold">{{ summary.projects.total }}</p>
+                                <p class="b-eyebrow mt-0.5">Projects</p>
                             </div>
                         </div>
                     </div>
-                </section>
 
-                <div class="reveal-panel grid gap-4 lg:grid-cols-[1fr_360px]">
-                    <Card class="premium-card overflow-hidden">
-                        <CardContent class="grid gap-5 p-5 lg:grid-cols-[1fr_280px] lg:p-6">
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                                        <Sparkles class="size-4" />
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-foreground">Current focus</p>
-                                        <p class="text-sm text-muted-foreground">Clean delivery snapshot</p>
-                                    </div>
-                                </div>
-                                <p class="max-w-2xl text-2xl leading-tight font-semibold tracking-tight text-foreground sm:text-3xl">
-                                    {{ experienceLabel }} building polished {{ focusLabel }} products.
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <Badge v-for="type in projectTypePreview" :key="type.id" variant="secondary" class="rounded-md px-3 py-1">
-                                        {{ type.name }}: {{ type.projects_count }}
+                    <ul class="mt-6 space-y-2.5">
+                        <li v-for="row in projectMix.rows" :key="row.id" class="flex items-center gap-2.5 text-sm">
+                            <span class="b-dot shrink-0" :style="{ '--dot-color': row.color }" />
+                            <span class="min-w-0 flex-1 truncate">{{ row.name }}</span>
+                            <span class="b-metric text-muted-foreground">{{ row.count }}</span>
+                            <span class="b-metric w-10 text-right text-xs text-muted-foreground">{{ row.share }}%</span>
+                        </li>
+                        <li v-if="projectMix.rows.length === 0" class="rounded-xl border border-dashed py-8 text-center text-sm text-muted-foreground">
+                            No projects yet
+                        </li>
+                    </ul>
+                </article>
+            </section>
+
+            <section class="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+                <!-- Recent projects -->
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Recent projects</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">Latest portfolio work</p>
+                        </div>
+                        <Button as-child variant="ghost" size="sm" class="rounded-xl text-muted-foreground hover:text-foreground">
+                            <Link :href="route('backend.projects.index')">
+                                View all
+                                <ExternalLink class="size-4" />
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <div class="mt-5 space-y-2.5">
+                        <div v-for="project in summary.projects.recent" :key="project.id" class="b-row group">
+                            <div class="b-tile size-11 shrink-0 text-sm">
+                                {{ project.title.charAt(0) }}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-medium">{{ project.title }}</p>
+                                <div class="mt-1 flex flex-wrap items-center gap-2">
+                                    <Badge variant="secondary" class="rounded-lg font-medium">
+                                        {{ project.project_type?.name || 'Project' }}
                                     </Badge>
+                                    <span class="text-xs text-muted-foreground">{{ formatDate(project.created_date) }}</span>
                                 </div>
                             </div>
+                            <ExternalLink class="size-4 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                        </div>
+                        <div v-if="summary.projects.recent.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+                            No projects yet
+                        </div>
+                    </div>
+                </article>
 
-                            <div class="rounded-lg border bg-muted/30 p-4">
-                                <p class="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Profile health</p>
-                                <div class="mt-4 space-y-3">
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-muted-foreground">Portfolio content</span>
-                                        <span class="font-semibold">{{ summary.projects.total }}</span>
-                                    </div>
-                                    <div class="h-2 rounded-full bg-background">
-                                        <div class="h-full w-4/5 rounded-full bg-foreground" />
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2 pt-2">
-                                        <div class="rounded-md bg-background p-3">
-                                            <p class="text-lg font-semibold">{{ summary.songs.total }}</p>
-                                            <p class="text-xs text-muted-foreground">Songs</p>
-                                        </div>
-                                        <div class="rounded-md bg-background p-3">
-                                            <p class="text-lg font-semibold">{{ summary.education.total }}</p>
-                                            <p class="text-xs text-muted-foreground">Education</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <!-- Career timeline -->
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Work experience</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">Career timeline and roles</p>
+                        </div>
+                        <Button as-child variant="ghost" size="sm" class="rounded-xl text-muted-foreground hover:text-foreground">
+                            <Link :href="route('backend.work-experience.index')">
+                                View all
+                                <ExternalLink class="size-4" />
+                            </Link>
+                        </Button>
+                    </div>
 
-                    <Card class="premium-card overflow-hidden">
-                        <CardHeader class="pb-2">
-                            <CardTitle class="text-base">Stack signal</CardTitle>
-                            <CardDescription>Skill weight by category</CardDescription>
-                            <CardAction>
-                                <Layers3 class="size-5 text-muted-foreground" />
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent class="space-y-4">
-                            <div v-for="row in techStackRows" :key="row.type" class="space-y-2">
-                                <div class="flex items-center justify-between gap-3 text-sm">
-                                    <span class="font-medium text-foreground capitalize">{{ row.type }}</span>
-                                    <span class="text-muted-foreground">{{ row.count }}</span>
-                                </div>
-                                <div class="h-2 overflow-hidden rounded-full bg-muted">
-                                    <div class="stack-bar h-full rounded-full bg-foreground" :style="{ width: `${row.width}%` }" />
-                                </div>
+                    <div class="mt-5">
+                        <div
+                            v-for="(experience, index) in summary.workExperience.recent"
+                            :key="experience.id"
+                            class="relative grid grid-cols-[18px_1fr] gap-3 pb-4 last:pb-0"
+                        >
+                            <div class="relative flex justify-center">
+                                <span class="mt-4 size-2.5 rounded-full bg-primary ring-4 ring-primary/12" />
+                                <span v-if="index < summary.workExperience.recent.length - 1" class="absolute top-7 bottom-0 w-px bg-border" />
                             </div>
-                            <div
-                                v-if="techStackRows.length === 0"
-                                class="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground"
-                            >
-                                No tech stacks yet
+                            <div class="rounded-xl border border-border/80 bg-muted/45 p-4">
+                                <h3 class="font-medium">{{ experience.position }}</h3>
+                                <p class="mt-0.5 text-sm text-muted-foreground">{{ experience.company }}</p>
+                                <p class="b-eyebrow mt-3">{{ formatDate(experience.from) }} — {{ formatDate(experience.to) }}</p>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        </div>
+                        <div
+                            v-if="summary.workExperience.recent.length === 0"
+                            class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground"
+                        >
+                            No work experience recorded
+                        </div>
+                    </div>
+                </article>
+            </section>
 
-                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <Card v-for="card in statCards" :key="card.title" class="stat-card group reveal-panel">
-                        <CardHeader class="gap-3">
-                            <CardAction>
-                                <div class="stat-icon flex size-11 items-center justify-center rounded-lg border bg-muted/50 text-muted-foreground">
-                                    <component :is="card.icon" class="size-5" />
-                                </div>
-                            </CardAction>
-                            <CardDescription class="font-semibold tracking-[0.14em] uppercase">{{ card.title }}</CardDescription>
-                            <CardTitle class="text-4xl font-semibold tracking-tight">{{ card.value }}</CardTitle>
-                        </CardHeader>
-                        <CardContent class="pt-0">
-                            <p class="text-sm text-muted-foreground">{{ card.caption }}</p>
-                        </CardContent>
-                    </Card>
-                </div>
+            <section class="grid gap-5 xl:grid-cols-2">
+                <!-- Education -->
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Education</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">Latest academic record</p>
+                        </div>
+                        <Button as-child variant="ghost" size="sm" class="rounded-xl text-muted-foreground hover:text-foreground">
+                            <Link :href="route('backend.education.index')">
+                                View all
+                                <ExternalLink class="size-4" />
+                            </Link>
+                        </Button>
+                    </div>
 
-                <div class="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
-                    <Card class="premium-card reveal-panel">
-                        <CardHeader class="border-b">
-                            <div>
-                                <CardTitle class="text-xl">Recent Projects</CardTitle>
-                                <CardDescription>Latest portfolio work</CardDescription>
-                            </div>
-                            <CardAction>
-                                <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link :href="route('backend.projects.index')">
-                                        View all
-                                        <ExternalLink class="size-4" />
-                                    </Link>
-                                </Button>
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent class="space-y-3 pt-6">
-                            <div v-for="project in summary.projects.recent" :key="project.id" class="list-row group">
-                                <div
-                                    class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-foreground text-sm font-semibold text-background shadow-xs"
-                                >
-                                    {{ project.title.charAt(0) }}
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-semibold text-foreground">{{ project.title }}</p>
-                                    <div class="mt-1 flex flex-wrap items-center gap-2">
-                                        <Badge variant="secondary" class="font-medium">
-                                            {{ project.project_type?.name || 'Project' }}
-                                        </Badge>
-                                        <span class="text-xs text-muted-foreground">{{ formatDate(project.created_date) }}</span>
-                                    </div>
-                                </div>
-                                <ExternalLink
-                                    class="size-4 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                                />
-                            </div>
-                            <div
-                                v-if="summary.projects.recent.length === 0"
-                                class="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground"
-                            >
-                                No projects yet
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div v-if="summary.education.latest" class="b-row mt-5">
+                        <div class="b-tile size-11 shrink-0">
+                            <GraduationCap class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-medium">{{ summary.education.latest.title }}</h3>
+                            <p class="mt-0.5 text-sm text-muted-foreground">{{ summary.education.latest.major }}</p>
+                            <p class="text-sm text-muted-foreground">{{ summary.education.latest.institution }}</p>
+                            <p class="b-eyebrow mt-3">
+                                {{ formatDate(summary.education.latest.from) }} — {{ formatDate(summary.education.latest.to) }}
+                            </p>
+                        </div>
+                    </div>
+                    <div v-else class="mt-5 rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+                        No education records
+                    </div>
+                </article>
 
-                    <Card class="premium-card reveal-panel">
-                        <CardHeader class="border-b">
-                            <div>
-                                <CardTitle class="text-xl">Work Experience</CardTitle>
-                                <CardDescription>Career timeline and roles</CardDescription>
-                            </div>
-                            <CardAction>
-                                <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link :href="route('backend.work-experience.index')">
-                                        View all
-                                        <ExternalLink class="size-4" />
-                                    </Link>
-                                </Button>
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent class="pt-6">
-                            <div class="space-y-1">
-                                <div
-                                    v-for="(experience, index) in summary.workExperience.recent"
-                                    :key="experience.id"
-                                    class="relative grid grid-cols-[22px_1fr] gap-3 pb-5 last:pb-0"
-                                >
-                                    <div class="relative flex justify-center">
-                                        <span class="mt-2 size-2.5 rounded-full bg-foreground ring-4 ring-muted" />
-                                        <span
-                                            v-if="index < summary.workExperience.recent.length - 1"
-                                            class="absolute top-6 bottom-0 w-px bg-border"
-                                        />
-                                    </div>
-                                    <div class="timeline-card rounded-lg border bg-muted/25 p-4">
-                                        <h4 class="font-semibold text-foreground">{{ experience.position }}</h4>
-                                        <p class="mt-1 text-sm text-muted-foreground">{{ experience.company }}</p>
-                                        <p class="mt-3 text-xs font-medium text-muted-foreground">
-                                            {{ formatDate(experience.from) }} - {{ formatDate(experience.to) }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div
-                                    v-if="summary.workExperience.recent.length === 0"
-                                    class="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground"
-                                >
-                                    No work experience recorded
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                <!-- Recent songs -->
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Recent songs</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">Latest additions to the collection</p>
+                        </div>
+                        <Button as-child variant="ghost" size="sm" class="rounded-xl text-muted-foreground hover:text-foreground">
+                            <Link :href="route('backend.popular-songs.index')">
+                                View all
+                                <ExternalLink class="size-4" />
+                            </Link>
+                        </Button>
+                    </div>
 
-                <div class="grid gap-5 xl:grid-cols-2">
-                    <Card class="premium-card reveal-panel">
-                        <CardHeader>
-                            <div>
-                                <CardTitle class="text-xl">Education</CardTitle>
-                                <CardDescription>Latest academic record</CardDescription>
+                    <div class="mt-5 space-y-2.5">
+                        <div v-for="song in summary.songs.recent" :key="song.id" class="b-row">
+                            <div class="b-tile size-11 shrink-0">
+                                <Music4 class="size-4" />
                             </div>
-                            <CardAction>
-                                <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link :href="route('backend.education.index')">
-                                        View all
-                                        <ExternalLink class="size-4" />
-                                    </Link>
-                                </Button>
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <div v-if="summary.education.latest" class="list-row">
-                                <div class="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-background">
-                                    <GraduationCap class="size-5 text-muted-foreground" />
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="font-semibold text-foreground">{{ summary.education.latest.title }}</h4>
-                                    <p class="mt-1 text-sm text-muted-foreground">{{ summary.education.latest.major }}</p>
-                                    <p class="text-sm text-muted-foreground">{{ summary.education.latest.institution }}</p>
-                                    <p class="mt-3 text-xs font-medium text-muted-foreground">
-                                        {{ formatDate(summary.education.latest.from) }} - {{ formatDate(summary.education.latest.to) }}
-                                    </p>
-                                </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-medium">{{ song.title }}</p>
+                                <p class="truncate text-sm text-muted-foreground">{{ song.artist }}</p>
                             </div>
-                            <div v-else class="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
-                                No education records
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card class="premium-card reveal-panel">
-                        <CardHeader>
-                            <div>
-                                <CardTitle class="text-xl">Recent Songs</CardTitle>
-                                <CardDescription>Latest additions to collection</CardDescription>
-                            </div>
-                            <CardAction>
-                                <Button as-child variant="outline" size="sm" class="action-button">
-                                    <Link :href="route('backend.popular-songs.index')">
-                                        View all
-                                        <ExternalLink class="size-4" />
-                                    </Link>
-                                </Button>
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent class="space-y-3">
-                            <div v-for="song in summary.songs.recent" :key="song.id" class="list-row">
-                                <div class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
-                                    <Music4 class="size-4" />
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-semibold text-foreground">{{ song.title }}</p>
-                                    <p class="truncate text-sm text-muted-foreground">{{ song.artist }}</p>
-                                </div>
-                                <Badge variant="outline" class="font-mono">{{ formatDuration(song) }}</Badge>
-                            </div>
-                            <div
-                                v-if="summary.songs.recent.length === 0"
-                                class="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground"
-                            >
-                                No songs in collection
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+                            <Badge variant="outline" class="rounded-lg font-mono">{{ formatDuration(song) }}</Badge>
+                        </div>
+                        <div v-if="summary.songs.recent.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+                            No songs in collection
+                        </div>
+                    </div>
+                </article>
+            </section>
         </div>
     </AppLayout>
 </template>
 
 <style scoped>
-.dashboard-surface {
-    background:
-        linear-gradient(to right, color-mix(in oklab, var(--border) 24%, transparent) 1px, transparent 1px),
-        linear-gradient(to bottom, color-mix(in oklab, var(--border) 20%, transparent) 1px, transparent 1px),
-        linear-gradient(180deg, color-mix(in oklab, var(--muted) 38%, transparent), var(--background) 42%);
-    background-size:
-        44px 44px,
-        44px 44px,
-        100% 100%;
+.reveal {
+    animation: panel-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.dashboard-hero {
-    background: linear-gradient(135deg, hsl(0 0% 5%) 0%, hsl(0 0% 11%) 48%, hsl(0 0% 17%) 100%), var(--foreground);
-}
-
-.hero-grid {
-    position: relative;
-    isolation: isolate;
-}
-
-.hero-grid::before {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    content: '';
-    background:
-        linear-gradient(to right, hsl(0 0% 100% / 0.06) 1px, transparent 1px), linear-gradient(to bottom, hsl(0 0% 100% / 0.05) 1px, transparent 1px);
-    background-size: 32px 32px;
-    mask-image: linear-gradient(90deg, black, transparent 78%);
-}
-
-.premium-card,
-.stat-card {
-    border-color: color-mix(in oklab, var(--border) 72%, transparent);
-    background: color-mix(in oklab, var(--card) 92%, transparent);
-    box-shadow:
-        0 1px 1px hsl(0 0% 0% / 0.03),
-        0 18px 50px hsl(0 0% 0% / 0.045);
-    backdrop-filter: blur(14px);
-}
-
-.stat-card,
-.list-row,
-.timeline-card,
-.action-button,
-.stat-icon {
-    transition:
-        transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 200ms ease,
-        background-color 200ms ease,
-        box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
-        color 200ms ease;
-}
-
-.stat-card:hover {
-    transform: translate3d(0, -4px, 0);
-    border-color: color-mix(in oklab, var(--foreground) 22%, transparent);
-    box-shadow:
-        0 1px 1px hsl(0 0% 0% / 0.04),
-        0 24px 70px hsl(0 0% 0% / 0.1);
-}
-
-.stat-card:hover .stat-icon {
-    transform: translate3d(0, -2px, 0);
-    color: var(--foreground);
-}
-
-.list-row {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    border-radius: var(--radius);
-    border: 1px solid color-mix(in oklab, var(--border) 74%, transparent);
-    background: color-mix(in oklab, var(--muted) 22%, transparent);
-    padding: 0.875rem;
-}
-
-.list-row:hover,
-.timeline-card:hover {
-    transform: translate3d(0, -2px, 0);
-    border-color: color-mix(in oklab, var(--foreground) 18%, transparent);
-    background: color-mix(in oklab, var(--muted) 34%, transparent);
-    box-shadow: 0 14px 34px hsl(0 0% 0% / 0.055);
-}
-
-.action-button:active {
-    transform: scale(0.97);
-}
-
-.stack-bar {
-    transform-origin: left center;
-    animation: grow-x 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.reveal-panel {
-    animation: panel-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.reveal-panel:nth-child(2) {
+.reveal:nth-child(2) {
     animation-delay: 40ms;
 }
 
-.reveal-panel:nth-child(3) {
-    animation-delay: 85ms;
+.reveal:nth-child(3) {
+    animation-delay: 80ms;
 }
 
-.reveal-panel:nth-child(4) {
-    animation-delay: 130ms;
-}
-
-.reveal-panel:nth-child(5) {
-    animation-delay: 175ms;
+.reveal:nth-child(4) {
+    animation-delay: 120ms;
 }
 
 @keyframes panel-in {
     from {
         opacity: 0;
-        transform: translate3d(0, 10px, 0) scale(0.985);
+        transform: translate3d(0, 8px, 0);
     }
     to {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scale(1);
-    }
-}
-
-@keyframes grow-x {
-    from {
-        transform: scaleX(0);
-    }
-    to {
-        transform: scaleX(1);
+        transform: translate3d(0, 0, 0);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .reveal-panel,
-    .stack-bar {
+    .reveal {
         animation: none;
-    }
-
-    .stat-card,
-    .list-row,
-    .timeline-card,
-    .action-button,
-    .stat-icon {
-        transition: none;
     }
 }
 </style>
