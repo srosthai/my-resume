@@ -87,7 +87,6 @@ const statCards = computed(() => [
         value: props.summary.projects.total,
         caption: `${props.summary.projects.byType.length} categories tracked`,
         tag: 'Portfolio',
-        tone: 'mint',
         icon: FolderOpenDot,
     },
     {
@@ -95,7 +94,6 @@ const statCards = computed(() => [
         value: props.summary.techStacks.total,
         caption: 'Grouped by discipline',
         tag: 'Skills',
-        tone: 'lavender',
         icon: Code2,
     },
     {
@@ -103,7 +101,6 @@ const statCards = computed(() => [
         value: props.summary.workExperience.total,
         caption: `${props.summary.education.total} education records`,
         tag: 'Career',
-        tone: 'butter',
         icon: CalendarDays,
     },
     {
@@ -111,7 +108,6 @@ const statCards = computed(() => [
         value: props.summary.songs.total,
         caption: 'Music collection',
         tag: 'Archive',
-        tone: 'peach',
         icon: Music4,
     },
 ]);
@@ -121,19 +117,16 @@ const ringCards = computed(() => [
         label: 'Projects',
         share: shareOf(props.summary.projects.total),
         caption: `${props.summary.projects.total} of ${contentTotal.value} records`,
-        color: 'var(--tone-mint-ink)',
     },
     {
         label: 'Tech stack',
         share: shareOf(props.summary.techStacks.total),
         caption: `${props.summary.techStacks.total} of ${contentTotal.value} records`,
-        color: 'var(--tone-lavender-ink)',
     },
     {
         label: 'Music',
         share: shareOf(props.summary.songs.total),
         caption: `${props.summary.songs.total} of ${contentTotal.value} records`,
-        color: 'var(--tone-peach-ink)',
     },
 ]);
 
@@ -206,17 +199,17 @@ const projectMix = computed(() => {
                 </div>
             </header>
 
-            <!-- Pastel slabs: the four counts that describe the whole portfolio. -->
+            <!-- Summary slabs: four counts on one material, so no colour has to be decoded. -->
             <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <article v-for="card in statCards" :key="card.title" class="b-kpi reveal" :data-tone="card.tone">
+                <article v-for="card in statCards" :key="card.title" class="b-kpi reveal">
                     <div class="flex items-start justify-between gap-3">
                         <div class="b-kpi-tile">
                             <component :is="card.icon" class="size-4" />
                         </div>
-                        <span class="b-kpi-caption text-xs font-medium">{{ card.tag }}</span>
+                        <span class="b-kpi-caption b-eyebrow">{{ card.tag }}</span>
                     </div>
                     <p class="b-kpi-label b-eyebrow mt-4">{{ card.title }}</p>
-                    <p class="b-metric b-kpi-label mt-1 text-4xl font-semibold">{{ card.value }}</p>
+                    <p class="b-metric mt-1 text-4xl font-semibold">{{ card.value }}</p>
                     <p class="b-kpi-caption mt-1.5 text-xs">{{ card.caption }}</p>
                 </article>
             </section>
@@ -224,7 +217,7 @@ const projectMix = computed(() => {
             <!-- Share rings: how the portfolio weight is distributed. -->
             <section class="grid gap-4 sm:grid-cols-3">
                 <article v-for="ring in ringCards" :key="ring.label" class="b-panel b-panel-lift reveal flex items-center gap-4 p-5">
-                    <div class="b-ring size-16 shrink-0" :style="{ '--value': ring.share, '--ring-color': ring.color }" />
+                    <div class="b-ring size-16 shrink-0" :style="{ '--value': ring.share }" />
                     <div class="min-w-0">
                         <p class="b-metric text-2xl font-semibold">{{ ring.share }}%</p>
                         <p class="b-eyebrow mt-0.5">{{ ring.label }}</p>

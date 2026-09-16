@@ -424,15 +424,10 @@
     --sidebar-pill: hsl(158 20% 11%);
     --sidebar-pill-foreground: hsl(150 30% 97%);
 
-    /* Pastel tone system. Each KPI slab picks one tone + its ink. */
-    --tone-mint: hsl(156 56% 91%);
-    --tone-lavender: hsl(249 62% 95%);
-    --tone-butter: hsl(45 88% 91%);
-    --tone-peach: hsl(8 74% 94%);
-    --tone-mint-ink: hsl(158 66% 23%);
-    --tone-lavender-ink: hsl(248 34% 38%);
-    --tone-butter-ink: hsl(38 58% 31%);
-    --tone-peach-ink: hsl(8 52% 39%);
+    /* One slab tone for the whole console: the summary cards, the share
+       rings and the icon tiles all read as the same material, so colour
+       never has to be decoded as meaning. */
+    --kpi-surface: hsl(152 20% 93.5%);
 
     --hairline: hsl(152 16% 89%);
     --hairline-strong: hsl(152 14% 82%);
@@ -481,14 +476,7 @@
     --sidebar-pill: hsl(156 30% 88%);
     --sidebar-pill-foreground: hsl(158 30% 10%);
 
-    --tone-mint: hsl(158 26% 16%);
-    --tone-lavender: hsl(250 20% 19%);
-    --tone-butter: hsl(42 24% 17%);
-    --tone-peach: hsl(8 24% 18%);
-    --tone-mint-ink: hsl(156 52% 72%);
-    --tone-lavender-ink: hsl(250 46% 82%);
-    --tone-butter-ink: hsl(44 62% 76%);
-    --tone-peach-ink: hsl(10 56% 80%);
+    --kpi-surface: hsl(158 11% 13%);
 
     --hairline: hsl(158 10% 19%);
     --hairline-strong: hsl(158 10% 25%);
@@ -537,46 +525,25 @@
     letter-spacing: -0.02em;
 }
 
-/* --- Pastel KPI slabs ---------------------------------------- */
+/* --- Summary slabs ------------------------------------------- */
 .backend-shell .b-kpi {
-    --kpi-tone: var(--tone-mint);
-    --kpi-ink: var(--tone-mint-ink);
-
     position: relative;
     overflow: hidden;
-    border: 1px solid color-mix(in oklab, var(--kpi-ink) 14%, transparent);
+    border: 1px solid var(--hairline);
     border-radius: 1.125rem;
-    background-color: var(--kpi-tone);
+    background-color: var(--kpi-surface);
     padding: 1.125rem 1.25rem 1.25rem;
     transition:
         transform 260ms var(--card-ease),
-        box-shadow 260ms var(--card-ease);
-}
-
-.backend-shell .b-kpi[data-tone='mint'] {
-    --kpi-tone: var(--tone-mint);
-    --kpi-ink: var(--tone-mint-ink);
-}
-
-.backend-shell .b-kpi[data-tone='lavender'] {
-    --kpi-tone: var(--tone-lavender);
-    --kpi-ink: var(--tone-lavender-ink);
-}
-
-.backend-shell .b-kpi[data-tone='butter'] {
-    --kpi-tone: var(--tone-butter);
-    --kpi-ink: var(--tone-butter-ink);
-}
-
-.backend-shell .b-kpi[data-tone='peach'] {
-    --kpi-tone: var(--tone-peach);
-    --kpi-ink: var(--tone-peach-ink);
+        box-shadow 260ms var(--card-ease),
+        border-color 200ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
     .backend-shell .b-kpi:hover {
         transform: translate3d(0, -3px, 0);
-        box-shadow: 0 20px 44px -30px color-mix(in oklab, var(--kpi-ink) 60%, transparent);
+        border-color: var(--hairline-strong);
+        box-shadow: 0 20px 44px -32px color-mix(in oklab, var(--foreground) 55%, transparent);
     }
 }
 
@@ -587,13 +554,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 0.75rem;
-    background-color: color-mix(in oklab, var(--kpi-tone) 45%, var(--card));
-    color: var(--kpi-ink);
+    background-color: color-mix(in oklab, var(--primary) 12%, var(--card));
+    color: var(--primary);
 }
 
 .backend-shell .b-kpi-label,
 .backend-shell .b-kpi-caption {
-    color: color-mix(in oklab, var(--kpi-ink) 72%, transparent);
+    color: var(--muted-foreground);
 }
 
 /* --- Rings, bars, dots -------------------------------------- */
