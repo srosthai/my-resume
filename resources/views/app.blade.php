@@ -85,6 +85,8 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
         {{-- Display + data faces shared by every public page --}}
         <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        {{-- Home stage faces: stencil display + techno body (see Home.vue) --}}
+        <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Michroma&display=swap" rel="stylesheet" />
 
         @routes(null, Illuminate\Support\Facades\Vite::cspNonce())
         @vite(['resources/css/app.css', 'resources/js/app.ts'])
