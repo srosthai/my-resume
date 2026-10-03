@@ -268,10 +268,6 @@ const quickLinks: QuickLink[] = [
                             </div>
                         </div>
                         <div class="figure-ticker">
-                            <span class="figure-ticker-name">
-                                {{ fullName }}
-                                <span aria-hidden="true">'26</span>
-                            </span>
                             <button
                                 type="button"
                                 class="figure-switch"
@@ -442,7 +438,7 @@ const quickLinks: QuickLink[] = [
     align-items: center;
     min-height: calc(100svh - var(--marquee-h));
     overflow: hidden;
-    padding: 1.5rem 1.25rem 3rem;
+    padding: 1.25rem 1.25rem 2.25rem;
 }
 
 @media (min-width: 768px) {
@@ -457,7 +453,7 @@ const quickLinks: QuickLink[] = [
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: 1rem;
-    row-gap: 1.5rem;
+    row-gap: 1.15rem;
     width: 100%;
     max-width: 84rem;
     margin-inline: auto;
@@ -483,8 +479,10 @@ const quickLinks: QuickLink[] = [
         display: contents;
     }
 
+    /* Mobile: the stencil name reads as a centered title over the centered portrait */
     .stage-name {
         order: 2;
+        text-align: center;
     }
     .stage-figure {
         order: 3;
@@ -499,6 +497,25 @@ const quickLinks: QuickLink[] = [
     }
     .stage-side {
         order: 6;
+        gap: 1.15rem;
+    }
+
+    /* Full-width pill pair: cleaner line, bigger touch targets */
+    .stage-btn {
+        flex: 1 1 0;
+        justify-content: center;
+    }
+
+    .stage-specs {
+        padding: 0.8rem 0.95rem 0.3rem;
+    }
+
+    .specs-stat {
+        padding: 0.7rem 0.9rem 0.65rem 0;
+    }
+
+    .specs-stat:nth-child(2n) {
+        padding-left: 0.9rem;
     }
 }
 
@@ -613,7 +630,7 @@ const quickLinks: QuickLink[] = [
    ------------------------------------------------------------ */
 
 .stage-figure {
-    width: min(88vw, 26rem);
+    width: min(78vw, 23rem);
     margin-inline: auto;
 }
 
@@ -695,8 +712,7 @@ const quickLinks: QuickLink[] = [
 .figure-ticker {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 2rem;
+    justify-content: center;
     margin-top: 0.75rem;
     padding-top: 0.6rem;
     border-top: 1px solid var(--rx-rule-soft);
@@ -705,11 +721,6 @@ const quickLinks: QuickLink[] = [
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--rx-ink-dim);
-}
-
-.figure-ticker-name {
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-    letter-spacing: 0.22em;
 }
 
 .figure-switch {
@@ -783,17 +794,6 @@ const quickLinks: QuickLink[] = [
     border-color: var(--accent-ink);
     color: #fff;
     box-shadow: 0 0 16px 2px color-mix(in oklab, var(--accent-ink) 45%, transparent);
-}
-
-@media (min-width: 1024px) {
-    .figure-ticker {
-        justify-content: center;
-    }
-
-    /* The name is already the hero headline on desktop; keep only the control, centered */
-    .figure-ticker-name {
-        display: none;
-    }
 }
 
 /* ------------------------------------------------------------
