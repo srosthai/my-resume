@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Skeleton } from '@/components/ui/skeleton';
+import Meteors from '@/components/magicui/Meteors.vue';
 import { usePageReveal } from '@/composables/usePageReveal';
-import { usePhnomPenhClock } from '@/composables/usePhnomPenhClock';
 import { usePointerGlow } from '@/composables/usePointerGlow';
 import FrontendLayout from '@/layouts/FrontendLayout.vue';
 import type { PublicOwner, TechStack } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowUpRight, Book, Github, Linkedin, Mail, Rss, Sparkles } from 'lucide-vue-next';
+import { ArrowLeftRight, ArrowUpRight, Mail, Rss } from 'lucide-vue-next';
 import type { Component } from 'vue';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 interface HomeStats {
     projects: number;
@@ -34,7 +34,6 @@ const props = withDefaults(
 );
 
 const { isLoading, isVisible } = usePageReveal();
-const { time: timeInPhnomPenh } = usePhnomPenhClock();
 const { pointer } = usePointerGlow();
 
 const fullName = computed(() => (props.users?.name || 'SROS THAI').trim());
@@ -131,29 +130,47 @@ const handleFrameClick = () => {
 
 onBeforeUnmount(() => {
     if (spotRaf) cancelAnimationFrame(spotRaf);
+    if (statsRaf) cancelAnimationFrame(statsRaf);
 });
 
-const stackSummary = computed(() => {
-    const names = (props.techStacks || [])
-        .slice(0, 3)
-        .map((tech) => tech.name)
-        .filter(Boolean);
-    return names.length ? names.join(' · ') : 'Laravel · Vue · TypeScript';
-});
+/** Live counts from the backend: projects, stacks, work entries, notes. */
+const specLabels = ['Projects', 'Stacks', 'Experience', 'Notes'];
 
-const specs = computed(() => [
-    { label: 'Stack', value: stackSummary.value },
-    { label: 'Base', value: 'Phnom Penh, KH' },
-    { label: 'Local time', value: timeInPhnomPenh.value, live: true },
-    { label: 'Status', value: 'Available for work' },
-]);
+const statsTargets = () => [props.stats.projects, props.stats.techStacks, props.stats.experience, props.stats.notes];
 
-const deckStats = computed(() => [
-    { value: props.stats.projects, label: 'Projects' },
-    { value: props.stats.techStacks, label: 'Stacks' },
-    { value: props.stats.experience, label: 'Work entries' },
-    { value: props.stats.notes, label: 'Notes' },
-]);
+/** Numbers roll up from zero on every load (refresh or fresh visit). */
+const displayedStats = ref<number[]>([0, 0, 0, 0]);
+let statsRaf = 0;
+
+const runStatsCount = () => {
+    const targets = statsTargets();
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        displayedStats.value = targets;
+        return;
+    }
+
+    const delay = 520;
+    const stagger = 90;
+    const duration = 1000;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+        const elapsed = now - start;
+        displayedStats.value = targets.map((target, index) => {
+            const progress = Math.min(Math.max((elapsed - delay - index * stagger) / duration, 0), 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            return Math.round(target * eased);
+        });
+
+        const doneAt = delay + (targets.length - 1) * stagger + duration;
+        statsRaf = elapsed >= doneAt ? 0 : requestAnimationFrame(tick);
+    };
+
+    statsRaf = requestAnimationFrame(tick);
+};
+
+onMounted(runStatsCount);
 
 interface QuickLink {
     label: string;
@@ -162,10 +179,8 @@ interface QuickLink {
 }
 
 const quickLinks: QuickLink[] = [
-    { label: 'See projects', href: '/portfolio', icon: ArrowUpRight },
+    { label: 'See project', href: '/portfolio', icon: ArrowUpRight },
     { label: 'My feeds', href: '/feeds', icon: Rss },
-    { label: 'Notes', href: '/note', icon: Book },
-    { label: 'Contact', href: '/contact', icon: Mail },
 ];
 </script>
 
@@ -192,9 +207,10 @@ const quickLinks: QuickLink[] = [
         </section>
 
         <section v-else id="home" class="stage" :class="{ 'is-visible': isVisible }">
-            <!-- Field wash + pointer bloom -->
+            <!-- Field wash + pointer bloom + meteor shower -->
             <div class="stage-field" aria-hidden="true"></div>
             <div class="stage-bloom" :style="{ left: pointer.x + '%', top: pointer.y + '%' }" aria-hidden="true"></div>
+            <Meteors class="stage-meteors" :count="16" />
 
             <div class="stage-hero">
                 <div class="stage-grid">
@@ -209,13 +225,12 @@ const quickLinks: QuickLink[] = [
                         <p class="stage-desc reveal" style="--d: 480ms">
                             {{ users.description }}
                         </p>
-                        <ul class="stage-controls reveal" style="--d: 560ms">
-                            <li v-for="item in quickLinks" :key="item.label">
-                                <Link :href="item.href" class="stage-icon-btn" :aria-label="item.label" :title="item.label">
-                                    <component :is="item.icon" class="h-4 w-4" aria-hidden="true" />
-                                </Link>
-                            </li>
-                        </ul>
+                        <div class="stage-controls reveal" style="--d: 560ms">
+                            <Link v-for="item in quickLinks" :key="item.label" :href="item.href" class="stage-btn">
+                                <component :is="item.icon" class="h-4 w-4" aria-hidden="true" />
+                                <span>{{ item.label }}</span>
+                            </Link>
+                        </div>
                     </div>
 
                     <!-- Cut-out portrait: me-1 sits on top; hover or the switch button reveals me-2 -->
@@ -264,17 +279,17 @@ const quickLinks: QuickLink[] = [
                                 @click="toggleAura"
                             >
                                 <span class="figure-switch-icon" aria-hidden="true">
-                                    <Sparkles class="h-4 w-4" />
+                                    <ArrowLeftRight class="h-4 w-4" />
                                 </span>
                                 <span class="figure-switch-text">
-                                    <span class="figure-switch-label">{{ showingAlt ? 'Dev on' : 'Show dev' }}</span>
-                                    <span class="figure-switch-sub">Switch to dev</span>
+                                    <span class="figure-switch-label">{{ showingAlt ? 'Casual on' : 'Show casual' }}</span>
+                                    <span class="figure-switch-sub">Switch look</span>
                                 </span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Right rail: spec table + credential card -->
+                    <!-- Right rail: stats card + credential card -->
                     <div class="stage-side">
                         <aside class="stage-specs reveal" style="--d: 620ms" aria-label="Developer specs">
                         <div class="specs-head">
@@ -284,105 +299,71 @@ const quickLinks: QuickLink[] = [
                                 Verified
                             </span>
                         </div>
-                        <dl class="specs-list">
-                            <div v-for="row in specs" :key="row.label" class="spec-row">
-                                <dt>{{ row.label }}</dt>
-                                <dd :class="{ 'is-live': row.live }">
-                                    <span v-if="row.live" class="spec-live-dot" aria-hidden="true"></span>
-                                    {{ row.value }}
-                                </dd>
+                        <div class="specs-stats">
+                            <div
+                                v-for="(label, i) in specLabels"
+                                :key="label"
+                                class="specs-stat reveal"
+                                :style="{ '--d': 660 + i * 60 + 'ms' }"
+                            >
+                                <span class="spec-value">{{ displayedStats[i] }}</span>
+                                <span class="spec-key">{{ label }}</span>
                             </div>
-                        </dl>
+                        </div>
                     </aside>
 
-                    <!-- Credential: actions row (identity lives in the headline) -->
+                    <!-- Credential: contact CTA (identity lives in the headline) -->
                     <div class="stage-cred reveal" style="--d: 700ms">
-                        <Link href="/portfolio" class="stage-cta">
-                            <span>See projects</span>
-                            <ArrowUpRight class="h-4 w-4" aria-hidden="true" />
+                        <Link href="/contact" class="stage-cta">
+                            <span>Get in touch</span>
+                            <Mail class="h-4 w-4" aria-hidden="true" />
                         </Link>
-                        <Link href="/contact" class="card-link">Get in touch</Link>
                     </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Data deck -->
-            <div class="deck">
-                <div class="deck-inner">
-                    <div class="deck-stats">
-                        <div v-for="stat in deckStats" :key="stat.label" class="stat-cell reveal">
-                            <span class="stat-value">{{ stat.value }}</span>
-                            <span class="stat-key">{{ stat.label }}</span>
-                        </div>
-                    </div>
+            <!-- Daily drivers: infinite marquee pinned at the foot of the stage -->
+            <section v-if="techStacks.length" class="stage-marquee reveal" style="--d: 900ms" aria-label="Daily drivers">
+                <div class="marquee-viewport">
+                    <div class="marquee-track">
+                        <ul class="marquee-group">
+                            <li v-for="tech in techStacks" :key="tech.id" class="driver-chip" :title="tech.name ?? undefined">
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    :alt="tech.name ?? undefined"
+                                    width="18"
+                                    height="18"
+                                    class="driver-logo"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                                <span v-else class="driver-badge">{{ tech.name?.charAt(0) }}</span>
+                                <span class="driver-name">{{ tech.name }}</span>
+                            </li>
+                        </ul>
 
-                    <div class="deck-grid">
-                        <section class="deck-links reveal" style="--d: 900ms" aria-labelledby="elsewhere-title">
-                            <h2 id="elsewhere-title" class="deck-title">Elsewhere</h2>
-                            <ul>
-                                <li>
-                                    <a href="https://github.com/srosthai" target="_blank" rel="noopener noreferrer" class="link-row">
-                                        <span class="link-label"><Github class="h-4 w-4" aria-hidden="true" />GitHub</span>
-                                        <ArrowUpRight class="link-arrow h-4 w-4" aria-hidden="true" />
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        href="https://www.linkedin.com/in/sros-thai-b491b42ab/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="link-row"
-                                    >
-                                        <span class="link-label"><Linkedin class="h-4 w-4" aria-hidden="true" />LinkedIn</span>
-                                        <ArrowUpRight class="link-arrow h-4 w-4" aria-hidden="true" />
-                                    </a>
-                                </li>
-                                <li>
-                                    <Link href="/contact" class="link-row">
-                                        <span class="link-label"><Mail class="h-4 w-4" aria-hidden="true" />Contact</span>
-                                        <ArrowUpRight class="link-arrow h-4 w-4" aria-hidden="true" />
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href="/note" class="link-row">
-                                        <span class="link-label"><Book class="h-4 w-4" aria-hidden="true" />Notes</span>
-                                        <ArrowUpRight class="link-arrow h-4 w-4" aria-hidden="true" />
-                                    </Link>
-                                </li>
-                            </ul>
-                        </section>
-
-                        <section v-if="techStacks.length" class="deck-drivers reveal" style="--d: 960ms" aria-labelledby="drivers-title">
-                            <div class="drivers-head">
-                                <h2 id="drivers-title" class="deck-title">Daily drivers</h2>
-                            </div>
-                            <ul class="drivers-grid">
-                                <li v-for="tech in techStacks" :key="tech.id" class="driver-chip" :title="tech.name ?? undefined">
-                                    <img
-                                        v-if="tech.logo"
-                                        :src="tech.logo"
-                                        :alt="tech.name ?? undefined"
-                                        width="18"
-                                        height="18"
-                                        class="driver-logo"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                    <span v-else class="driver-badge">{{ tech.name?.charAt(0) }}</span>
-                                    <span class="driver-name">{{ tech.name }}</span>
-                                </li>
-                            </ul>
-                        </section>
-                    </div>
-
-                    <div class="deck-foot reveal" style="--d: 1020ms">
-                        <span>© {{ new Date().getFullYear() }} {{ users.name }}</span>
-                        <span>Crafted in Cambodia</span>
-                        <span class="deck-foot-hint">Scroll to explore ↓</span>
+                        <!-- Duplicate set makes the loop seamless; hidden from assistive tech -->
+                        <ul class="marquee-group" aria-hidden="true">
+                            <li v-for="tech in techStacks" :key="`ghost-${tech.id}`" class="driver-chip">
+                                <img
+                                    v-if="tech.logo"
+                                    :src="tech.logo"
+                                    alt=""
+                                    width="18"
+                                    height="18"
+                                    class="driver-logo"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                                <span v-else class="driver-badge">{{ tech.name?.charAt(0) }}</span>
+                                <span class="driver-name">{{ tech.name }}</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-            </div>
+            </section>
         </section>
     </FrontendLayout>
 </template>
@@ -390,8 +371,9 @@ const quickLinks: QuickLink[] = [
 <style scoped>
 /* ============================================================
    Home stage — the reference composition in the site's own
-   palette. Cut-out portrait, HUD spec table, quiet deck; every
-   color resolves from the theme tokens (light and dark).
+   palette. Cut-out portrait, HUD spec table, and the infinite
+   drivers marquee closing a single-screen landing; every color
+   resolves from the theme tokens (light and dark).
    ============================================================ */
 
 .stage {
@@ -407,6 +389,8 @@ const quickLinks: QuickLink[] = [
     --rx-solid-hover: color-mix(in oklab, var(--color-foreground) 85%, transparent);
     --rx-on-solid: var(--color-background);
     --rx-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Height reserved for the always-visible drivers marquee so the landing fits one screen */
+    --marquee-h: 4.3rem;
 
     position: relative;
     color: var(--rx-ink);
@@ -456,14 +440,14 @@ const quickLinks: QuickLink[] = [
     z-index: 2;
     display: flex;
     align-items: center;
-    min-height: 100svh;
+    min-height: calc(100svh - var(--marquee-h));
     overflow: hidden;
     padding: 1.5rem 1.25rem 3rem;
 }
 
 @media (min-width: 768px) {
     .stage-hero {
-        min-height: calc(100svh - 5.75rem);
+        min-height: calc(100svh - 5.75rem - var(--marquee-h));
         padding: 4.5rem 2.5rem 2.5rem;
     }
 }
@@ -523,7 +507,7 @@ const quickLinks: QuickLink[] = [
         grid-template-rows: auto 1fr auto;
         column-gap: 2rem;
         row-gap: 2rem;
-        min-height: calc(100svh - 12.75rem);
+        min-height: calc(100svh - 12.75rem - var(--marquee-h));
     }
 
     .stage-intro {
@@ -596,18 +580,19 @@ const quickLinks: QuickLink[] = [
     flex-wrap: wrap;
     gap: 0.6rem;
     margin-top: 1.5rem;
-    list-style: none;
 }
 
-.stage-icon-btn {
+.stage-btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
+    gap: 0.55rem;
     border: 1px solid var(--rx-rule-strong);
     border-radius: 9999px;
+    padding: 0.65rem 1.15rem;
     background: color-mix(in oklab, var(--color-card) 65%, transparent);
+    font-family: 'Chakra Petch', 'Instrument Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
     color: var(--rx-ink);
     transition:
         background-color 0.2s ease,
@@ -616,7 +601,7 @@ const quickLinks: QuickLink[] = [
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .stage-icon-btn:hover {
+    .stage-btn:hover {
         background: var(--rx-solid);
         border-color: var(--rx-solid);
         color: var(--rx-on-solid);
@@ -638,7 +623,7 @@ const quickLinks: QuickLink[] = [
         bottom: 2rem;
         left: 50%;
         z-index: 1;
-        width: min(52vw, 42.5rem, calc(100svh - 15rem));
+        width: min(52vw, 42.5rem, calc(100svh - 15rem - var(--marquee-h)));
         margin-inline: 0;
         translate: -50% 0;
     }
@@ -743,11 +728,17 @@ const quickLinks: QuickLink[] = [
     height: 2.4rem;
     border: 1px solid var(--rx-rule-strong);
     border-radius: 9999px;
+    background: color-mix(in oklab, var(--color-card) 70%, transparent);
     transition:
         background-color 0.25s ease,
         border-color 0.25s ease,
         color 0.25s ease,
-        box-shadow 0.25s ease;
+        box-shadow 0.25s ease,
+        transform 0.25s var(--rx-ease);
+}
+
+.figure-switch-icon svg {
+    transition: transform 0.25s var(--rx-ease);
 }
 
 .figure-switch-text {
@@ -777,6 +768,14 @@ const quickLinks: QuickLink[] = [
         border-color: var(--accent-ink);
         color: var(--accent-ink);
     }
+
+    .figure-switch:hover .figure-switch-icon svg {
+        transform: translateX(2px);
+    }
+}
+
+.figure-switch:active .figure-switch-icon {
+    transform: scale(0.93);
 }
 
 .figure-switch[aria-pressed='true'] .figure-switch-icon {
@@ -805,7 +804,7 @@ const quickLinks: QuickLink[] = [
     border: 1px solid var(--rx-rule);
     border-radius: 14px;
     background: color-mix(in oklab, var(--color-card) 75%, transparent);
-    padding: 0.9rem 1rem 0.7rem;
+    padding: 0.9rem 1rem 0.4rem;
     backdrop-filter: blur(10px);
 }
 
@@ -830,49 +829,42 @@ const quickLinks: QuickLink[] = [
     color: var(--rx-ink-soft);
 }
 
-.spec-row {
+.specs-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.specs-stat {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px solid var(--rx-rule-soft);
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem 1.1rem 0.8rem 0;
 }
 
-.specs-list .spec-row:last-child {
-    border-bottom: 0;
-    padding-bottom: 0.15rem;
+.specs-stat:nth-child(2n) {
+    padding-left: 1.1rem;
+    padding-right: 0;
+    border-left: 1px solid var(--rx-rule-soft);
 }
 
-.spec-row dt {
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--rx-ink-dim);
+.specs-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--rx-rule-soft);
 }
 
-.spec-row dd {
-    font-family: 'Chakra Petch', 'Instrument Sans', sans-serif;
-    font-size: 0.875rem;
-    text-align: right;
+.spec-value {
+    font-family: 'Michroma', 'Chakra Petch', sans-serif;
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    line-height: 1;
     color: var(--rx-ink);
-}
-
-.spec-row dd.is-live {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
     font-variant-numeric: tabular-nums;
 }
 
-.spec-live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 9999px;
-    background: #34d399;
-    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+.spec-key {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rx-ink-dim);
 }
 
 /* ------------------------------------------------------------
@@ -908,24 +900,6 @@ const quickLinks: QuickLink[] = [
     }
 }
 
-.card-link {
-    margin-left: auto;
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--rx-ink-dim);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    transition: color 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .card-link:hover {
-        color: var(--rx-ink);
-    }
-}
-
 /* ------------------------------------------------------------
    Skeleton
    ------------------------------------------------------------ */
@@ -947,186 +921,60 @@ const quickLinks: QuickLink[] = [
 }
 
 /* ------------------------------------------------------------
-   Data deck
+   Daily drivers: an infinite marquee closing the one-screen stage
    ------------------------------------------------------------ */
 
-.deck {
+.stage-marquee {
     position: relative;
-    border-top: 1px solid var(--rx-rule);
-}
-
-.deck-inner {
-    position: relative;
-    width: 100%;
-    max-width: 84rem;
-    margin-inline: auto;
-    padding: 2.5rem 1.25rem 2.25rem;
-}
-
-@media (min-width: 768px) {
-    .deck-inner {
-        padding: 3rem 2.5rem 2.5rem;
-    }
-}
-
-.deck-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1rem;
-}
-
-@media (min-width: 768px) {
-    .deck-stats {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        column-gap: 2rem;
-    }
-}
-
-.stat-cell {
+    z-index: 2;
     display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 1rem 0.15rem;
+    align-items: stretch;
     border-top: 1px solid var(--rx-rule);
+    background: color-mix(in oklab, var(--color-card) 55%, transparent);
 }
 
-.deck-stats .stat-cell:nth-child(1) {
-    --d: 760ms;
-}
-.deck-stats .stat-cell:nth-child(2) {
-    --d: 820ms;
-}
-.deck-stats .stat-cell:nth-child(3) {
-    --d: 880ms;
-}
-.deck-stats .stat-cell:nth-child(4) {
-    --d: 940ms;
+.marquee-viewport {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0.95rem 0;
+    mask-image: linear-gradient(to right, transparent, #000 4.5rem, #000 calc(100% - 4.5rem), transparent);
 }
 
-.stat-value {
-    font-family: 'Michroma', 'Chakra Petch', sans-serif;
-    font-size: clamp(1.6rem, 4.5vw, 2.35rem);
-    line-height: 1;
-    color: var(--rx-ink);
-    font-variant-numeric: tabular-nums;
+.marquee-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: marquee-drift 36s linear infinite;
 }
 
-.stat-key {
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--rx-ink-dim);
-}
-
-.deck-grid {
-    display: grid;
-    gap: 2.25rem;
-    margin-top: 2.5rem;
-}
-
-@media (min-width: 900px) {
-    .deck-grid {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-        gap: 4rem;
-    }
-}
-
-.deck-title {
-    font-family: 'Michroma', 'Chakra Petch', sans-serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--rx-ink-dim);
-}
-
-.deck-links ul {
-    margin-top: 0.5rem;
-    border-top: 1px solid var(--rx-rule-soft);
+/* Two identical groups; sliding exactly one group width (-50%) loops seamlessly */
+.marquee-group {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0 0.85rem 0 0;
     list-style: none;
 }
 
-.link-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    min-height: 3.1rem;
-    padding: 0.75rem 0.15rem;
-    border-bottom: 1px solid var(--rx-rule-soft);
-    font-family: 'Chakra Petch', 'Instrument Sans', sans-serif;
-    font-size: 0.95rem;
-    color: var(--rx-ink);
-    transition: color 0.2s ease;
-}
-
-.link-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.link-arrow {
-    color: var(--rx-ink-soft);
-    transition:
-        transform 0.2s ease,
-        color 0.2s ease;
+@keyframes marquee-drift {
+    to {
+        transform: translateX(-50%);
+    }
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .link-row:hover {
-        color: var(--accent-ink);
+    .stage-marquee:hover .marquee-track {
+        animation-play-state: paused;
     }
-
-    .link-row:hover .link-arrow {
-        transform: translate(2px, -2px);
-        color: var(--accent-ink);
-    }
-}
-
-.drivers-head {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--rx-rule-soft);
-}
-
-.deck-foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1.5rem;
-    margin-top: 2.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--rx-rule);
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--rx-ink-dim);
-}
-
-.deck-foot-hint {
-    color: var(--rx-ink-soft);
-}
-
-/* ------------------------------------------------------------
-   Daily drivers
-   ------------------------------------------------------------ */
-
-.drivers-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 0.75rem;
-    margin-top: 1rem;
-    padding: 0;
-    list-style: none;
 }
 
 .driver-chip {
     display: inline-flex;
+    flex: none;
     align-items: center;
     gap: 0.5rem;
     padding: 0.4rem 0.9rem 0.4rem 0.5rem;
@@ -1210,6 +1058,10 @@ const quickLinks: QuickLink[] = [
 
     .stage-bloom {
         transition: none;
+    }
+
+    .marquee-track {
+        animation: none;
     }
 }
 </style>
