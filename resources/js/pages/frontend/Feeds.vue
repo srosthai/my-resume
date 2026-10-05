@@ -63,7 +63,7 @@ let lightboxTrigger: HTMLElement | null = null;
 const currentYear = new Date().getFullYear();
 
 // Like / view tracking
-const likedFeeds = ref<Set<number>>(new Set<number>(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liked_feeds') || '[]') : []));
+const likedFeeds = ref<Set<number>>(new Set(props.feeds.filter((feed) => feed.liked).map((feed) => feed.id)));
 const feedStats = reactive<Record<number, FeedStat>>({});
 const likingInProgress = ref<Set<number>>(new Set());
 
@@ -93,12 +93,11 @@ const toggleLike = async (feed: Feed) => {
     const wasLiked = likedFeeds.value.has(feed.id);
     if (wasLiked) {
         likedFeeds.value.delete(feed.id);
-        if (feedStats[feed.id]) feedStats[feed.id].likes_count--;
+        if (feedStats[feed.id] && feedStats[feed.id].likes_count > 0) feedStats[feed.id].likes_count--;
     } else {
         likedFeeds.value.add(feed.id);
         if (feedStats[feed.id]) feedStats[feed.id].likes_count++;
     }
-    localStorage.setItem('liked_feeds', JSON.stringify([...likedFeeds.value]));
 
     try {
         const { data } = await axios.post<{ likes_count: number; liked: boolean }>(`/api/feeds/${feed.id}/like`);
@@ -110,16 +109,14 @@ const toggleLike = async (feed: Feed) => {
         } else {
             likedFeeds.value.delete(feed.id);
         }
-        localStorage.setItem('liked_feeds', JSON.stringify([...likedFeeds.value]));
     } catch {
         if (wasLiked) {
             likedFeeds.value.add(feed.id);
             if (feedStats[feed.id]) feedStats[feed.id].likes_count++;
         } else {
             likedFeeds.value.delete(feed.id);
-            if (feedStats[feed.id]) feedStats[feed.id].likes_count--;
+            if (feedStats[feed.id] && feedStats[feed.id].likes_count > 0) feedStats[feed.id].likes_count--;
         }
-        localStorage.setItem('liked_feeds', JSON.stringify([...likedFeeds.value]));
     } finally {
         likingInProgress.value.delete(feed.id);
     }

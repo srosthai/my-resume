@@ -259,7 +259,7 @@ class PortfolioController extends Controller
      *
      * @return Response
      */
-    public function feeds()
+    public function feeds(Request $request)
     {
         $feeds = Feed::published()
             ->visible()
@@ -267,10 +267,12 @@ class PortfolioController extends Controller
             ->orderBy('is_pinned', 'desc')
             ->orderBy('published_at', 'desc')
             ->get()
-            ->map(function ($feed) {
+            ->map(function ($feed) use ($request) {
                 if ($feed->images) {
                     $feed->images = array_map(fn ($img) => asset($img), $feed->images);
                 }
+
+                $feed->setAttribute('liked', $this->visitorLikes($feed, $request));
 
                 return $feed;
             });
@@ -353,6 +355,7 @@ class PortfolioController extends Controller
 
         $feed->load('user:id,name,image');
         $feed->images = $feed->images ? array_map(fn ($img) => asset($img), $feed->images) : null;
+        $feed->setAttribute('liked', $this->visitorLikes($feed, $request));
 
         $summary = Str::limit(strip_tags($feed->body), 160);
 
@@ -393,6 +396,8 @@ class PortfolioController extends Controller
      */
     public function incrementFeedView(Feed $feed, Request $request)
     {
+        $this->abortUnlessPublic($feed);
+
         $key = 'feed_view_'.$feed->id.'_'.$request->ip();
         if (! cache()->has($key)) {
             $feed->increment('views');
@@ -409,11 +414,13 @@ class PortfolioController extends Controller
      */
     public function toggleFeedLike(Feed $feed, Request $request)
     {
-        $key = 'feed_like_'.$feed->id.'_'.$request->ip();
+        $this->abortUnlessPublic($feed);
+
+        $key = $this->likeCacheKey($feed, $request);
         $liked = cache()->has($key);
 
         if ($liked) {
-            $feed->decrement('likes_count');
+            Feed::query()->whereKey($feed->id)->where('likes_count', '>', 0)->decrement('likes_count');
             cache()->forget($key);
         } else {
             $feed->increment('likes_count');
@@ -424,6 +431,21 @@ class PortfolioController extends Controller
             'likes_count' => $feed->fresh()->likes_count,
             'liked' => ! $liked,
         ]);
+    }
+
+    private function abortUnlessPublic(Feed $feed): void
+    {
+        abort_unless($feed->isPublished() && $feed->visibility === FeedVisibility::Public, 404);
+    }
+
+    private function visitorLikes(Feed $feed, Request $request): bool
+    {
+        return cache()->has($this->likeCacheKey($feed, $request));
+    }
+
+    private function likeCacheKey(Feed $feed, Request $request): string
+    {
+        return 'feed_like_'.$feed->id.'_'.$request->ip();
     }
 
     /**
