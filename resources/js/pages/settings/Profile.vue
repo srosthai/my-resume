@@ -14,6 +14,7 @@ import { type BreadcrumbItem, type User } from '@/types';
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
+    canDeleteAccount?: boolean;
 }
 
 defineProps<Props>();
@@ -102,7 +103,7 @@ const submit = () => {
                 </form>
             </div>
 
-            <DeleteUser />
+            <DeleteUser :can-delete="canDeleteAccount !== false" />
         </SettingsLayout>
     </AppLayout>
 </template>

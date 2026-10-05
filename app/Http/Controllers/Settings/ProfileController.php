@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class ProfileController extends Controller
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'canDeleteAccount' => $request->user() instanceof User && ! $request->user()->isLastOwner(),
         ]);
     }
 
@@ -50,6 +52,12 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($user instanceof User && $user->isLastOwner()) {
+            return back()->withErrors([
+                'account' => 'The owner account cannot be deleted. It is the only way into the admin.',
+            ]);
+        }
 
         Auth::logout();
 

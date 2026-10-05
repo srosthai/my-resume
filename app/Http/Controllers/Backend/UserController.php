@@ -19,8 +19,11 @@ class UserController extends Controller
 
     public function index(): Response
     {
+        $user = User::owner()->first();
+
         return Inertia::render('backend/users/Index', [
-            'user' => User::owner()->first(),
+            'user' => $user,
+            'canDelete' => $user instanceof User && ! $user->isLastOwner(),
         ]);
     }
 
@@ -76,11 +79,18 @@ class UserController extends Controller
     {
         return Inertia::render('backend/users/Delete', [
             'user' => $user,
+            'canDelete' => ! $user->isLastOwner(),
         ]);
     }
 
     public function destroy(User $user): RedirectResponse
     {
+        if ($user->isLastOwner()) {
+            return back()->withErrors([
+                'user' => 'The owner account cannot be deleted. It is the only way into the admin.',
+            ]);
+        }
+
         $this->images->delete($user->image);
         $user->delete();
 

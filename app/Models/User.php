@@ -74,6 +74,14 @@ class User extends Authenticatable
     }
 
     /**
+     * True when deleting this user would leave the admin with no owner.
+     */
+    public function isLastOwner(): bool
+    {
+        return $this->is_owner && ! static::query()->where('is_owner', true)->whereKeyNot($this->id)->exists();
+    }
+
+    /**
      * Columns that are safe to expose on public pages.
      *
      * @return list<string>

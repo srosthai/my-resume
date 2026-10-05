@@ -17,9 +17,12 @@ interface User {
 
 interface Props {
     user: User;
+    canDelete?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    canDelete: false,
+});
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: route('dashboard') },
@@ -95,9 +98,12 @@ const deleteUser = () => {
                         <p class="text-sm text-muted-foreground">{{ user.position || 'No position set' }}</p>
                     </div>
 
-                    <p class="max-w-md text-sm leading-6 text-muted-foreground">
+                    <p v-if="canDelete" class="max-w-md text-sm leading-6 text-muted-foreground">
                         This will permanently delete the profile record. Public resume and portfolio pages may lose name, contact, image, and profile
                         summary data after deletion.
+                    </p>
+                    <p v-else class="max-w-md text-sm leading-6 text-muted-foreground">
+                        The owner account cannot be deleted. It is the only way into the admin.
                     </p>
 
                     <div class="grid w-full max-w-sm gap-3 text-left sm:grid-cols-2">
@@ -115,9 +121,9 @@ const deleteUser = () => {
                 <!-- Footer actions -->
                 <form class="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 sm:px-8" @submit.prevent="deleteUser">
                     <Link :href="route('backend.users.index')">
-                        <Button type="button" variant="outline" class="rounded-xl">Cancel</Button>
+                        <Button type="button" variant="outline" class="rounded-xl">{{ canDelete ? 'Cancel' : 'Back' }}</Button>
                     </Link>
-                    <Button type="submit" variant="destructive" :disabled="form.processing" class="rounded-xl shadow-sm">
+                    <Button v-if="canDelete" type="submit" variant="destructive" :disabled="form.processing" class="rounded-xl shadow-sm">
                         <Icon v-if="form.processing" name="loaderCircle" class="size-4 animate-spin" />
                         <Icon v-else name="trash2" class="size-4" />
                         Delete profile
