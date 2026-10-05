@@ -19,15 +19,15 @@ test('the owner can visit the dashboard', function () {
     $response->assertStatus(200);
 });
 
-test('the dashboard keeps career years as written and includes notes and feeds', function () {
+test('the dashboard keeps career years as numbers and includes notes and feeds', function () {
     $owner = User::factory()->owner()->create();
-    WorkExperience::factory()->create(['position' => 'Engineer', 'company' => 'Acme', 'from' => '2022', 'to' => 'Present']);
+    WorkExperience::factory()->create(['position' => 'Engineer', 'company' => 'Acme', 'from' => 2022, 'to' => null]);
     Note::factory()->create(['title' => 'Install Laravel']);
     Feed::factory()->create(['title' => 'Weekend market']);
 
     $this->actingAs($owner)->get('/dashboard')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-        ->where('summary.workExperience.recent.0.from', '2022')
-        ->where('summary.workExperience.recent.0.to', 'Present')
+        ->where('summary.workExperience.recent.0.from', 2022)
+        ->where('summary.workExperience.recent.0.to', null)
         ->where('summary.notes.total', 1)
         ->where('summary.notes.published', 1)
         ->where('summary.notes.recent.0.title', 'Install Laravel')

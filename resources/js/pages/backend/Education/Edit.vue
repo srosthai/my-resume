@@ -90,7 +90,7 @@ const submit = () => {
                             </div>
                             <div class="space-y-2">
                                 <Label for="to">To</Label>
-                                <Input id="to" v-model="form.to" type="text" placeholder="End year (e.g. 2025)" />
+                                <Input id="to" v-model="form.to" type="text" placeholder="End year, or Present" />
                                 <InputError :message="form.errors.to" />
                             </div>
                         </div>

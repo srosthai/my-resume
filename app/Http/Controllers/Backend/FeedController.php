@@ -17,7 +17,7 @@ class FeedController extends Controller
     public function index(): Response
     {
         return Inertia::render('backend/Feed/Index', [
-            'feeds' => Feed::with('user:id,name,image')->latest()->get(),
+            'feeds' => Feed::withTrashed()->with('user:id,name,image')->latest()->get(),
             'activityTypes' => Feed::getActivityTypes(),
         ]);
     }
@@ -78,13 +78,16 @@ class FeedController extends Controller
 
     public function destroy(Feed $feed): RedirectResponse
     {
-        foreach ($feed->images ?? [] as $image) {
-            $this->images->delete($image);
-        }
-
         $feed->delete();
 
-        return redirect()->route('backend.feeds.index')->with('success', 'Feed deleted successfully.');
+        return redirect()->route('backend.feeds.index')->with('success', 'Feed deleted. You can restore it from the list.');
+    }
+
+    public function restore(Feed $feed): RedirectResponse
+    {
+        $feed->restore();
+
+        return redirect()->route('backend.feeds.index')->with('success', 'Feed restored.');
     }
 
     public function togglePinned(Feed $feed): RedirectResponse

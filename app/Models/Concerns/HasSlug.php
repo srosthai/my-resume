@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 /**
@@ -53,8 +54,12 @@ trait HasSlug
         $counter = 1;
 
         while (static::query()
+            ->when(
+                in_array(SoftDeletes::class, class_uses_recursive(static::class), true),
+                fn ($query) => $query->withTrashed(),
+            )
             ->where('slug', $slug)
-            ->when($this->exists, fn ($q) => $q->whereKeyNot($this->getKey()))
+            ->when($this->exists, fn ($query) => $query->whereKeyNot($this->getKey()))
             ->exists()) {
             $slug = $base.'-'.$counter++;
         }

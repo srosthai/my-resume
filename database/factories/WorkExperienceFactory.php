@@ -17,8 +17,8 @@ class WorkExperienceFactory extends Factory
             'position' => fake()->jobTitle(),
             'company' => fake()->company(),
             'description' => fake()->paragraph(),
-            'from' => '2022',
-            'to' => '2024',
+            'from' => 2022,
+            'to' => 2024,
         ];
     }
 }

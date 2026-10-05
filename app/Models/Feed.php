@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class Feed extends Model
 {
-    use HasFactory, HasSlug, Publishable;
+    use HasFactory, HasSlug, Publishable, SoftDeletes;
 
     protected $fillable = [
         'title',

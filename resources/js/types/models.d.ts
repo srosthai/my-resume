@@ -56,8 +56,8 @@ export interface WorkExperience extends Timestamps {
     position: string | null;
     company: string | null;
     description: string | null;
-    from: string | null;
-    to: string | null;
+    from: number | null;
+    to: number | null;
 }
 
 export interface Education extends Timestamps {
@@ -66,8 +66,8 @@ export interface Education extends Timestamps {
     major: string | null;
     institution: string | null;
     description: string | null;
-    from: string | null;
-    to: string | null;
+    from: number | null;
+    to: number | null;
 }
 
 export interface TechStack extends Timestamps {
@@ -101,6 +101,7 @@ export interface Project extends Timestamps {
     created_date: string | null;
     status: ProjectStatus;
     links: ProjectLink[] | null;
+    deleted_at?: string | null;
 }
 
 export interface PopularSong extends Timestamps {
@@ -148,6 +149,7 @@ export interface Note extends Timestamps {
     views: number;
     is_featured: boolean;
     published_at: string | null;
+    deleted_at?: string | null;
 }
 
 export type FeedVisibility = 'public' | 'private';
@@ -172,6 +174,7 @@ export interface Feed extends Timestamps {
     views: number;
     is_pinned: boolean;
     published_at: string | null;
+    deleted_at?: string | null;
 }
 
 /** Laravel paginator payload as sent by ->paginate(). */

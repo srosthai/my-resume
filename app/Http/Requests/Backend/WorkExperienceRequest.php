@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Backend;
 
+use App\Http\Requests\Backend\Concerns\NormalizesCareerYears;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class WorkExperienceRequest extends FormRequest
 {
+    use NormalizesCareerYears;
+
     public function authorize(): bool
     {
         return true; // Route group is already restricted to the owner.
@@ -24,8 +27,7 @@ class WorkExperienceRequest extends FormRequest
             'position' => ['nullable', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'from' => ['nullable', 'string', 'max:255'],
-            'to' => ['nullable', 'string', 'max:255'],
+            ...$this->careerYearRules(),
         ];
     }
 }

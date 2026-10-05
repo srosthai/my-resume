@@ -17,8 +17,8 @@ class EducationFactory extends Factory
             'major' => 'Software Engineering',
             'institution' => fake()->company(),
             'description' => fake()->paragraph(),
-            'from' => '2018',
-            'to' => '2022',
+            'from' => 2018,
+            'to' => 2022,
         ];
     }
 }
