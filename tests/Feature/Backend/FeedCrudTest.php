@@ -50,6 +50,19 @@ test('private and draft feeds never reach the public page, pinned ones come firs
     $this->get('/feeds')->assertOk()->assertInertia(fn (AssertableInertia $p) => $p->has('feeds', 2)->where('feeds.0.title', 'Pinned')->where('feeds.1.title', 'Old'));
 });
 
+test('the feeds index does not count views; opening a feed does, once per cooldown', function () {
+    $feed = Feed::factory()->create(['title' => 'Weekend market', 'views' => 4]);
+
+    $this->get('/feeds')->assertOk();
+    expect($feed->fresh()->views)->toBe(4);
+
+    $this->get('/feeds/weekend-market')->assertOk();
+    expect($feed->fresh()->views)->toBe(5);
+
+    $this->get('/feeds/weekend-market')->assertOk();
+    expect($feed->fresh()->views)->toBe(5);
+});
+
 test('view and like counters are de-duplicated per visitor', function () {
     $feed = Feed::factory()->create();
 

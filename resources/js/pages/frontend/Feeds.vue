@@ -125,20 +125,6 @@ const toggleLike = async (feed: Feed) => {
     }
 };
 
-const trackView = async (feed: Feed) => {
-    const viewedKey = `feed_viewed_${feed.id}`;
-    if (sessionStorage.getItem(viewedKey)) return;
-    sessionStorage.setItem(viewedKey, '1');
-    try {
-        const { data } = await axios.post<{ views: number }>(`/api/feeds/${feed.id}/view`);
-        if (feedStats[feed.id]) {
-            feedStats[feed.id].views = data.views;
-        }
-    } catch {
-        // silent
-    }
-};
-
 const handleKeydown = (e: KeyboardEvent) => {
     if (!expandedImages.value) return;
     if (e.key === 'Escape') closeImageViewer();
@@ -257,12 +243,6 @@ const prevImage = () => {
 
 onMounted(() => {
     initFeedStats();
-
-    // Track views once the reveal beat (handled by usePageReveal) has passed.
-    setTimeout(() => {
-        props.feeds.forEach((feed) => trackView(feed));
-    }, 400);
-
     window.addEventListener('keydown', handleKeydown);
 });
 
