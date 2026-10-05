@@ -19,6 +19,7 @@ class Project extends Model
         'title',
         'description',
         'image',
+        'gallery',
         'project_type_id',
         'technologies',
         'created_date',
@@ -29,6 +30,7 @@ class Project extends Model
     protected $casts = [
         'technologies' => 'array',
         'links' => 'array',
+        'gallery' => 'array',
         'created_date' => 'date',
         'status' => ProjectStatus::class,
     ];

@@ -7,7 +7,7 @@ import { formatDate } from '@/lib/date';
 import type { LegacyProject, ProjectNeighbour } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Github, Laptop } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -95,6 +95,31 @@ const entryNumber = computed(() => {
     if (!props.project?.id) return '00';
     return String(props.project.id).padStart(2, '0');
 });
+
+const frames = computed(() => {
+    const gallery = (props.project.gallery ?? []).filter((src): src is string => Boolean(src));
+    const cover = props.project.image;
+    const extras = cover ? gallery.filter((src) => src !== cover) : gallery;
+
+    return cover ? [cover, ...extras] : extras;
+});
+
+const activeIndex = ref(0);
+
+watch(
+    () => props.project.id,
+    () => {
+        activeIndex.value = 0;
+    },
+);
+
+const activeFrame = computed(() => frames.value[activeIndex.value] ?? null);
+
+const showFrame = (index: number) => {
+    const total = frames.value.length;
+    if (total === 0) return;
+    activeIndex.value = (index + total) % total;
+};
 
 const goBack = () => {
     router.visit(route('portfolio'));
@@ -194,24 +219,65 @@ const goToProject = (target: ProjectNeighbour) => {
                 class="card-3d mobile-image-card reveal mt-4 overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/60 backdrop-blur-xl sm:mt-5 sm:rounded-[1.5rem]"
                 style="--d: 220ms"
             >
-                <div class="relative aspect-[16/9] overflow-hidden bg-muted/30">
+                <div
+                    class="relative aspect-[16/9] overflow-hidden bg-muted/30 outline-none"
+                    :tabindex="frames.length > 1 ? 0 : undefined"
+                    :aria-label="frames.length > 1 ? 'Project gallery' : undefined"
+                    @keydown.left.prevent="showFrame(activeIndex - 1)"
+                    @keydown.right.prevent="showFrame(activeIndex + 1)"
+                >
                     <img
-                        v-if="project.image"
-                        :src="project.image"
-                        :alt="project.title ?? undefined"
+                        v-if="activeFrame"
+                        :src="activeFrame"
+                        :alt="frames.length > 1 ? `${project.title ?? 'Project'} — image ${activeIndex + 1} of ${frames.length}` : (project.title ?? undefined)"
                         width="1600"
                         height="900"
-                        loading="lazy"
+                        :loading="activeIndex === 0 ? 'eager' : 'lazy'"
                         decoding="async"
                         class="h-full w-full object-cover"
                     />
                     <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/60 to-muted/20">
                         <Laptop class="h-14 w-14 text-muted-foreground/40" />
                     </div>
+                    <template v-if="frames.length > 1">
+                        <button
+                            type="button"
+                            class="btn-3d absolute top-1/2 left-3 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground"
+                            aria-label="Previous image"
+                            @click="showFrame(activeIndex - 1)"
+                        >
+                            <ChevronLeft class="h-4 w-4" />
+                        </button>
+                        <button
+                            type="button"
+                            class="btn-3d absolute top-1/2 right-3 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground"
+                            aria-label="Next image"
+                            @click="showFrame(activeIndex + 1)"
+                        >
+                            <ChevronRight class="h-4 w-4" />
+                        </button>
+                        <p class="absolute right-3 bottom-3 rounded-full bg-background/80 px-2.5 py-1 font-mono text-[10px] tracking-[0.18em] text-foreground tabular-nums">
+                            {{ activeIndex + 1 }} / {{ frames.length }}
+                        </p>
+                    </template>
                     <div class="corner corner-tl" aria-hidden="true"></div>
                     <div class="corner corner-tr" aria-hidden="true"></div>
                     <div class="corner corner-bl" aria-hidden="true"></div>
                     <div class="corner corner-br" aria-hidden="true"></div>
+                </div>
+                <div v-if="frames.length > 1" class="flex gap-2 overflow-x-auto p-3">
+                    <button
+                        v-for="(frame, index) in frames"
+                        :key="`${frame}-${index}`"
+                        type="button"
+                        class="h-16 w-24 shrink-0 overflow-hidden rounded-xl border border-border/70 focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
+                        :class="index === activeIndex ? 'ring-2 ring-foreground' : 'opacity-70 hover:opacity-100'"
+                        :aria-pressed="index === activeIndex"
+                        :aria-label="`Show image ${index + 1} of ${frames.length}`"
+                        @click="activeIndex = index"
+                    >
+                        <img :src="frame" alt="" class="h-full w-full object-cover" width="96" height="64" loading="lazy" decoding="async" />
+                    </button>
                 </div>
             </article>
 

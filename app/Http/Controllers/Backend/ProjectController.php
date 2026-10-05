@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\ProjectType;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,6 +38,8 @@ class ProjectController extends Controller
             $data['image'] = $this->images->store($request->file('image'), 'projects');
         }
 
+        $data['gallery'] = $this->syncGallery($request);
+
         Project::create($data);
 
         return redirect()->route('backend.projects.index')->with('success', 'Project created successfully.');
@@ -62,6 +65,8 @@ class ProjectController extends Controller
             $data['image'] = null;
         }
 
+        $data['gallery'] = $this->syncGallery($request, $project);
+
         $project->update($data);
 
         return redirect()->route('backend.projects.index')->with('success', 'Project updated successfully.');
@@ -79,5 +84,46 @@ class ProjectController extends Controller
         $project->restore();
 
         return redirect()->route('backend.projects.index')->with('success', 'Project restored.');
+    }
+
+    /**
+     * Keep only gallery paths that already belong to this project, drop the
+     * rest, and append newly uploaded files. A request that never mentions
+     * the gallery leaves the current set alone.
+     *
+     * @return list<string>|null
+     */
+    private function syncGallery(ProjectRequest $request, ?Project $project = null): ?array
+    {
+        $uploaded = [];
+
+        foreach ($request->file('gallery', []) as $image) {
+            if ($image instanceof UploadedFile) {
+                $uploaded[] = $this->images->store($image, 'projects/gallery');
+            }
+        }
+
+        if ($project === null) {
+            return $uploaded === [] ? null : $uploaded;
+        }
+
+        if (! $request->exists('existing_gallery') && $uploaded === []) {
+            return $project->gallery;
+        }
+
+        $current = $project->gallery ?? [];
+        $requested = array_values(array_filter(
+            (array) $request->input('existing_gallery', []),
+            fn ($path) => is_string($path) && $path !== '',
+        ));
+        $kept = array_values(array_intersect($current, $requested));
+
+        foreach (array_diff($current, $kept) as $removed) {
+            $this->images->delete($removed);
+        }
+
+        $paths = [...$kept, ...$uploaded];
+
+        return $paths === [] ? null : $paths;
     }
 }

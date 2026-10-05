@@ -25,6 +25,7 @@ const form = useForm({
     title: '',
     description: '',
     image: null as File | null,
+    gallery: [] as File[],
     project_type_id: null as string | null,
     technologies: [] as string[],
     created_date: '',
@@ -33,6 +34,9 @@ const form = useForm({
 });
 
 const technologiesString = ref('');
+const galleryPreviews = ref<string[]>([]);
+const galleryNotice = ref('');
+const galleryLimit = 12;
 const links = ref([
     { label: 'Github', url: '' },
     { label: 'View', url: '' },
@@ -41,6 +45,37 @@ const links = ref([
 const handleImageChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
     form.image = input.files?.[0] ?? null;
+};
+
+const handleGalleryChange = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    galleryNotice.value = '';
+
+    if (form.gallery.length + files.length > galleryLimit) {
+        galleryNotice.value = 'You can add up to 12 gallery images.';
+        input.value = '';
+        return;
+    }
+
+    files.forEach((file) => {
+        const index = form.gallery.length;
+        form.gallery.push(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (typeof reader.result === 'string') {
+                galleryPreviews.value[index] = reader.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+
+    input.value = '';
+};
+
+const removeGalleryImage = (index: number) => {
+    form.gallery.splice(index, 1);
+    galleryPreviews.value.splice(index, 1);
 };
 
 const addLink = () => {
@@ -149,6 +184,34 @@ const submit = () => {
                             <Input id="image" type="file" accept="image/*" @change="handleImageChange" />
                             <p class="text-sm text-muted-foreground">Upload an image for the project (JPEG, PNG, JPG, GIF - max 2MB)</p>
                             <InputError :message="form.errors.image" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="gallery">Gallery</Label>
+                            <Input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple @change="handleGalleryChange" />
+                            <p class="text-sm text-muted-foreground">Add extra screenshots. Up to 12 images, 5MB each. The project image above stays the cover.</p>
+                            <InputError :message="galleryNotice || form.errors.gallery" />
+                            <div v-if="galleryPreviews.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                <div v-for="(preview, index) in galleryPreviews" :key="preview || index" class="group relative">
+                                    <img
+                                        :src="preview"
+                                        :alt="`Gallery image ${index + 1}`"
+                                        class="h-24 w-full rounded-xl border object-cover"
+                                        width="160"
+                                        height="96"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        class="absolute top-1 right-1 size-6 p-0"
+                                        :aria-label="`Remove gallery image ${index + 1}`"
+                                        @click="removeGalleryImage(index)"
+                                    >
+                                        <Icon name="x" class="size-3" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="space-y-2">

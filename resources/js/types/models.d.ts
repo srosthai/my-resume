@@ -95,6 +95,7 @@ export interface Project extends Timestamps {
     slug: string | null;
     description: string | null;
     image: string | null;
+    gallery?: string[] | null;
     project_type_id: number | null;
     project_type?: ProjectType | null;
     technologies: string[] | null;

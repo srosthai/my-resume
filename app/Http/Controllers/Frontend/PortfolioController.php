@@ -112,11 +112,7 @@ class PortfolioController extends Controller
         $projects = $query->orderBy('created_date', 'desc')
             ->orderBy('id', 'desc')
             ->get()
-            ->map(function ($project) {
-                $project->image = $project->image ? asset($project->image) : null;
-
-                return $project;
-            });
+            ->map(fn (Project $project) => $this->presentProject($project));
 
         $projectTypes = ProjectType::orderBy('name')->get();
 
@@ -152,7 +148,7 @@ class PortfolioController extends Controller
         $project = $model;
 
         $project->load('projectType');
-        $project->image = $project->image ? asset($project->image) : null;
+        $this->presentProject($project);
 
         // Same order as the portfolio list: newest created_date first, then highest id.
         $ordered = Project::query()
@@ -251,11 +247,7 @@ class PortfolioController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get()
-            ->map(function ($project) {
-                $project->image = $project->image ? asset($project->image) : null;
-
-                return $project;
-            });
+            ->map(fn (Project $project) => $this->presentProject($project));
 
         return Inertia::render('frontend/Resume', [
             'title' => 'Resume - '.($users->name ?? 'Professional Resume'),
@@ -461,6 +453,21 @@ class PortfolioController extends Controller
     private function likeCacheKey(Feed $feed, Request $request): string
     {
         return 'feed_like_'.$feed->id.'_'.$request->ip();
+    }
+
+    /**
+     * Public pages receive absolute image URLs. The stored paths stay in the database.
+     */
+    private function presentProject(Project $project): Project
+    {
+        $project->image = $project->image ? asset($project->image) : null;
+        $project->gallery = collect($project->gallery ?? [])
+            ->filter(fn ($path) => is_string($path) && $path !== '')
+            ->map(fn (string $path) => asset($path))
+            ->values()
+            ->all();
+
+        return $project;
     }
 
     /**

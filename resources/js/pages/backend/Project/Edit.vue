@@ -27,6 +27,8 @@ const form = useForm({
     description: props.project.description || '',
     image: null as File | null,
     remove_image: false,
+    gallery: [] as File[],
+    existing_gallery: [...(props.project.gallery ?? [])] as string[],
     project_type_id: (props.project.project_type_id ? props.project.project_type_id.toString() : null) as string | null,
     technologies: (props.project.technologies || []) as string[],
     created_date: props.project.created_date || '',
@@ -35,6 +37,9 @@ const form = useForm({
 });
 
 const technologiesString = ref(Array.isArray(props.project.technologies) ? props.project.technologies.join(', ') : '');
+const galleryPreviews = ref<string[]>([]);
+const galleryNotice = ref('');
+const galleryLimit = 12;
 
 // Convert existing links from array of objects to editable format
 const initializeLinks = () => {
@@ -56,6 +61,41 @@ const links = ref(initializeLinks());
 const handleImageChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
     form.image = input.files?.[0] ?? null;
+};
+
+const handleGalleryChange = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    galleryNotice.value = '';
+
+    if (form.existing_gallery.length + form.gallery.length + files.length > galleryLimit) {
+        galleryNotice.value = 'You can add up to 12 gallery images.';
+        input.value = '';
+        return;
+    }
+
+    files.forEach((file) => {
+        const index = form.gallery.length;
+        form.gallery.push(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (typeof reader.result === 'string') {
+                galleryPreviews.value[index] = reader.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+
+    input.value = '';
+};
+
+const removeExistingGalleryImage = (index: number) => {
+    form.existing_gallery.splice(index, 1);
+};
+
+const removeGalleryImage = (index: number) => {
+    form.gallery.splice(index, 1);
+    galleryPreviews.value.splice(index, 1);
 };
 
 const addLink = () => {
@@ -80,7 +120,11 @@ const submit = () => {
     }
 
     // Browsers cannot send multipart PUT, so spoof the method on a POST.
-    form.transform((data) => ({ ...data, _method: 'put' })).post(route('backend.projects.update', props.project.id), {
+    form.transform((data) => ({
+        ...data,
+        _method: 'put',
+        existing_gallery: data.existing_gallery.length > 0 ? data.existing_gallery : [''],
+    })).post(route('backend.projects.update', props.project.id), {
         forceFormData: true,
     });
 };
@@ -181,6 +225,51 @@ const submit = () => {
                             <Input id="image" type="file" accept="image/*" @change="handleImageChange" />
                             <p class="text-sm text-muted-foreground">Upload a new image to replace the current one (JPEG, PNG, JPG, GIF - max 2MB)</p>
                             <InputError :message="form.errors.image" />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="gallery">Gallery</Label>
+                            <p class="text-sm text-muted-foreground">Extra screenshots shown on the project page. Up to 12 images, 5MB each.</p>
+                            <div v-if="form.existing_gallery.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                <div v-for="(image, index) in form.existing_gallery" :key="image" class="group relative">
+                                    <img
+                                        :src="`/${image}`"
+                                        :alt="`Gallery image ${index + 1}`"
+                                        class="h-24 w-full rounded-xl border object-cover"
+                                        width="160"
+                                        height="96"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        class="absolute top-1 right-1 size-6 p-0"
+                                        :aria-label="`Remove gallery image ${index + 1}`"
+                                        @click="removeExistingGalleryImage(index)"
+                                    >
+                                        <Icon name="x" class="size-3" />
+                                    </Button>
+                                </div>
+                            </div>
+                            <Input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple @change="handleGalleryChange" />
+                            <InputError :message="galleryNotice || form.errors.gallery" />
+                            <div v-if="galleryPreviews.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                <div v-for="(preview, index) in galleryPreviews" :key="preview || index" class="group relative">
+                                    <img :src="preview" :alt="`New gallery image ${index + 1}`" class="h-24 w-full rounded-xl border object-cover" width="160" height="96" />
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        class="absolute top-1 right-1 size-6 p-0"
+                                        :aria-label="`Remove new gallery image ${index + 1}`"
+                                        @click="removeGalleryImage(index)"
+                                    >
+                                        <Icon name="x" class="size-3" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="space-y-2">
