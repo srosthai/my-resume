@@ -14,15 +14,17 @@ beforeEach(function () {
 test('popular songs crud and the public player endpoint', function () {
     $this->actingAs($this->owner);
 
-    $this->post(route('backend.popular-songs.store'), ['title' => 'Song', 'artist' => 'Artist', 'url' => 'https://www.youtube.com/watch?v=abc', 'duration' => 200])
+    $this->post(route('backend.popular-songs.store'), ['title' => 'Song', 'artist' => 'Artist', 'url' => 'https://youtu.be/dQw4w9WgXcQ', 'duration' => 200])
         ->assertRedirect(route('backend.popular-songs.index'));
     $this->post(route('backend.popular-songs.store'), ['title' => 'Bad', 'artist' => 'A', 'url' => 'not a url', 'duration' => 0])
         ->assertSessionHasErrors(['url', 'duration']);
+    $this->post(route('backend.popular-songs.store'), ['title' => 'Spotify', 'artist' => 'A', 'url' => 'https://open.spotify.com/track/abc', 'duration' => 180])
+        ->assertSessionHasErrors('url');
 
     $song = PopularSong::first();
-    expect($song->formatted_duration)->toBe('3:20');
+    expect($song->formatted_duration)->toBe('3:20')->and(PopularSong::count())->toBe(1);
 
-    $this->get('/api/popular-songs')->assertOk()->assertJsonPath('0.src', 'https://www.youtube.com/watch?v=abc')->assertJsonPath('0.title', 'Song');
+    $this->get('/api/popular-songs')->assertOk()->assertJsonPath('0.src', 'https://youtu.be/dQw4w9WgXcQ')->assertJsonPath('0.title', 'Song');
 
     $this->put(route('backend.popular-songs.update', $song), ['title' => 'Renamed', 'artist' => 'Artist', 'url' => $song->url, 'duration' => 200])->assertRedirect();
     expect($song->fresh()->title)->toBe('Renamed');
