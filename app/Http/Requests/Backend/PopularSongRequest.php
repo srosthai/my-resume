@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Backend;
 
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -22,7 +23,23 @@ class PopularSongRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'artist' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'url', 'max:1000'],
+            'url' => [
+                'required',
+                'string',
+                'url',
+                'max:1000',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    // Same id shape as extractYouTubeId() in the music player.
+                    $isYouTube = is_string($value) && preg_match(
+                        '/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?![A-Za-z0-9_-])/',
+                        $value,
+                    );
+
+                    if (! $isYouTube) {
+                        $fail('Enter a YouTube link (watch, youtu.be, embed, or shorts).');
+                    }
+                },
+            ],
             'duration' => ['required', 'integer', 'min:1', 'max:3600'],
         ];
     }
