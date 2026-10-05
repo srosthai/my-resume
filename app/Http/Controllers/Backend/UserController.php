@@ -27,13 +27,21 @@ class UserController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): Response|RedirectResponse
     {
+        if (User::owner()->exists()) {
+            return $this->rejectExtraProfile();
+        }
+
         return Inertia::render('backend/users/Create');
     }
 
     public function store(UserProfileRequest $request): RedirectResponse
     {
+        if (User::owner()->exists()) {
+            return $this->rejectExtraProfile();
+        }
+
         $data = $request->profileData();
 
         if ($request->hasFile('image')) {
@@ -41,8 +49,7 @@ class UserController extends Controller
         }
 
         $user = new User($data);
-        // The first profile ever created becomes the owner; never a later one.
-        $user->forceFill(['is_owner' => ! User::owner()->exists()])->save();
+        $user->forceFill(['is_owner' => true])->save();
 
         return redirect()->route('backend.users.index')->with('success', 'User created successfully.');
     }
@@ -95,5 +102,12 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('backend.users.index')->with('success', 'User deleted successfully.');
+    }
+
+    private function rejectExtraProfile(): RedirectResponse
+    {
+        return redirect()->route('backend.users.index')->withErrors([
+            'user' => 'A profile already exists. Me is the single owner account.',
+        ]);
     }
 }

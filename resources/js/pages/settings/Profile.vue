@@ -46,6 +46,12 @@ const submit = () => {
         <Head title="Profile settings" />
 
         <SettingsLayout>
+            <p
+                v-if="page.props.flash?.error"
+                class="mb-6 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
+            >
+                {{ page.props.flash.error }}
+            </p>
             <div class="flex flex-col space-y-6">
                 <HeadingSmall title="Profile information" description="Update your name and email address" />
 

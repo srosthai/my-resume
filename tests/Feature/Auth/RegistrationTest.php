@@ -45,7 +45,7 @@ test('new users can register when enabled', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('profile.edit'));
 });
 
 test('a registered user is never the owner', function () {
