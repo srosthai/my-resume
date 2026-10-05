@@ -63,6 +63,43 @@ test('the feeds index does not count views; opening a feed does, once per cooldo
     expect($feed->fresh()->views)->toBe(5);
 });
 
+test('like and view endpoints ignore drafts and private feeds', function () {
+    $draft = Feed::factory()->draft()->create(['likes_count' => 3, 'views' => 2]);
+    $private = Feed::factory()->private()->create(['likes_count' => 3, 'views' => 2]);
+
+    $this->post("/api/feeds/{$draft->id}/like")->assertNotFound();
+    $this->post("/api/feeds/{$draft->id}/view")->assertNotFound();
+    $this->post("/api/feeds/{$private->id}/like")->assertNotFound();
+    $this->post("/api/feeds/{$private->id}/view")->assertNotFound();
+
+    expect($draft->fresh()->likes_count)->toBe(3)
+        ->and($draft->fresh()->views)->toBe(2)
+        ->and($private->fresh()->likes_count)->toBe(3)
+        ->and($private->fresh()->views)->toBe(2);
+});
+
+test('unliking a feed never drives the count below zero', function () {
+    $feed = Feed::factory()->create(['likes_count' => 0]);
+    cache()->put('feed_like_'.$feed->id.'_127.0.0.1', true, 60);
+
+    $this->post("/api/feeds/{$feed->id}/like")->assertOk()->assertJson(['likes_count' => 0, 'liked' => false]);
+
+    expect($feed->fresh()->likes_count)->toBe(0);
+});
+
+test('the heart state comes from the server, not from the browser', function () {
+    $newer = Feed::factory()->create(['title' => 'Liked one', 'published_at' => now()]);
+    $older = Feed::factory()->create(['title' => 'Plain one', 'published_at' => now()->subDay()]);
+    cache()->put('feed_like_'.$newer->id.'_127.0.0.1', true, 60);
+
+    $this->get('/feeds')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('feeds.0.liked', true)
+        ->where('feeds.1.liked', false));
+
+    $this->get('/feeds/'.$newer->slug)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('feed.liked', true));
+    $this->get('/feeds/'.$older->slug)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('feed.liked', false));
+});
+
 test('view and like counters are de-duplicated per visitor', function () {
     $feed = Feed::factory()->create();
 

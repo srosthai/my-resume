@@ -167,6 +167,8 @@ export interface Feed extends Timestamps {
     user_id: number | null;
     user?: Author | null;
     likes_count: number;
+    /** True when this visitor's IP already liked the feed. Server is the source of truth. */
+    liked?: boolean;
     views: number;
     is_pinned: boolean;
     published_at: string | null;

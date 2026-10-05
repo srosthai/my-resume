@@ -7,7 +7,7 @@ import type { Feed } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ArrowLeft, Eye, Heart, MapPin, Pin } from 'lucide-vue-next';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
     title: string;
@@ -20,28 +20,8 @@ const { pointer } = usePointerGlow();
 const currentYear = new Date().getFullYear();
 
 const likes = ref(props.feed.likes_count);
-const liked = ref(false);
+const liked = ref(props.feed.liked === true);
 const busy = ref(false);
-
-const readLiked = (): Set<number> => {
-    try {
-        return new Set<number>(JSON.parse(localStorage.getItem('liked_feeds') || '[]'));
-    } catch {
-        return new Set<number>();
-    }
-};
-
-const writeLiked = (set: Set<number>) => {
-    try {
-        localStorage.setItem('liked_feeds', JSON.stringify([...set]));
-    } catch {
-        // Storage may be unavailable; the like still counts server-side.
-    }
-};
-
-onMounted(() => {
-    liked.value = readLiked().has(props.feed.id);
-});
 
 const toggleLike = async () => {
     if (busy.value) return;
@@ -50,10 +30,6 @@ const toggleLike = async () => {
         const { data } = await axios.post<{ likes_count: number; liked: boolean }>(`/api/feeds/${props.feed.id}/like`);
         likes.value = data.likes_count;
         liked.value = data.liked;
-        const set = readLiked();
-        if (data.liked) set.add(props.feed.id);
-        else set.delete(props.feed.id);
-        writeLiked(set);
     } catch {
         // Leave the counter as it was.
     } finally {
