@@ -4,6 +4,7 @@ use App\Models\PopularSong;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia;
 
 beforeEach(function () {
     Storage::fake('uploads');
@@ -28,6 +29,24 @@ test('popular songs crud and the public player endpoint', function () {
 
     $this->delete(route('backend.popular-songs.destroy', $song))->assertRedirect();
     expect(PopularSong::count())->toBe(0);
+});
+
+test('the more page lists library songs instead of invented certificates', function () {
+    PopularSong::factory()->create([
+        'title' => 'Quiet Night',
+        'artist' => 'Teppiseth',
+        'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    ]);
+
+    $this->get('/more')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('frontend/More')
+            ->where('title', 'Music')
+            ->where('songs.0.title', 'Quiet Night')
+            ->where('songs.0.artist', 'Teppiseth'))
+        ->assertDontSee('AWS Solutions Architecture')
+        ->assertDontSee('more-og-image.jpg');
 });
 
 test('the owner profile can be updated with a new photo and without a password', function () {
