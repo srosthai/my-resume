@@ -154,13 +154,14 @@ class PortfolioController extends Controller
         $project->load('projectType');
         $project->image = $project->image ? asset($project->image) : null;
 
-        $previousProject = Project::where('id', '<', $project->id)
-            ->orderBy('id', 'desc')
-            ->first(['id', 'title', 'slug']);
-
-        $nextProject = Project::where('id', '>', $project->id)
-            ->orderBy('id', 'asc')
-            ->first(['id', 'title', 'slug']);
+        // Same order as the portfolio list: newest created_date first, then highest id.
+        $ordered = Project::query()
+            ->orderByDesc('created_date')
+            ->orderByDesc('id')
+            ->get(['id', 'title', 'slug']);
+        $index = $ordered->search(fn (Project $item) => $item->id === $project->id);
+        $previousProject = is_int($index) && $index > 0 ? $ordered[$index - 1] : null;
+        $nextProject = is_int($index) ? $ordered->get($index + 1) : null;
 
         return Inertia::render('frontend/ProjectDetail', [
             'title' => $project->title,

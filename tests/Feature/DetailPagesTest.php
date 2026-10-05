@@ -45,6 +45,20 @@ test('a public feed has its own page with absolute image urls', function () {
     expect($feed->fresh()->views)->toBe(1);
 });
 
+test('project neighbours follow portfolio order rather than insert order', function () {
+    Project::factory()->create(['title' => 'Older work', 'created_date' => '2020-01-01']);
+    Project::factory()->create(['title' => 'Newer work', 'created_date' => '2024-06-01']);
+    Project::factory()->create(['title' => 'Middle work', 'created_date' => '2022-03-01']);
+
+    $this->get('/portfolio/middle-work')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('previousProject.title', 'Newer work')
+        ->where('nextProject.title', 'Older work'));
+
+    $this->get('/portfolio/newer-work')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('previousProject', null)
+        ->where('nextProject.title', 'Middle work'));
+});
+
 test('projects resolve by slug and old numeric urls redirect permanently', function () {
     $project = Project::factory()->create(['title' => 'Shop Platform']);
     expect($project->slug)->toBe('shop-platform');
