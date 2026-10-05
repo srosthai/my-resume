@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AboutMe;
 use App\Models\Education;
+use App\Models\Feed;
+use App\Models\Note;
 use App\Models\PopularSong;
 use App\Models\Project;
 use App\Models\ProjectType;
@@ -73,6 +75,16 @@ class DashboardController extends Controller
                 'songs' => [
                     'total' => $totalSongs,
                     'recent' => $recentSongs,
+                ],
+                'notes' => [
+                    'total' => Note::count(),
+                    'published' => Note::published()->count(),
+                    'recent' => Note::query()->latest()->limit(3)->get(['id', 'title', 'status']),
+                ],
+                'feeds' => [
+                    'total' => Feed::count(),
+                    'published' => Feed::published()->visible()->count(),
+                    'recent' => Feed::query()->latest()->limit(3)->get(['id', 'title', 'body', 'status']),
                 ],
             ],
         ]);
