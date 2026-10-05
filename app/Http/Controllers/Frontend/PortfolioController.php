@@ -10,6 +10,7 @@ use App\Models\AboutMe;
 use App\Models\Education;
 use App\Models\Feed;
 use App\Models\Note;
+use App\Models\PopularSong;
 use App\Models\Project;
 use App\Models\ProjectType;
 use App\Models\TechStack;
@@ -213,9 +214,22 @@ class PortfolioController extends Controller
      */
     public function more()
     {
+        $songs = PopularSong::query()
+            ->latest()
+            ->get(['id', 'title', 'artist', 'url', 'duration'])
+            ->map(fn (PopularSong $song) => [
+                'id' => $song->id,
+                'title' => $song->title,
+                'artist' => $song->artist,
+                'src' => $song->url,
+                'duration' => $song->duration,
+            ])
+            ->values();
+
         return Inertia::render('frontend/More', [
-            'title' => 'More',
-            'description' => 'Additional content and features coming soon.',
+            'title' => 'Music',
+            'description' => 'Songs from the library, the same list as the music player.',
+            'songs' => $songs,
         ]);
     }
 
