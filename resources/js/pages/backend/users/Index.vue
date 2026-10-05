@@ -23,9 +23,12 @@ interface User {
 
 interface Props {
     user: User | null;
+    canDelete?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    canDelete: false,
+});
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: route('dashboard') },
@@ -148,6 +151,7 @@ const deleteItem = () => {
                             </Button>
                         </Link>
                         <Button
+                            v-if="canDelete"
                             variant="ghost"
                             size="sm"
                             class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
@@ -156,6 +160,9 @@ const deleteItem = () => {
                             <Icon name="trash2" class="size-4" />
                             Delete
                         </Button>
+                        <p v-else class="max-w-xs text-right text-xs leading-5 text-muted-foreground">
+                            This owner account cannot be deleted. It is the only way into the admin.
+                        </p>
                     </div>
                 </div>
 

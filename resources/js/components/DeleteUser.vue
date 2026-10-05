@@ -19,6 +19,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+withDefaults(
+    defineProps<{
+        canDelete?: boolean;
+    }>(),
+    { canDelete: true },
+);
+
 const passwordInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
@@ -48,9 +55,11 @@ const closeModal = () => {
         <div class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
             <div class="relative space-y-0.5 text-red-600 dark:text-red-100">
                 <p class="font-medium">Warning</p>
-                <p class="text-sm">Please proceed with caution, this cannot be undone.</p>
+                <p v-if="canDelete" class="text-sm">Please proceed with caution, this cannot be undone.</p>
+                <p v-else class="text-sm">The owner account cannot be deleted. It is the only way into the admin.</p>
             </div>
-            <Dialog>
+            <p v-if="!canDelete" class="text-sm text-red-600 dark:text-red-100">{{ form.errors.account }}</p>
+            <Dialog v-if="canDelete">
                 <DialogTrigger as-child>
                     <Button variant="destructive">Delete account</Button>
                 </DialogTrigger>
