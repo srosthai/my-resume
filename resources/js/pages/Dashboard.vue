@@ -10,10 +10,12 @@ import {
     CalendarDays,
     Code2,
     ExternalLink,
+    BookOpen,
     FolderOpenDot,
     GraduationCap,
     Layers3,
     Music4,
+    Rss,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -42,6 +44,16 @@ interface Props {
             total: number;
             recent: any[];
         };
+        notes: {
+            total: number;
+            published: number;
+            recent: any[];
+        };
+        feeds: {
+            total: number;
+            published: number;
+            recent: any[];
+        };
     };
 }
 
@@ -54,7 +66,17 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const formatDate = (date?: string | null) => formatSharedDate(date, { month: 'short', day: undefined }) || 'Present';
+const formatDate = (date?: string | null) => formatSharedDate(date, { month: 'short', day: undefined });
+
+/** Career dates are free text ("2022", "Present"). Do not parse them as calendar dates. */
+const periodLabel = (from?: string | null, to?: string | null) => {
+    const start = String(from ?? '').trim();
+    const end = String(to ?? '').trim();
+
+    if (!start && !end) return 'Present';
+
+    return `${start || '—'} — ${end || 'Present'}`;
+};
 
 const formatDuration = (song: any) => {
     if (song.formatted_duration) return song.formatted_duration;
@@ -303,7 +325,12 @@ const projectMix = computed(() => {
                     </div>
 
                     <div class="mt-5 space-y-2.5">
-                        <div v-for="project in summary.projects.recent" :key="project.id" class="b-row group">
+                        <Link
+                            v-for="project in summary.projects.recent"
+                            :key="project.id"
+                            :href="route('backend.projects.edit', project.id)"
+                            class="b-row group"
+                        >
                             <div class="b-tile size-11 shrink-0 text-sm">
                                 {{ project.title.charAt(0) }}
                             </div>
@@ -317,7 +344,7 @@ const projectMix = computed(() => {
                                 </div>
                             </div>
                             <ExternalLink class="size-4 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                        </div>
+                        </Link>
                         <div v-if="summary.projects.recent.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
                             No projects yet
                         </div>
@@ -349,11 +376,14 @@ const projectMix = computed(() => {
                                 <span class="mt-4 size-2.5 rounded-full bg-primary ring-4 ring-primary/12" />
                                 <span v-if="index < summary.workExperience.recent.length - 1" class="absolute top-7 bottom-0 w-px bg-border" />
                             </div>
-                            <div class="rounded-xl border border-border/80 bg-muted/45 p-4">
+                            <Link
+                                :href="route('backend.work-experience.edit', experience.id)"
+                                class="block rounded-xl border border-border/80 bg-muted/45 p-4 transition-colors hover:bg-muted"
+                            >
                                 <h3 class="font-medium">{{ experience.position }}</h3>
                                 <p class="mt-0.5 text-sm text-muted-foreground">{{ experience.company }}</p>
-                                <p class="b-eyebrow mt-3">{{ formatDate(experience.from) }} — {{ formatDate(experience.to) }}</p>
-                            </div>
+                                <p class="b-eyebrow mt-3">{{ periodLabel(experience.from, experience.to) }}</p>
+                            </Link>
                         </div>
                         <div
                             v-if="summary.workExperience.recent.length === 0"
@@ -381,7 +411,11 @@ const projectMix = computed(() => {
                         </Button>
                     </div>
 
-                    <div v-if="summary.education.latest" class="b-row mt-5">
+                    <Link
+                        v-if="summary.education.latest"
+                        :href="route('backend.education.edit', summary.education.latest.id)"
+                        class="b-row mt-5"
+                    >
                         <div class="b-tile size-11 shrink-0">
                             <GraduationCap class="size-4" />
                         </div>
@@ -389,11 +423,9 @@ const projectMix = computed(() => {
                             <h3 class="font-medium">{{ summary.education.latest.title }}</h3>
                             <p class="mt-0.5 text-sm text-muted-foreground">{{ summary.education.latest.major }}</p>
                             <p class="text-sm text-muted-foreground">{{ summary.education.latest.institution }}</p>
-                            <p class="b-eyebrow mt-3">
-                                {{ formatDate(summary.education.latest.from) }} — {{ formatDate(summary.education.latest.to) }}
-                            </p>
+                            <p class="b-eyebrow mt-3">{{ periodLabel(summary.education.latest.from, summary.education.latest.to) }}</p>
                         </div>
-                    </div>
+                    </Link>
                     <div v-else class="mt-5 rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
                         No education records
                     </div>
@@ -415,7 +447,7 @@ const projectMix = computed(() => {
                     </div>
 
                     <div class="mt-5 space-y-2.5">
-                        <div v-for="song in summary.songs.recent" :key="song.id" class="b-row">
+                        <Link v-for="song in summary.songs.recent" :key="song.id" :href="route('backend.popular-songs.edit', song.id)" class="b-row">
                             <div class="b-tile size-11 shrink-0">
                                 <Music4 class="size-4" />
                             </div>
@@ -424,9 +456,83 @@ const projectMix = computed(() => {
                                 <p class="truncate text-sm text-muted-foreground">{{ song.artist }}</p>
                             </div>
                             <Badge variant="outline" class="rounded-lg font-mono">{{ formatDuration(song) }}</Badge>
-                        </div>
+                        </Link>
                         <div v-if="summary.songs.recent.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
                             No songs in collection
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="grid gap-5 xl:grid-cols-2">
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Notes</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                {{ summary.notes.published }} published · {{ summary.notes.total - summary.notes.published }} not published
+                            </p>
+                        </div>
+                        <Button as-child variant="ghost" size="sm" class="rounded-xl text-muted-foreground hover:text-foreground">
+                            <Link :href="route('backend.notes.index')">
+                                View all
+                                <ExternalLink class="size-4" />
+                            </Link>
+                        </Button>
+                    </div>
+                    <div class="mt-5 space-y-2.5">
+                        <Link
+                            v-for="note in summary.notes.recent"
+                            :key="note.id"
+                            :href="route('backend.notes.edit', note.id)"
+                            class="b-row"
+                        >
+                            <div class="b-tile size-11 shrink-0">
+                                <BookOpen class="size-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-medium">{{ note.title }}</p>
+                                <p class="truncate text-sm text-muted-foreground capitalize">{{ note.status }}</p>
+                            </div>
+                        </Link>
+                        <div v-if="summary.notes.recent.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+                            No notes yet
+                        </div>
+                    </div>
+                </article>
+
+                <article class="b-panel reveal p-5 sm:p-6">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-semibold tracking-tight">Feeds</h2>
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                {{ summary.feeds.published }} public · {{ summary.feeds.total - summary.feeds.published }} not public
+                            </p>
+                        </div>
+                        <Button as-child variant="ghost" size="sm" class="rounded-xl text-muted-foreground hover:text-foreground">
+                            <Link :href="route('backend.feeds.index')">
+                                View all
+                                <ExternalLink class="size-4" />
+                            </Link>
+                        </Button>
+                    </div>
+                    <div class="mt-5 space-y-2.5">
+                        <Link
+                            v-for="feed in summary.feeds.recent"
+                            :key="feed.id"
+                            :href="route('backend.feeds.edit', feed.id)"
+                            class="b-row"
+                        >
+                            <div class="b-tile size-11 shrink-0">
+                                <Rss class="size-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-medium">{{ feed.title || feed.body }}</p>
+                                <p class="truncate text-sm text-muted-foreground capitalize">{{ feed.status }}</p>
+                            </div>
+                        </Link>
+                        <div v-if="summary.feeds.recent.length === 0" class="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+                            No feeds yet
                         </div>
                     </div>
                 </article>
