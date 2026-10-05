@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatDate as formatSharedDate } from '@/lib/date';
 import type { BreadcrumbItemType } from '@/types';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 interface User {
@@ -29,6 +29,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     canDelete: false,
 });
+
+const page = usePage();
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: route('dashboard') },
@@ -109,6 +111,10 @@ const deleteItem = () => {
                     </Button>
                 </Link>
             </div>
+
+            <p v-if="page.props.errors?.user" class="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                {{ page.props.errors.user }}
+            </p>
 
             <!-- Profile card -->
             <div v-if="profile" class="overflow-hidden rounded-2xl border bg-card shadow-sm">

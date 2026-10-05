@@ -59,8 +59,21 @@ test('a profile created while an owner already exists is not made owner', functi
         'phone' => '012345678',
         'address' => 'Phnom Penh',
         'position' => 'Developer',
-    ])->assertRedirect();
+    ])->assertRedirect(route('backend.users.index'))->assertSessionHasErrors('user');
 
-    expect(User::where('email', 'profile@example.com')->first()->is_owner)->toBeFalse();
+    $this->get(route('backend.users.create'))->assertRedirect(route('backend.users.index'));
+
+    expect(User::where('email', 'profile@example.com')->first())->toBeNull();
     expect(User::owner()->count())->toBe(1);
+});
+
+test('a non-owner signs in to settings instead of the admin dashboard', function () {
+    $user = User::factory()->create();
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertRedirect(route('profile.edit'));
+
+    $this->actingAs($user)->get('/dashboard')->assertForbidden();
 });
