@@ -63,8 +63,8 @@ class PortfolioController extends Controller
     {
         $user = User::owner()->first(User::publicColumns());
         $aboutMe = AboutMe::latest()->first() ?? [];
-        $workExperience = WorkExperience::orderByDesc('from')->orderByDesc('id')->get() ?? [];
-        $education = Education::orderByDesc('from')->orderByDesc('id')->get() ?? [];
+        $workExperience = WorkExperience::query()->inCareerOrder()->get();
+        $education = Education::query()->inCareerOrder()->get();
         $techStacks = TechStack::orderBy('type')->orderBy('id')->get() ?? [];
 
         return Inertia::render('frontend/About', [

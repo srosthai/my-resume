@@ -4,6 +4,8 @@ use App\Enums\ProjectStatus;
 use App\Models\Project;
 use App\Models\ProjectType;
 use App\Models\User;
+use App\Models\WorkExperience;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(fn () => $this->owner = User::factory()->owner()->create());
 
@@ -39,4 +41,55 @@ test('project status is cast to an enum and validated against it', function () {
     $this->actingAs($this->owner)
         ->put(route('backend.projects.update', $project), ['title' => 'x', 'status' => 'bogus'])
         ->assertSessionHasErrors('status');
+});
+
+test('status columns are strings, so a new value does not need a database migration', function () {
+    DB::table('projects')->insert([
+        'title' => 'Paused work',
+        'slug' => 'paused-work',
+        'status' => 'paused',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    expect(DB::table('projects')->where('status', 'paused')->exists())->toBeTrue();
+});
+
+test('career periods are stored as years and Present means still current', function () {
+    $this->actingAs($this->owner)
+        ->post(route('backend.work-experience.store'), [
+            'title' => 'Now',
+            'position' => 'Engineer',
+            'company' => 'Acme',
+            'from' => '2022',
+            'to' => 'Present',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $job = WorkExperience::query()->first();
+    expect($job->from)->toBe(2022)->and($job->to)->toBeNull();
+
+    $this->post(route('backend.work-experience.store'), [
+        'title' => 'Bad',
+        'from' => 'soon',
+        'to' => '2010',
+    ])->assertSessionHasErrors('from');
+});
+
+test('deleting a project, note, or feed hides it until it is restored', function () {
+    $project = Project::factory()->create(['title' => 'Restorable']);
+    $slug = $project->slug;
+
+    $this->actingAs($this->owner)->delete(route('backend.projects.destroy', $project))->assertRedirect();
+
+    expect(Project::find($project->id))->toBeNull()
+        ->and(Project::withTrashed()->find($project->id))->not->toBeNull()
+        ->and(Project::where('slug', $slug)->exists())->toBeFalse();
+
+    $again = Project::factory()->create(['title' => 'Restorable']);
+    expect($again->slug)->not->toBe($slug);
+
+    $this->post(route('backend.projects.restore', $project->id))->assertRedirect();
+    expect(Project::find($project->id))->not->toBeNull();
 });

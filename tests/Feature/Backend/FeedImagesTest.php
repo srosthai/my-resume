@@ -59,7 +59,7 @@ test('existing_images cannot inject foreign paths or delete files outside the fe
     expect(file_exists(base_path('.env')))->toBeTrue();
 });
 
-test('deleting a feed removes only its own images', function () {
+test('deleting a feed keeps its images so a restore still has them', function () {
     Storage::disk('uploads')->put('feeds/mine.jpg', 'x');
     Storage::disk('uploads')->put('feeds/theirs.jpg', 'x');
 
@@ -68,8 +68,10 @@ test('deleting a feed removes only its own images', function () {
 
     $this->actingAs($this->owner)->delete(route('backend.feeds.destroy', $feed))->assertRedirect();
 
-    Storage::disk('uploads')->assertMissing('feeds/mine.jpg');
+    Storage::disk('uploads')->assertExists('feeds/mine.jpg');
     Storage::disk('uploads')->assertExists('feeds/theirs.jpg');
+    expect(Feed::find($feed->id))->toBeNull()
+        ->and(Feed::withTrashed()->find($feed->id)?->images)->toBe(['uploads/feeds/mine.jpg']);
 });
 
 test('a stored path pointing outside uploads is never unlinked', function () {

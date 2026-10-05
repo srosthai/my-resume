@@ -68,8 +68,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const formatDate = (date?: string | null) => formatSharedDate(date, { month: 'short', day: undefined });
 
-/** Career dates are free text ("2022", "Present"). Do not parse them as calendar dates. */
-const periodLabel = (from?: string | null, to?: string | null) => {
+/** Career periods are years. An empty end means the period is still current. */
+const periodLabel = (from?: string | number | null, to?: string | number | null) => {
     const start = String(from ?? '').trim();
     const end = String(to ?? '').trim();
 

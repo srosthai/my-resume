@@ -36,13 +36,16 @@ class DashboardController extends Controller
 
         // Work experience
         $totalExperience = WorkExperience::count();
-        $recentExperience = WorkExperience::orderBy('from', 'desc')
+        $recentExperience = WorkExperience::query()->inCareerOrder()
             ->limit(3)
             ->get();
 
         // Education
         $totalEducation = Education::count();
-        $latestEducation = Education::orderBy('to', 'desc')
+        $latestEducation = Education::query()
+            ->orderByRaw('case when "to" is null then 0 else 1 end')
+            ->orderByDesc('to')
+            ->orderByDesc('from')
             ->first();
 
         // Popular songs

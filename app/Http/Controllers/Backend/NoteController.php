@@ -16,7 +16,7 @@ class NoteController extends Controller
     public function index(): Response
     {
         return Inertia::render('backend/Note/Index', [
-            'notes' => Note::with('user:id,name,image')->latest()->get(),
+            'notes' => Note::withTrashed()->with('user:id,name,image')->latest()->get(),
             'categories' => Note::getCategories(),
         ]);
     }
@@ -61,7 +61,14 @@ class NoteController extends Controller
     {
         $note->delete();
 
-        return redirect()->route('backend.notes.index')->with('success', 'Note deleted successfully.');
+        return redirect()->route('backend.notes.index')->with('success', 'Note deleted. You can restore it from the list.');
+    }
+
+    public function restore(Note $note): RedirectResponse
+    {
+        $note->restore();
+
+        return redirect()->route('backend.notes.index')->with('success', 'Note restored.');
     }
 
     public function toggleFeatured(Note $note): RedirectResponse

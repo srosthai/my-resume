@@ -47,6 +47,10 @@ const deleteItem = () => {
     });
 };
 
+const restoreItem = (note: Note) => {
+    router.post(route('backend.notes.restore', note.id));
+};
+
 const toggleFeatured = (note: Note) => {
     router.patch(
         route('backend.notes.toggle-featured', note.id),
@@ -200,36 +204,48 @@ const formatDate = (dateString: string | null) => formatSharedDate(dateString, {
                                 <td class="px-6 py-4 text-muted-foreground">{{ formatDate(note.created_at) }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="route('backend.notes.show', note.id)">
-                                            <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
-                                                <Icon name="eye" class="size-4" />
-                                                View
-                                            </Button>
-                                        </Link>
-                                        <Link :href="route('backend.notes.edit', note.id)">
-                                            <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
-                                                <Icon name="squarePen" class="size-4" />
-                                                Edit
-                                            </Button>
-                                        </Link>
                                         <Button
+                                            v-if="note.deleted_at"
                                             variant="ghost"
                                             size="sm"
                                             class="rounded-lg text-muted-foreground hover:text-foreground"
-                                            @click="duplicateNote(note)"
-                                            aria-label="Duplicate note"
+                                            @click="restoreItem(note)"
                                         >
-                                            <Icon name="copy" class="size-4" />
+                                            <Icon name="rotateCcw" class="size-4" />
+                                            Restore
                                         </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                            @click="confirmDelete(note)"
-                                        >
-                                            <Icon name="trash2" class="size-4" />
-                                            Delete
-                                        </Button>
+                                        <template v-else>
+                                            <Link :href="route('backend.notes.show', note.id)">
+                                                <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
+                                                    <Icon name="eye" class="size-4" />
+                                                    View
+                                                </Button>
+                                            </Link>
+                                            <Link :href="route('backend.notes.edit', note.id)">
+                                                <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
+                                                    <Icon name="squarePen" class="size-4" />
+                                                    Edit
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                class="rounded-lg text-muted-foreground hover:text-foreground"
+                                                @click="duplicateNote(note)"
+                                                aria-label="Duplicate note"
+                                            >
+                                                <Icon name="copy" class="size-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                @click="confirmDelete(note)"
+                                            >
+                                                <Icon name="trash2" class="size-4" />
+                                                Delete
+                                            </Button>
+                                        </template>
                                     </div>
                                 </td>
                             </tr>
@@ -258,7 +274,7 @@ const formatDate = (dateString: string | null) => formatSharedDate(dateString, {
         <ConfirmDialog
             v-model:open="showDeleteConfirm"
             title="Delete note?"
-            description="This note will be permanently removed. This action cannot be undone."
+            description="This note leaves the site. You can restore it from this list."
             confirm-label="Delete"
             :processing="deleting"
             @confirm="deleteItem"

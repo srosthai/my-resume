@@ -18,7 +18,7 @@ class ProjectController extends Controller
     public function index(): Response
     {
         return Inertia::render('backend/Project/Index', [
-            'projects' => Project::with('projectType')->latest()->get(),
+            'projects' => Project::withTrashed()->with('projectType')->latest()->get(),
         ]);
     }
 
@@ -69,9 +69,15 @@ class ProjectController extends Controller
 
     public function destroy(Project $project): RedirectResponse
     {
-        $this->images->delete($project->image);
         $project->delete();
 
-        return redirect()->route('backend.projects.index')->with('success', 'Project deleted successfully.');
+        return redirect()->route('backend.projects.index')->with('success', 'Project deleted. You can restore it from the list.');
+    }
+
+    public function restore(Project $project): RedirectResponse
+    {
+        $project->restore();
+
+        return redirect()->route('backend.projects.index')->with('success', 'Project restored.');
     }
 }

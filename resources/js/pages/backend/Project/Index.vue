@@ -39,6 +39,10 @@ const deleteItem = () => {
     });
 };
 
+const restoreItem = (item: Project) => {
+    router.post(route('backend.projects.restore', item.id));
+};
+
 const formatDate = (dateString: string) => formatSharedDate(dateString, { month: 'numeric', day: 'numeric' });
 
 const getStatusBadgeVariant = (status: string) => {
@@ -125,21 +129,33 @@ const getStatusBadgeVariant = (status: string) => {
                                 <td class="px-6 py-4 text-muted-foreground">{{ item.created_date ? formatDate(item.created_date) : '-' }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-end gap-1">
-                                        <Link :href="route('backend.projects.edit', item.id)">
-                                            <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
-                                                <Icon name="squarePen" class="size-4" />
-                                                Edit
-                                            </Button>
-                                        </Link>
                                         <Button
+                                            v-if="item.deleted_at"
                                             variant="ghost"
                                             size="sm"
-                                            class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                            @click="confirmDelete(item)"
+                                            class="rounded-lg text-muted-foreground hover:text-foreground"
+                                            @click="restoreItem(item)"
                                         >
-                                            <Icon name="trash2" class="size-4" />
-                                            Delete
+                                            <Icon name="rotateCcw" class="size-4" />
+                                            Restore
                                         </Button>
+                                        <template v-else>
+                                            <Link :href="route('backend.projects.edit', item.id)">
+                                                <Button variant="ghost" size="sm" class="rounded-lg text-muted-foreground hover:text-foreground">
+                                                    <Icon name="squarePen" class="size-4" />
+                                                    Edit
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                class="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                @click="confirmDelete(item)"
+                                            >
+                                                <Icon name="trash2" class="size-4" />
+                                                Delete
+                                            </Button>
+                                        </template>
                                     </div>
                                 </td>
                             </tr>
@@ -168,7 +184,7 @@ const getStatusBadgeVariant = (status: string) => {
         <ConfirmDialog
             v-model:open="showDeleteConfirm"
             title="Delete project?"
-            description="This project will be permanently removed. This action cannot be undone."
+            description="This project leaves the site. You can restore it from this list."
             confirm-label="Delete"
             :processing="deleting"
             @confirm="deleteItem"

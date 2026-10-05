@@ -55,13 +55,16 @@ Route::middleware(['auth', 'owner'])->group(function () {
         Route::resource('education', EducationController::class)->except('show');
         Route::resource('tech-stacks', TechStackController::class)->except('show')->parameters(['tech-stacks' => 'techStack']);
         Route::resource('project-types', ProjectTypeController::class)->except('show')->parameters(['project-types' => 'projectType']);
+        Route::post('projects/{project}/restore', [ProjectController::class, 'restore'])->withTrashed()->name('projects.restore');
         Route::resource('projects', ProjectController::class)->except('show');
         Route::resource('popular-songs', PopularSongController::class)->parameters(['popular-songs' => 'popularSong']);
 
+        Route::post('notes/{note}/restore', [NoteController::class, 'restore'])->withTrashed()->name('notes.restore');
         Route::patch('notes/{note}/toggle-featured', [NoteController::class, 'toggleFeatured'])->name('notes.toggle-featured');
         Route::post('notes/{note}/duplicate', [NoteController::class, 'duplicate'])->name('notes.duplicate');
         Route::resource('notes', NoteController::class);
 
+        Route::post('feeds/{feed}/restore', [FeedController::class, 'restore'])->withTrashed()->name('feeds.restore');
         Route::patch('feeds/{feed}/toggle-pinned', [FeedController::class, 'togglePinned'])->name('feeds.toggle-pinned');
         Route::resource('feeds', FeedController::class)->except('show');
     });
