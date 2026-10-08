@@ -132,8 +132,12 @@ const submit = () => {
         forceFormData: true,
         onError: (errors) => {
             toast.value = validationMessages(errors);
-            const first = Object.keys(errors)[0]?.split('.')[0];
-            document.getElementById(first)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const field = Object.keys(errors)[0]?.split('.')[0];
+            // Saved paths validate as existing_gallery; the control on the page is the gallery input.
+            const targetId = field === 'existing_gallery' ? 'gallery' : field;
+            if (targetId) {
+                document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         },
     });
 };
