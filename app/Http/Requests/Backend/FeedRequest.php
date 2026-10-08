@@ -28,7 +28,9 @@ class FeedRequest extends FormRequest
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
             'existing_images' => ['nullable', 'array'],
-            'existing_images.*' => ['string'],
+            // A blank entry keeps this key in multipart bodies. Empty strings
+            // become null before validation, so the item rule has to allow null.
+            'existing_images.*' => ['nullable', 'string'],
             'location' => ['nullable', 'string', 'max:255'],
             'mood' => ['nullable', 'string', 'max:50'],
             'activity_type' => ['nullable', 'string', 'max:100'],

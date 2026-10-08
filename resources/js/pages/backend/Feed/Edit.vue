@@ -89,7 +89,11 @@ const submit = () => {
     form.tags = form.tags.filter((tag) => tag.trim());
 
     // Browsers cannot send multipart PUT, so spoof the method on a POST.
-    form.transform((data) => ({ ...data, _method: 'put' })).post(route('backend.feeds.update', props.feed.id), {
+    form.transform((data) => ({
+        ...data,
+        _method: 'put',
+        existing_images: data.existing_images.length > 0 ? data.existing_images : [''],
+    })).post(route('backend.feeds.update', props.feed.id), {
         forceFormData: true,
     });
 };
