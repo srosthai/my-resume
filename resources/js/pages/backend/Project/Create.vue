@@ -2,6 +2,7 @@
 import DatePicker from '@/components/DatePicker.vue';
 import FormToast from '@/components/FormToast.vue';
 import Icon from '@/components/Icon.vue';
+import ImageUpload from '@/components/ImageUpload.vue';
 import InputError from '@/components/InputError.vue';
 import SearchSelect from '@/components/SearchSelect.vue';
 import { Button } from '@/components/ui/button';
@@ -52,11 +53,6 @@ const links = ref([
     { label: 'Github', url: '' },
     { label: 'View', url: '' },
 ]);
-
-const handleImageChange = (event: Event) => {
-    const input = event.target as HTMLInputElement;
-    form.image = input.files?.[0] ?? null;
-};
 
 const handleGalleryChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -210,8 +206,14 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <Label for="image">Project Image</Label>
-                            <Input id="image" type="file" accept="image/*" @change="handleImageChange" />
-                            <p class="text-sm text-muted-foreground">Upload an image for the project (JPEG, PNG, JPG, GIF - max 2MB)</p>
+                            <ImageUpload
+                                id="image"
+                                v-model="form.image"
+                                :uploading="form.processing"
+                                :progress="form.progress?.percentage ?? null"
+                                :invalid="!!fieldError(form.errors, 'image')"
+                                hint="JPEG, PNG, GIF, or WebP. Max 2 MB."
+                            />
                             <InputError :message="fieldError(form.errors, 'image')" />
                         </div>
 

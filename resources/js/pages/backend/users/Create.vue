@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DatePicker from '@/components/DatePicker.vue';
 import Icon from '@/components/Icon.vue';
+import ImageUpload from '@/components/ImageUpload.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { Link, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItemType[] = [
     { title: 'Dashboard', href: route('dashboard') },
@@ -43,13 +44,21 @@ const previewInitials = computed(() => {
         .toUpperCase();
 });
 
-function onImageChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0] || null;
+watch(
+    () => form.image,
+    (file) => {
+        if (imagePreview.value) {
+            URL.revokeObjectURL(imagePreview.value);
+        }
+        imagePreview.value = file ? URL.createObjectURL(file) : null;
+    },
+);
 
-    form.image = file;
-    imagePreview.value = file ? URL.createObjectURL(file) : null;
-}
+onBeforeUnmount(() => {
+    if (imagePreview.value) {
+        URL.revokeObjectURL(imagePreview.value);
+    }
+});
 
 const submit = () => {
     form.post(route('backend.users.store'), {
@@ -147,7 +156,14 @@ const submit = () => {
 
                                 <div class="space-y-2">
                                     <Label for="image">Profile image</Label>
-                                    <Input id="image" type="file" accept="image/*" @change="onImageChange" />
+                                    <ImageUpload
+                                        id="image"
+                                        v-model="form.image"
+                                        :uploading="form.processing"
+                                        :progress="form.progress?.percentage ?? null"
+                                        :invalid="!!form.errors.image"
+                                        empty-label="Choose a profile image"
+                                    />
                                     <InputError :message="form.errors.image" />
                                 </div>
                             </div>

@@ -2,6 +2,7 @@
 import DatePicker from '@/components/DatePicker.vue';
 import FormToast from '@/components/FormToast.vue';
 import Icon from '@/components/Icon.vue';
+import ImageUpload from '@/components/ImageUpload.vue';
 import InputError from '@/components/InputError.vue';
 import SearchSelect from '@/components/SearchSelect.vue';
 import { Button } from '@/components/ui/button';
@@ -68,11 +69,6 @@ const initializeLinks = () => {
 };
 
 const links = ref(initializeLinks());
-
-const handleImageChange = (event: Event) => {
-    const input = event.target as HTMLInputElement;
-    form.image = input.files?.[0] ?? null;
-};
 
 const handleGalleryChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -238,25 +234,16 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <Label for="image">Project Image</Label>
-                            <div v-if="project.image" class="mb-1">
-                                <p class="mb-2 text-sm text-muted-foreground">Current image:</p>
-                                <img
-                                    :src="`/${project.image}`"
-                                    :alt="project.title ?? undefined"
-                                    class="size-32 rounded-xl border object-cover"
-                                    :class="{ 'opacity-40 grayscale': form.remove_image }"
-                                    width="128"
-                                    height="128"
-                                    loading="lazy"
-                                    decoding="async"
-                                />
-                                <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                                    <input v-model="form.remove_image" type="checkbox" class="size-4 rounded border" />
-                                    Remove current image
-                                </label>
-                            </div>
-                            <Input id="image" type="file" accept="image/*" @change="handleImageChange" />
-                            <p class="text-sm text-muted-foreground">Upload a new image to replace the current one (JPEG, PNG, JPG, GIF - max 2MB)</p>
+                            <ImageUpload
+                                id="image"
+                                v-model="form.image"
+                                v-model:removed="form.remove_image"
+                                :current-url="project.image ? `/${project.image}` : null"
+                                :uploading="form.processing"
+                                :progress="form.progress?.percentage ?? null"
+                                :invalid="!!fieldError(form.errors, 'image')"
+                                hint="Upload a new image to replace the current one. JPEG, PNG, GIF, or WebP. Max 2 MB."
+                            />
                             <InputError :message="fieldError(form.errors, 'image')" />
                         </div>
 
