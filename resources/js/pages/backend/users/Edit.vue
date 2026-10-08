@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DatePicker from '@/components/DatePicker.vue';
 import Icon from '@/components/Icon.vue';
+import ImageUpload from '@/components/ImageUpload.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { Link, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 interface User {
     id: number;
@@ -71,13 +72,21 @@ const previewInitials = computed(() => {
         .toUpperCase();
 });
 
-function onImageChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0] || null;
+watch(
+    () => form.image,
+    (file) => {
+        if (selectedImagePreview.value) {
+            URL.revokeObjectURL(selectedImagePreview.value);
+        }
+        selectedImagePreview.value = file ? URL.createObjectURL(file) : null;
+    },
+);
 
-    form.image = file;
-    selectedImagePreview.value = file ? URL.createObjectURL(file) : null;
-}
+onBeforeUnmount(() => {
+    if (selectedImagePreview.value) {
+        URL.revokeObjectURL(selectedImagePreview.value);
+    }
+});
 
 const submit = () => {
     form.transform((data) => ({
@@ -178,8 +187,18 @@ const submit = () => {
                                 </div>
 
                                 <div class="space-y-2">
-                                    <Label for="image">Replace image</Label>
-                                    <Input id="image" type="file" accept="image/*" @change="onImageChange" />
+                                    <Label for="image">Profile image</Label>
+                                    <ImageUpload
+                                        id="image"
+                                        v-model="form.image"
+                                        :current-url="currentImage"
+                                        :uploading="form.processing"
+                                        :progress="form.progress?.percentage ?? null"
+                                        :invalid="!!form.errors.image"
+                                        empty-label="Choose a profile image"
+                                        :allow-remove="false"
+                                        hint="Choose a new image to replace the current one. JPEG, PNG, GIF, or WebP. Max 2 MB."
+                                    />
                                     <InputError :message="form.errors.image" />
                                 </div>
                             </div>
