@@ -2,20 +2,27 @@
 import FormToast from '@/components/FormToast.vue';
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
+import SearchSelect from '@/components/SearchSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { fieldError, validationMessages } from '@/lib/formErrors';
 import type { ProjectLink, ProjectStatus, ProjectType } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     projectTypes: ProjectType[];
 }>();
+
+const projectTypeOptions = computed(() => props.projectTypes.map((type) => ({ value: type.id.toString(), label: type.name || 'Untitled type' })));
+
+const statusOptions = [
+    { value: 'processing' as const, label: 'Processing' },
+    { value: 'completed' as const, label: 'Completed' },
+];
 
 const breadcrumbs = [
     { title: 'Dashboard', href: route('dashboard') },
@@ -147,22 +154,28 @@ const submit = () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="title">Title *</Label>
-                                <Input id="title" v-model="form.title" type="text" placeholder="Enter project title" required :aria-invalid="fieldError(form.errors, 'title') ? true : undefined" />
+                                <Input
+                                    id="title"
+                                    v-model="form.title"
+                                    type="text"
+                                    placeholder="Enter project title"
+                                    required
+                                    :aria-invalid="fieldError(form.errors, 'title') ? true : undefined"
+                                />
                                 <InputError :message="fieldError(form.errors, 'title')" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="project_type_id">Project Type</Label>
-                                <Select v-model="form.project_type_id">
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select project type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem v-for="type in projectTypes" :key="type.id" :value="type.id.toString()">
-                                            {{ type.name }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <SearchSelect
+                                    id="project_type_id"
+                                    v-model="form.project_type_id"
+                                    :options="projectTypeOptions"
+                                    placeholder="Select project type"
+                                    search-placeholder="Search project types"
+                                    clearable
+                                    :invalid="!!fieldError(form.errors, 'project_type_id')"
+                                />
                                 <InputError :message="fieldError(form.errors, 'project_type_id')" />
                             </div>
                         </div>
@@ -170,21 +183,25 @@ const submit = () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="status">Status *</Label>
-                                <Select v-model="form.status">
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="processing">Processing</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <SearchSelect
+                                    id="status"
+                                    v-model="form.status"
+                                    :options="statusOptions"
+                                    placeholder="Select status"
+                                    search-placeholder="Search statuses"
+                                    :invalid="!!fieldError(form.errors, 'status')"
+                                />
                                 <InputError :message="fieldError(form.errors, 'status')" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="created_date">Created Date</Label>
-                                <Input id="created_date" v-model="form.created_date" type="date" :aria-invalid="fieldError(form.errors, 'created_date') ? true : undefined" />
+                                <Input
+                                    id="created_date"
+                                    v-model="form.created_date"
+                                    type="date"
+                                    :aria-invalid="fieldError(form.errors, 'created_date') ? true : undefined"
+                                />
                                 <InputError :message="fieldError(form.errors, 'created_date')" />
                             </div>
                         </div>
@@ -198,8 +215,16 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <Label for="gallery">Gallery</Label>
-                            <Input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple @change="handleGalleryChange" />
-                            <p class="text-sm text-muted-foreground">Add extra screenshots. Up to 12 images, 5MB each. The project image above stays the cover.</p>
+                            <Input
+                                id="gallery"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                multiple
+                                @change="handleGalleryChange"
+                            />
+                            <p class="text-sm text-muted-foreground">
+                                Add extra screenshots. Up to 12 images, 5MB each. The project image above stays the cover.
+                            </p>
                             <InputError :message="galleryNotice || fieldError(form.errors, 'gallery')" />
                             <div v-if="galleryPreviews.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                 <div v-for="(preview, index) in galleryPreviews" :key="preview || index" class="group relative">

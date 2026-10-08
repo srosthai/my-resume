@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
+import SearchSelect from '@/components/SearchSelect.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,12 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { Note, NoteContentForm, PublishStatus } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+
+const statusOptions: { value: PublishStatus; label: string }[] = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'published', label: 'Published' },
+    { value: 'archived', label: 'Archived' },
+];
 
 const props = withDefaults(
     defineProps<{
@@ -414,16 +421,14 @@ const selectCategory = (category: string) => {
 
                         <div class="space-y-2">
                             <Label for="status">Status *</Label>
-                            <select
+                            <SearchSelect
                                 id="status"
                                 v-model="form.status"
-                                class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
-                                :class="{ 'border-red-500': form.errors.status }"
-                            >
-                                <option value="draft">Draft</option>
-                                <option value="published">Published</option>
-                                <option value="archived">Archived</option>
-                            </select>
+                                :options="statusOptions"
+                                placeholder="Select status"
+                                search-placeholder="Search statuses"
+                                :invalid="!!form.errors.status"
+                            />
                             <p v-if="form.errors.status" class="mt-1 text-sm text-red-500">{{ form.errors.status }}</p>
                         </div>
 
