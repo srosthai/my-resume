@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DatePicker from '@/components/DatePicker.vue';
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -140,7 +141,7 @@ const submit = () => {
 
                                 <div class="space-y-2">
                                     <Label for="dob">Date of birth</Label>
-                                    <Input id="dob" v-model="form.dob" type="date" required />
+                                    <DatePicker id="dob" v-model="form.dob" placeholder="Select a date of birth" :invalid="!!form.errors.dob" />
                                     <InputError :message="form.errors.dob" />
                                 </div>
 

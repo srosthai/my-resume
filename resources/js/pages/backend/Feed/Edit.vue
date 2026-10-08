@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DatePicker from '@/components/DatePicker.vue';
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import SearchSelect from '@/components/SearchSelect.vue';
@@ -42,14 +43,6 @@ const form = useForm({
     is_pinned: props.feed.is_pinned || false,
     likes_count: props.feed.likes_count || 0,
     published_at: (props.feed.published_at ? new Date(props.feed.published_at).toISOString().slice(0, 16) : null) as string | null,
-});
-
-/** Bridges the nullable form field to <Input>, whose v-model only accepts string | number. */
-const publishedAt = computed({
-    get: () => form.published_at ?? undefined,
-    set: (value: string | number) => {
-        form.published_at = String(value);
-    },
 });
 
 const statusOptions: { value: PublishStatus; label: string }[] = [
@@ -378,7 +371,14 @@ const selectActivityType = (type: string) => {
                             <!-- Published At -->
                             <div v-if="form.status === 'published'" class="space-y-2">
                                 <Label for="published_at">Publish Date</Label>
-                                <Input id="published_at" v-model="publishedAt" type="datetime-local" />
+                                <DatePicker
+                                    id="published_at"
+                                    v-model="form.published_at"
+                                    placeholder="Publish immediately"
+                                    with-time
+                                    clearable
+                                    :invalid="!!form.errors.published_at"
+                                />
                                 <p class="text-sm text-muted-foreground">Leave empty to publish immediately</p>
                                 <InputError :message="form.errors.published_at" />
                             </div>
