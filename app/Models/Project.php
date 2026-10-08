@@ -31,7 +31,7 @@ class Project extends Model
         'technologies' => 'array',
         'links' => 'array',
         'gallery' => 'array',
-        'created_date' => 'date',
+        'created_date' => 'date:Y-m-d',
         'status' => ProjectStatus::class,
     ];
 

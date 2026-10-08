@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FormToast from '@/components/FormToast.vue';
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { fieldError, validationMessages } from '@/lib/formErrors';
 import type { ProjectLink, ProjectStatus, ProjectType } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -37,6 +39,7 @@ const technologiesString = ref('');
 const galleryPreviews = ref<string[]>([]);
 const galleryNotice = ref('');
 const galleryLimit = 12;
+const toast = ref<string[] | null>(null);
 const links = ref([
     { label: 'Github', url: '' },
     { label: 'View', url: '' },
@@ -54,6 +57,7 @@ const handleGalleryChange = (event: Event) => {
 
     if (form.gallery.length + files.length > galleryLimit) {
         galleryNotice.value = 'You can add up to 12 gallery images.';
+        toast.value = [galleryNotice.value];
         input.value = '';
         return;
     }
@@ -102,6 +106,11 @@ const submit = () => {
 
     form.post(route('backend.projects.store'), {
         forceFormData: true,
+        onError: (errors) => {
+            toast.value = validationMessages(errors);
+            const first = Object.keys(errors)[0]?.split('.')[0];
+            document.getElementById(first)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        },
     });
 };
 </script>
@@ -110,6 +119,7 @@ const submit = () => {
     <Head title="Create Project" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
+        <FormToast :messages="toast" tone="error" @close="toast = null" />
         <div class="mx-auto w-full max-w-4xl space-y-8 p-4 sm:p-6">
             <!-- Page header -->
             <div class="flex items-center gap-4">
@@ -137,8 +147,8 @@ const submit = () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="title">Title *</Label>
-                                <Input id="title" v-model="form.title" type="text" placeholder="Enter project title" required />
-                                <InputError :message="form.errors.title" />
+                                <Input id="title" v-model="form.title" type="text" placeholder="Enter project title" required :aria-invalid="fieldError(form.errors, 'title') ? true : undefined" />
+                                <InputError :message="fieldError(form.errors, 'title')" />
                             </div>
 
                             <div class="space-y-2">
@@ -153,7 +163,7 @@ const submit = () => {
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <InputError :message="form.errors.project_type_id" />
+                                <InputError :message="fieldError(form.errors, 'project_type_id')" />
                             </div>
                         </div>
 
@@ -169,13 +179,13 @@ const submit = () => {
                                         <SelectItem value="completed">Completed</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <InputError :message="form.errors.status" />
+                                <InputError :message="fieldError(form.errors, 'status')" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="created_date">Created Date</Label>
-                                <Input id="created_date" v-model="form.created_date" type="date" />
-                                <InputError :message="form.errors.created_date" />
+                                <Input id="created_date" v-model="form.created_date" type="date" :aria-invalid="fieldError(form.errors, 'created_date') ? true : undefined" />
+                                <InputError :message="fieldError(form.errors, 'created_date')" />
                             </div>
                         </div>
 
@@ -183,14 +193,14 @@ const submit = () => {
                             <Label for="image">Project Image</Label>
                             <Input id="image" type="file" accept="image/*" @change="handleImageChange" />
                             <p class="text-sm text-muted-foreground">Upload an image for the project (JPEG, PNG, JPG, GIF - max 2MB)</p>
-                            <InputError :message="form.errors.image" />
+                            <InputError :message="fieldError(form.errors, 'image')" />
                         </div>
 
                         <div class="space-y-2">
                             <Label for="gallery">Gallery</Label>
                             <Input id="gallery" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple @change="handleGalleryChange" />
                             <p class="text-sm text-muted-foreground">Add extra screenshots. Up to 12 images, 5MB each. The project image above stays the cover.</p>
-                            <InputError :message="galleryNotice || form.errors.gallery" />
+                            <InputError :message="galleryNotice || fieldError(form.errors, 'gallery')" />
                             <div v-if="galleryPreviews.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                 <div v-for="(preview, index) in galleryPreviews" :key="preview || index" class="group relative">
                                     <img
@@ -217,14 +227,14 @@ const submit = () => {
                         <div class="space-y-2">
                             <Label for="description">Description</Label>
                             <Textarea id="description" v-model="form.description" placeholder="Enter project description" :rows="4" />
-                            <InputError :message="form.errors.description" />
+                            <InputError :message="fieldError(form.errors, 'description')" />
                         </div>
 
                         <div class="space-y-2">
                             <Label for="technologies">Technologies</Label>
                             <Input id="technologies" v-model="technologiesString" type="text" placeholder="Enter technologies (comma-separated)" />
                             <p class="text-sm text-muted-foreground">Enter technologies separated by commas (e.g., Vue.js, Laravel, MySQL)</p>
-                            <InputError :message="form.errors.technologies" />
+                            <InputError :message="fieldError(form.errors, 'technologies')" />
                         </div>
 
                         <div class="space-y-2">
@@ -259,7 +269,7 @@ const submit = () => {
                                 </div>
                             </div>
                             <p class="text-sm text-muted-foreground">Add project links like Github repository, live demo, etc.</p>
-                            <InputError :message="form.errors.links" />
+                            <InputError :message="fieldError(form.errors, 'links')" />
                         </div>
                     </div>
 

@@ -108,6 +108,42 @@ test('updating a gallery keeps chosen images, drops the rest, and ignores foreig
     expect(file_exists(base_path('.env')))->toBeTrue();
 });
 
+test('a missing title is explained in plain language', function () {
+    $project = Project::factory()->create();
+
+    $this->actingAs($this->owner)
+        ->put(route('backend.projects.update', $project), [
+            'title' => '',
+            'status' => 'completed',
+        ])
+        ->assertSessionHasErrors(['title' => 'Title is required.']);
+});
+
+test('a project with no gallery can still be updated', function () {
+    $project = Project::factory()->create(['gallery' => null, 'title' => 'Keep me']);
+
+    $this->actingAs($this->owner)
+        ->put(route('backend.projects.update', $project), [
+            'title' => 'Renamed without gallery',
+            'status' => 'completed',
+            'existing_gallery' => [''],
+        ])
+        ->assertRedirect(route('backend.projects.index'))
+        ->assertSessionHasNoErrors();
+
+    expect($project->fresh())->title->toBe('Renamed without gallery')->gallery->toBeNull();
+});
+
+test('the edit form receives a date the browser date input can show', function () {
+    $project = Project::factory()->create(['created_date' => '2024-01-15']);
+
+    $this->actingAs($this->owner)
+        ->get(route('backend.projects.edit', $project))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('project.created_date', '2024-01-15'));
+});
+
 test('a title-only update leaves the gallery in place', function () {
     $project = Project::factory()->create([
         'gallery' => ['uploads/projects/gallery/keep.jpg'],
