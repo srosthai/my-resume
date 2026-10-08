@@ -325,7 +325,7 @@ const printResume = () => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="resume-row-meta">{{ edu.from }} — {{ edu.to }}</div>
+                                    <div class="resume-row-meta">{{ edu.from }} — {{ edu.to || 'Present' }}</div>
                                 </div>
                                 <p v-if="edu.description" class="resume-row-body">
                                     {{ edu.description }}
