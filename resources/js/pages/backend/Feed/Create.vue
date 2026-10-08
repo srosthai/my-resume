@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
+import SearchSelect from '@/components/SearchSelect.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,17 @@ const publishedAt = computed({
         form.published_at = String(value);
     },
 });
+
+const statusOptions: { value: PublishStatus; label: string }[] = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'published', label: 'Published' },
+    { value: 'archived', label: 'Archived' },
+];
+
+const visibilityOptions: { value: FeedVisibility; label: string }[] = [
+    { value: 'public', label: 'Public' },
+    { value: 'private', label: 'Private' },
+];
 
 const newTag = ref('');
 const newActivityType = ref('');
@@ -291,29 +303,28 @@ const selectActivityType = (type: string) => {
                             <!-- Status -->
                             <div class="space-y-2">
                                 <Label for="status">Status *</Label>
-                                <select
+                                <SearchSelect
                                     id="status"
                                     v-model="form.status"
-                                    class="w-full rounded-md border border-border px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-primary focus:outline-none"
-                                >
-                                    <option value="draft">Draft</option>
-                                    <option value="published">Published</option>
-                                    <option value="archived">Archived</option>
-                                </select>
+                                    :options="statusOptions"
+                                    placeholder="Select status"
+                                    search-placeholder="Search statuses"
+                                    :invalid="!!form.errors.status"
+                                />
                                 <InputError :message="form.errors.status" />
                             </div>
 
                             <!-- Visibility -->
                             <div class="space-y-2">
                                 <Label for="visibility">Visibility *</Label>
-                                <select
+                                <SearchSelect
                                     id="visibility"
                                     v-model="form.visibility"
-                                    class="w-full rounded-md border border-border px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-primary focus:outline-none"
-                                >
-                                    <option value="public">Public</option>
-                                    <option value="private">Private</option>
-                                </select>
+                                    :options="visibilityOptions"
+                                    placeholder="Select visibility"
+                                    search-placeholder="Search visibility"
+                                    :invalid="!!form.errors.visibility"
+                                />
                                 <InputError :message="form.errors.visibility" />
                             </div>
 
