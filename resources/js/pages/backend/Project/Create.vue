@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DatePicker from '@/components/DatePicker.vue';
 import FormToast from '@/components/FormToast.vue';
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
@@ -196,11 +197,12 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="created_date">Created Date</Label>
-                                <Input
+                                <DatePicker
                                     id="created_date"
                                     v-model="form.created_date"
-                                    type="date"
-                                    :aria-invalid="fieldError(form.errors, 'created_date') ? true : undefined"
+                                    placeholder="Select a created date"
+                                    clearable
+                                    :invalid="!!fieldError(form.errors, 'created_date')"
                                 />
                                 <InputError :message="fieldError(form.errors, 'created_date')" />
                             </div>

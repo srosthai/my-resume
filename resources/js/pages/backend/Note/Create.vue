@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DatePicker from '@/components/DatePicker.vue';
 import Icon from '@/components/Icon.vue';
 import SearchSelect from '@/components/SearchSelect.vue';
 import { Badge } from '@/components/ui/badge';
@@ -49,14 +50,6 @@ const form = useForm({
 
 /** Validation errors for nested array fields (e.g. `content.steps.0.title`) that Inertia's key type cannot express. */
 const errorFor = (key: string): string | undefined => (form.errors as Record<string, string | undefined>)[key];
-
-/** Bridges the nullable form field to <Input>, whose v-model only accepts string | number. */
-const publishedAt = computed({
-    get: () => form.published_at ?? undefined,
-    set: (value: string | number) => {
-        form.published_at = String(value);
-    },
-});
 
 const statusOptions: { value: PublishStatus; label: string }[] = [
     { value: 'draft', label: 'Draft' },
@@ -446,11 +439,13 @@ const selectCategory = (category: string) => {
 
                         <div v-if="form.status === 'published'" class="space-y-2">
                             <Label for="published_at">Publish Date</Label>
-                            <Input
+                            <DatePicker
                                 id="published_at"
-                                v-model="publishedAt"
-                                type="datetime-local"
-                                :class="{ 'border-red-500': form.errors.published_at }"
+                                v-model="form.published_at"
+                                placeholder="Publish immediately"
+                                with-time
+                                clearable
+                                :invalid="!!form.errors.published_at"
                             />
                             <p class="text-sm text-muted-foreground">Leave empty to publish immediately</p>
                             <p v-if="form.errors.published_at" class="mt-1 text-sm text-red-500">{{ form.errors.published_at }}</p>
