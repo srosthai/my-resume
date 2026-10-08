@@ -33,6 +33,8 @@ const copiedCommands = ref<Set<string>>(new Set());
 
 const currentYear = new Date().getFullYear();
 
+const publishedOn = (note: Note) => formatDate(note.published_at || note.created_at);
+
 // Date format matches the composable's `date` output exactly.
 const { date: dateString } = usePhnomPenhClock(60000);
 
@@ -324,7 +326,7 @@ onBeforeUnmount(() => {
                             <div
                                 class="mt-5 flex items-center justify-between border-t border-border/50 pt-3 font-mono text-[10px] tracking-[0.22em] text-muted-foreground/70 uppercase"
                             >
-                                <span>{{ formatDate(note.created_at) }}</span>
+                                <span>{{ publishedOn(note) }}</span>
                                 <span class="inline-flex items-center gap-1.5">
                                     Read entry
                                     <ArrowUpRight
@@ -416,7 +418,7 @@ onBeforeUnmount(() => {
                         <span class="h-px w-5 bg-foreground/40 sm:w-6"></span>
                         {{ selectedNote.category }}
                     </span>
-                    <span class="tabular-nums">{{ formatDate(selectedNote.created_at) }}</span>
+                    <span class="tabular-nums">{{ publishedOn(selectedNote) }}</span>
                 </div>
 
                 <h1 class="mt-5 font-serif text-[clamp(2rem,6vw,4.25rem)] leading-[0.95] font-normal tracking-tight text-foreground sm:mt-6">
