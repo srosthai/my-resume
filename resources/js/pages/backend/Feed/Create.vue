@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DatePicker from '@/components/DatePicker.vue';
+import GalleryUpload from '@/components/GalleryUpload.vue';
 import Icon from '@/components/Icon.vue';
 import InputError from '@/components/InputError.vue';
 import SearchSelect from '@/components/SearchSelect.vue';
@@ -56,8 +57,6 @@ const visibilityOptions: { value: FeedVisibility; label: string }[] = [
 
 const newTag = ref('');
 const newActivityType = ref('');
-const imagePreviews = ref<string[]>([]);
-
 const moods = [
     { value: 'happy', label: 'Happy', emoji: '😊' },
     { value: 'excited', label: 'Excited', emoji: '🎉' },
@@ -81,36 +80,6 @@ const addTag = () => {
 
 const removeTag = (index: number) => {
     form.tags.splice(index, 1);
-};
-
-const handleImageUpload = (event: Event) => {
-    const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files ?? []);
-    const currentCount = form.images.length;
-
-    if (currentCount + files.length > 10) {
-        alert('Maximum 10 images allowed');
-        return;
-    }
-
-    files.forEach((file) => {
-        form.images.push(file);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const result = e.target?.result;
-            if (typeof result === 'string') {
-                imagePreviews.value.push(result);
-            }
-        };
-        reader.readAsDataURL(file);
-    });
-
-    input.value = '';
-};
-
-const removeImage = (index: number) => {
-    form.images.splice(index, 1);
-    imagePreviews.value.splice(index, 1);
 };
 
 const submit = () => {
@@ -234,41 +203,17 @@ const selectActivityType = (type: string) => {
 
                         <!-- Media -->
                         <div class="space-y-2">
-                            <Label>Media</Label>
-                            <p class="text-sm text-muted-foreground">Upload photos for your post (max 10 images, 5MB each)</p>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                class="w-full rounded-md border border-border px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-primary focus:outline-none"
-                                @change="handleImageUpload"
+                            <Label for="images">Media</Label>
+                            <GalleryUpload
+                                id="images"
+                                v-model="form.images"
+                                :max="10"
+                                :uploading="form.processing"
+                                :progress="form.progress?.percentage ?? null"
+                                :invalid="!!form.errors.images"
+                                hint="5 MB each."
                             />
                             <InputError :message="form.errors.images" />
-
-                            <!-- Image Previews -->
-                            <div v-if="imagePreviews.length > 0" class="grid grid-cols-2 gap-4 md:grid-cols-4">
-                                <div v-for="(preview, index) in imagePreviews" :key="index" class="group relative">
-                                    <img
-                                        :src="preview"
-                                        :alt="`Selected image ${index + 1}`"
-                                        class="h-32 w-full rounded-lg object-cover"
-                                        width="256"
-                                        height="128"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="sm"
-                                        class="absolute top-1 right-1 size-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                                        @click="removeImage(index)"
-                                        aria-label="Remove image"
-                                    >
-                                        <Icon name="x" class="size-3" />
-                                    </Button>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Tags -->

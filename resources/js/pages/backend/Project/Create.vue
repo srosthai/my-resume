@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DatePicker from '@/components/DatePicker.vue';
 import FormToast from '@/components/FormToast.vue';
+import GalleryUpload from '@/components/GalleryUpload.vue';
 import Icon from '@/components/Icon.vue';
 import ImageUpload from '@/components/ImageUpload.vue';
 import InputError from '@/components/InputError.vue';
@@ -45,46 +46,11 @@ const form = useForm({
 });
 
 const technologiesString = ref('');
-const galleryPreviews = ref<string[]>([]);
-const galleryNotice = ref('');
-const galleryLimit = 12;
 const toast = ref<string[] | null>(null);
 const links = ref([
     { label: 'Github', url: '' },
     { label: 'View', url: '' },
 ]);
-
-const handleGalleryChange = (event: Event) => {
-    const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files ?? []);
-    galleryNotice.value = '';
-
-    if (form.gallery.length + files.length > galleryLimit) {
-        galleryNotice.value = 'You can add up to 12 gallery images.';
-        toast.value = [galleryNotice.value];
-        input.value = '';
-        return;
-    }
-
-    files.forEach((file) => {
-        const index = form.gallery.length;
-        form.gallery.push(file);
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (typeof reader.result === 'string') {
-                galleryPreviews.value[index] = reader.result;
-            }
-        };
-        reader.readAsDataURL(file);
-    });
-
-    input.value = '';
-};
-
-const removeGalleryImage = (index: number) => {
-    form.gallery.splice(index, 1);
-    galleryPreviews.value.splice(index, 1);
-};
 
 const addLink = () => {
     links.value.push({ label: '', url: '' });
@@ -219,38 +185,16 @@ const submit = () => {
 
                         <div class="space-y-2">
                             <Label for="gallery">Gallery</Label>
-                            <Input
+                            <GalleryUpload
                                 id="gallery"
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp,image/gif"
-                                multiple
-                                @change="handleGalleryChange"
+                                v-model="form.gallery"
+                                :max="12"
+                                :uploading="form.processing"
+                                :progress="form.progress?.percentage ?? null"
+                                :invalid="!!fieldError(form.errors, 'gallery')"
+                                hint="Extra screenshots. 5 MB each. The project image stays the cover."
                             />
-                            <p class="text-sm text-muted-foreground">
-                                Add extra screenshots. Up to 12 images, 5MB each. The project image above stays the cover.
-                            </p>
-                            <InputError :message="galleryNotice || fieldError(form.errors, 'gallery')" />
-                            <div v-if="galleryPreviews.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                <div v-for="(preview, index) in galleryPreviews" :key="preview || index" class="group relative">
-                                    <img
-                                        :src="preview"
-                                        :alt="`Gallery image ${index + 1}`"
-                                        class="h-24 w-full rounded-xl border object-cover"
-                                        width="160"
-                                        height="96"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="sm"
-                                        class="absolute top-1 right-1 size-6 p-0"
-                                        :aria-label="`Remove gallery image ${index + 1}`"
-                                        @click="removeGalleryImage(index)"
-                                    >
-                                        <Icon name="x" class="size-3" />
-                                    </Button>
-                                </div>
-                            </div>
+                            <InputError :message="fieldError(form.errors, 'gallery')" />
                         </div>
 
                         <div class="space-y-2">
