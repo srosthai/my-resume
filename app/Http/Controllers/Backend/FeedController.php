@@ -7,6 +7,7 @@ use App\Http\Requests\Backend\FeedRequest;
 use App\Models\Feed;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -55,21 +56,7 @@ class FeedController extends Controller
     public function update(FeedRequest $request, Feed $feed): RedirectResponse
     {
         $data = $request->feedData();
-
-        // Only paths that already belong to this feed may be kept; anything
-        // else in existing_images (foreign paths, URLs, traversal) is dropped.
-        $current = $feed->images ?? [];
-        $kept = array_values(array_intersect($current, (array) $request->input('existing_images', [])));
-
-        foreach (array_diff($current, $kept) as $removed) {
-            $this->images->delete($removed);
-        }
-
-        foreach ($request->file('images', []) as $image) {
-            $kept[] = $this->images->store($image, 'feeds');
-        }
-
-        $data['images'] = $kept !== [] ? $kept : null;
+        $data['images'] = $this->syncImages($request, $feed);
 
         $feed->update($data);
 
@@ -81,6 +68,45 @@ class FeedController extends Controller
         $feed->delete();
 
         return redirect()->route('backend.feeds.index')->with('success', 'Feed deleted. You can restore it from the list.');
+    }
+
+    /**
+     * Keep only image paths that already belong to this feed, drop the rest,
+     * and append newly uploaded files. A request that never mentions the
+     * photos, and uploads nothing, leaves the current set alone. A blank
+     * entry is how the edit form keeps this key in a multipart body when the
+     * owner has cleared every photo.
+     *
+     * @return list<string>|null
+     */
+    private function syncImages(FeedRequest $request, Feed $feed): ?array
+    {
+        $uploaded = [];
+
+        foreach ($request->file('images', []) as $image) {
+            if ($image instanceof UploadedFile) {
+                $uploaded[] = $this->images->store($image, 'feeds');
+            }
+        }
+
+        if (! $request->exists('existing_images') && $uploaded === []) {
+            return $feed->images;
+        }
+
+        $current = $feed->images ?? [];
+        $requested = array_values(array_filter(
+            (array) $request->input('existing_images', []),
+            fn ($path) => is_string($path) && $path !== '',
+        ));
+        $kept = array_values(array_intersect($current, $requested));
+
+        foreach (array_diff($current, $kept) as $removed) {
+            $this->images->delete($removed);
+        }
+
+        $paths = [...$kept, ...$uploaded];
+
+        return $paths === [] ? null : $paths;
     }
 
     public function restore(Feed $feed): RedirectResponse

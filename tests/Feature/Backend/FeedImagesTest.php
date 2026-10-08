@@ -59,6 +59,31 @@ test('existing_images cannot inject foreign paths or delete files outside the fe
     expect(file_exists(base_path('.env')))->toBeTrue();
 });
 
+test('a body-only update leaves feed images in place', function () {
+    Storage::disk('uploads')->put('feeds/keep.jpg', 'x');
+    $feed = Feed::factory()->create(['images' => ['uploads/feeds/keep.jpg']]);
+
+    $this->actingAs($this->owner)
+        ->put(route('backend.feeds.update', $feed), feedPayload(['body' => 'Updated body']))
+        ->assertRedirect();
+
+    expect($feed->fresh())->body->toBe('Updated body')->images->toBe(['uploads/feeds/keep.jpg']);
+    Storage::disk('uploads')->assertExists('feeds/keep.jpg');
+});
+
+test('a blank existing image entry clears the feed photos', function () {
+    Storage::disk('uploads')->put('feeds/keep.jpg', 'x');
+    $feed = Feed::factory()->create(['images' => ['uploads/feeds/keep.jpg']]);
+
+    $this->actingAs($this->owner)
+        ->put(route('backend.feeds.update', $feed), feedPayload(['existing_images' => ['']]))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($feed->fresh()->images)->toBeNull();
+    Storage::disk('uploads')->assertMissing('feeds/keep.jpg');
+});
+
 test('deleting a feed keeps its images so a restore still has them', function () {
     Storage::disk('uploads')->put('feeds/mine.jpg', 'x');
     Storage::disk('uploads')->put('feeds/theirs.jpg', 'x');
