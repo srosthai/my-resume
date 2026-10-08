@@ -14,7 +14,7 @@ class EducationController extends Controller
     public function index(): Response
     {
         return Inertia::render('backend/Education/Index', [
-            'educations' => Education::latest()->get(),
+            'educations' => Education::query()->inCareerOrder()->get(),
         ]);
     }
 

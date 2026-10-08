@@ -14,7 +14,7 @@ class WorkExperienceController extends Controller
     public function index(): Response
     {
         return Inertia::render('backend/WorkExperience/Index', [
-            'workExperiences' => WorkExperience::latest()->get(),
+            'workExperiences' => WorkExperience::query()->inCareerOrder()->get(),
         ]);
     }
 

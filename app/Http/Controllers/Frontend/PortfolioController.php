@@ -240,8 +240,8 @@ class PortfolioController extends Controller
         // The resume page intentionally shows the owner's contact details.
         $users = User::owner()->first([...User::publicColumns(), 'email', 'phone', 'address']);
         $aboutMe = AboutMe::latest()->first() ?? [];
-        $workExperience = WorkExperience::orderBy('id')->get() ?? [];
-        $education = Education::orderBy('id')->get() ?? [];
+        $workExperience = WorkExperience::query()->inCareerOrder()->get();
+        $education = Education::query()->inCareerOrder()->get();
         $techStacks = TechStack::orderBy('id')->get() ?? [];
         $projects = Project::with('projectType')
             ->orderBy('created_at', 'desc')
